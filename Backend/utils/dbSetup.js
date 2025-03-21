@@ -7,8 +7,7 @@ const initializeDbs = async (userDetails) => {
   try {
     console.log("Initializing databases for user:", userDetails);
 
-    // ✅ Ensure academicDegree is correctly formatted (Title Case)
-    userDetails.academicDegree = userDetails.academicDegree.trim(); // Remove spaces
+    userDetails.academicDegree = userDetails.academicDegree.trim(); 
 
     if (userDetails.academicDegree.toUpperCase() === "PHD") {
       userDetails.academicDegree = "PhD";
@@ -19,7 +18,6 @@ const initializeDbs = async (userDetails) => {
     } else {
       throw new Error(`❌ Invalid academic degree: ${userDetails.academicDegree}`);
     }
-
 
     // ✅ Find or Create Campus
     let campus = await Campus.findOne({

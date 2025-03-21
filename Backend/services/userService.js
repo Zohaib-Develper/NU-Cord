@@ -5,7 +5,7 @@ const encryptPassword = require("../utils/helpers/encryptPassword");
 const extractDetailsFromEmail = require("../utils/helpers/extractDetails");
 const isValidFastNuEmail = require("../utils/validators/emailValidator");
 
-const signUpService = async (userProfile) => {
+const signupService = async (userProfile) => {
   const validEmail = isValidFastNuEmail(userProfile.emails?.[0]?.value);
   if (!validEmail) {
     console.error("Authentication failed: Invalid Email");
@@ -38,7 +38,7 @@ const signUpService = async (userProfile) => {
   return { user };
 };
 
-const signInService = async (username, password) => {
+const signinService = async (username, password) => {
   const user = await User.findOne({ username })
     .populate("batch", "year")
     .populate("campus", "name")
@@ -67,4 +67,4 @@ const signInService = async (username, password) => {
   };
 };
 
-module.exports = { signUpService, signInService };
+module.exports = { signupService, signinService };

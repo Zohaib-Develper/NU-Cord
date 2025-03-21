@@ -1,9 +1,9 @@
-const { signUpService, signInService } = require("../services/userService");
+const { signupService, signinService } = require("../services/userService");
 const { registerUserToServer } = require("../services/serverService"); 
 
-const signUp = async (req, res) => {
+const signup = async (req, res) => {
   try {
-    const result = await signUpService(req.user);
+    const result = await signupService(req.user);
     const user = result.user;
 
     if (!user) {
@@ -17,7 +17,7 @@ const signUp = async (req, res) => {
       .status(200)
       .json({ message: "User registered successfully", user });
   } catch (error) {
-    console.error("Error in signUp:", error);
+    console.error("Error in signup:", error);
 
     if (!res.headersSent) {
       return res
@@ -27,13 +27,13 @@ const signUp = async (req, res) => {
   }
 };
 
-const signIn = async (req, res) => {
+const signin = async (req, res) => {
   try {
     const { username, password } = req.body;
-    const user = await signInService(username, password);
+    const user = await signinService(username, password);
     res.status(200).json({ message: "Sign in successful", user });
   } catch (error) {
-    console.error("Error in signIn:", error);
+    console.error("Error in sign in:", error);
     res.status(error.statusCode || 500).json({ error: error.message });
   }
 };
@@ -47,4 +47,4 @@ const logout = (req, res) => {
   });
 };
 
-module.exports = { signUp, signIn, logout };
+module.exports = { signup, signin, logout };
