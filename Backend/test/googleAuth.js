@@ -1,4 +1,4 @@
-const { signUp } = require("../controllers/userController");
+const { signup } = require("../controllers/userController");
 
 const testGoogleAuth = async (req, res) => {
   try {
@@ -13,8 +13,8 @@ const testGoogleAuth = async (req, res) => {
       },
     };
 
-    // Call signUp directly
-    await signUp(req, res);
+    // Call signup directly
+    await signup(req, res);
   } catch (error) {
     console.error("❌ Error in testGoogleAuth:", error);
     res.status(500).json({ error: "Internal Server Error" });
