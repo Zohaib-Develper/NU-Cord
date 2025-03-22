@@ -1,3 +1,5 @@
+const Server = require("./server");
+
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
@@ -19,6 +21,7 @@ const userSchema = new Schema(
     friends: [{ type: Schema.Types.ObjectId, ref: "User" }],
     friendRequests: [{ type: Schema.Types.ObjectId, ref: "User" }],
     friendRequestsSent: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    servers: [{ type: Schema.Types.ObjectId, ref: "Server" }],
   },
   { timestamps: true }
 );
