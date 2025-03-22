@@ -2,6 +2,7 @@ const Server = require("../models/server");
 const Batch = require("../models/batch");
 const Major = require("../models/major");
 const Campus = require("../models/campus");
+const User = require("../models/user");
 
 const registerUserToServer = async (userId, batchId, majorId, campusId) => {
   try {
@@ -32,6 +33,17 @@ const registerUserToServer = async (userId, batchId, majorId, campusId) => {
       } else {
         console.log(`ℹ️ User already in server: ${server.name}`);
       }
+    }
+
+    const user = await User.findById(userId);
+    if (user) {
+      if (!user.servers.includes(server._id)) {
+        user.servers.push(server._id);
+        await user.save();
+        console.log(`✅ Server ${server.name} added to user's server list.`);
+      }
+    } else {
+      console.warn(`⚠️ User with ID ${userId} not found.`);
     }
   } catch (error) {
     console.error("❌ Error in registerUserToServer:", error.message);

@@ -13,12 +13,13 @@ const signupService = async (userProfile) => {
   }
 
   const userDetails = extractDetailsFromEmail(userProfile);
-
   let user = await User.findOne({ email: userDetails.email });
 
   if (!user) {
     console.log("✅ User does not exist, initializing DBs...");
-    const { batch, campus, academicDegree, major } = await initializeDbs(userDetails);
+    const { batch, campus, academicDegree, major } = await initializeDbs(
+      userDetails
+    );
     userDetails.password = await encryptPassword(userDetails.password);
 
     user = new User({
