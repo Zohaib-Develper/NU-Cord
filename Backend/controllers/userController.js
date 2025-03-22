@@ -13,8 +13,12 @@ const signup = async (req, res) => {
     }
 
     // Register user to server
-    await registerUserToServer(user._id, user.batch, user.major, user.campus);
-    const updatedUser = await User.findById(user._id); //IF WE DO NOT DO THIS THEN THE SERVER ARRAY OF USER IS NOT UPDATED AND IT DISPLAYS IT TO BE EMPTY.
+    const updatedUser = await registerUserToServer(
+      user._id,
+      user.batch,
+      user.major,
+      user.campus
+    );
     return res
       .status(200)
       .json({ message: "User registered successfully", updatedUser });

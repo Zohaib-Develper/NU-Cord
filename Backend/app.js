@@ -1,5 +1,6 @@
 require("dotenv").config();
 const express = require("express");
+const cors = require("cors");
 const session = require("express-session");
 const passport = require("passport");
 const connectDB = require("./config/dbConfig.js");
@@ -16,12 +17,21 @@ connectDB();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Use CORS Middleware
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+  })
+);
+
 app.use(
   session({
-    secret: process.env.SESSION_SECRET ,
+    secret: process.env.SESSION_SECRET,
     resave: false,
-    saveUninitialized: true,
-    // cookie: { secure: process.env.NODE_ENV === "production" },
+    saveUninitialized: false,
+    cookie: { secure: process.env.NODE_ENV === "production" ? true : false },
   })
 );
 

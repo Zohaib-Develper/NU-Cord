@@ -41,6 +41,7 @@ const registerUserToServer = async (userId, batchId, majorId, campusId) => {
         user.servers.push(server._id);
         await user.save();
         console.log(`✅ Server ${server.name} added to user's server list.`);
+        return user;
       }
     } else {
       console.warn(`⚠️ User with ID ${userId} not found.`);
