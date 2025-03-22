@@ -1,20 +1,22 @@
 import { useState } from "react";
-import {
-  Box,
-  Checkbox,
-  Container,
-  Paper,
-  Typography,
-  Divider,
-} from "@mui/material";
-import "../style/signup.css";
+import { Box, Container, Paper, Typography, Divider } from "@mui/material";
 import googleLogo from "../assets/google.svg";
 import SignupImage from "../assets/signup.png";
 import GoogleButton from "../components/googleButton";
-import WelcomeText from "../components/welcomeText"; 
+import WelcomeText from "../components/welcomeText";
+import CheckBox from "../components/checkBox";
+import FallingStars from "../components/fallingStars";
+import "../style/signup.css";
 
 function SignupPage() {
   const [checked, setChecked] = useState(false);
+
+  //  GoogleButton function
+  const googleButton = () => {
+    console.log("Sign Up Google Button Clicked "); //[FOR DEBUGGING ONLY]
+    if (checked)
+      window.location.href = "http://localhost:8000/user/auth/google";
+  };
 
   return (
     <Box
@@ -23,19 +25,23 @@ function SignupPage() {
         alignItems: "center",
         justifyContent: "center",
         minHeight: "100vh",
-        width: "100vw",
+        width: "100%",
         backgroundColor: "#5D0EE7",
         position: "relative",
         overflow: "hidden",
+        padding: { xs: 2, md: 0 },
       }}
     >
+      {/* Add the stars effect */}
+      <FallingStars />
+
       <Container maxWidth="xs">
         <Paper
           elevation={6}
           sx={{
-            height: 400,
-            padding: 6,
-            borderRadius: 15,
+            height: { xs: "auto", md: 400 },
+            padding: { xs: 3, md: 6 },
+            borderRadius: 20,
             textAlign: "center",
             position: "relative",
           }}
@@ -50,43 +56,23 @@ function SignupPage() {
 
           {/* Google Signup Button */}
           <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
-            <GoogleButton image={googleLogo} text="Sign up with NU mail" />
-          </Box>
-
-          {/* Terms & Conditions */}
-          <Box
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-            marginTop={1}
-          >
-            <Checkbox
-              checked={checked}
-              onChange={(e) => setChecked(e.target.checked)}
-              sx={{
-                "& .MuiSvgIcon-root": {
-                  fontSize: 20,
-                  color: "black",
-                },
-                "&.Mui-checked .MuiSvgIcon-root": {
-                  fontSize: 20,
-                  color: "#5D0EE7",
-                },
-              }}
+            <GoogleButton
+              image={googleLogo}
+              text="Sign up with NU mail"
+              onClick={googleButton}
             />
-
-            <Typography
-              variant="body2"
-              sx={{ cursor: "pointer" }}
-              onClick={() => setChecked(!checked)}
-            >
-              Terms & Conditions
-            </Typography>
           </Box>
+
+          {/* Terms & Conditions Checkbox */}
+          <CheckBox
+            checked={checked}
+            onChange={setChecked}
+            label="Terms & Conditions"
+          />
         </Paper>
       </Container>
 
-      {/* Signup Image at the Bottom Right */}
+      {/* Signup Image - Responsive */}
       <img
         src={SignupImage}
         alt="Signup Illustration"

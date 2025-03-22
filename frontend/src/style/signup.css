@@ -23,9 +23,19 @@ html {
 }
 
 .signup-image {
-  width: 300px;
-  height: auto;
+  width: 200px;
+  max-width: 40%;
   position: absolute;
-  top: 50%;
-  left: 57%;
+  bottom: 5%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+@media (min-width: 768px) {
+  .signup-image {
+    width: 300px;
+    left: 57%;
+    top: 75%;
+    transform: translateY(-50%);
+  }
 }

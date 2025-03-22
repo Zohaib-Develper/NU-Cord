@@ -1,6 +1,6 @@
 import { Button } from "@mui/material";
 
-function GoogleButton({ image, text }) {
+function GoogleButton({ image, text, onClick }) {
   return (
     <Button
       variant="contained"
@@ -15,6 +15,7 @@ function GoogleButton({ image, text }) {
         "&:hover": { backgroundColor: "#4A0BBE" },
         "&:focus": { outline: "none", boxShadow: "none" },
       }}
+      onClick={onClick}
     >
       {text}
     </Button>
