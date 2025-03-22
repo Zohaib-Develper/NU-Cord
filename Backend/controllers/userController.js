@@ -1,5 +1,7 @@
+const User = require("../models/user");
+
 const { signupService, signinService } = require("../services/userService");
-const { registerUserToServer } = require("../services/serverService"); 
+const { registerUserToServer } = require("../services/serverService");
 
 const signup = async (req, res) => {
   try {
@@ -11,19 +13,17 @@ const signup = async (req, res) => {
     }
 
     // Register user to server
-    await registerUserToServer(user._id, user.batch, user.major, user.campus);
-
+    const updatedUser = await registerUserToServer(
+      user._id,
+      user.batch,
+      user.major,
+      user.campus
+    );
     return res
       .status(200)
-      .json({ message: "User registered successfully", user });
+      .json({ message: "User registered successfully", updatedUser });
   } catch (error) {
     console.error("Error in signup:", error);
-
-    if (!res.headersSent) {
-      return res
-        .status(500)
-        .json({ error: "Server error", details: error.message });
-    }
   }
 };
 
