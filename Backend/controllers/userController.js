@@ -6,7 +6,6 @@ const { registerUserToServer } = require("../services/serverService");
 const signup = async (req, res) => {
   try {
     const { user } = await signupService(req.user);
-    console.log(user);
     if (!user) {
       return res.status(400).json({ error: "User registration failed" });
     }
@@ -23,8 +22,8 @@ const signup = async (req, res) => {
 
 const signin = async (req, res) => {
   try {
-    const { username, password } = req.body;
-    const user = await signinService(username, password);
+    const { email, password } = req.body;
+    const user = await signinService(email, password);
     res.status(200).json({ message: "Sign in successful", user });
   } catch (error) {
     console.error("Error in sign in:", error);

@@ -16,6 +16,7 @@ const signupService = async (userProfile) => {
 
   if (!user) {
     console.log("✅ User does not exist, creating new user.");
+    console.log("Password aloted to User:", userDetails.password);              //For testing purposes only.
     userDetails.password = await encryptPassword(userDetails.password);
 
     user = await User.create(userDetails);
@@ -28,15 +29,11 @@ const signupService = async (userProfile) => {
   return { user };
 };
 
-const signinService = async (username, password) => {
-  const user = await User.findOne({ username })
-    .populate("batch", "year")
-    .populate("campus", "name")
-    .populate("academicDegree", "name")
-    .populate("major", "name");
+const signinService = async (email, password) => {
+  const user = await User.findOne({ email })
 
   if (!user) {
-    throw { statusCode: 400, message: "Invalid username" };
+    throw { statusCode: 400, message: "Invalid email" };
   }
 
   const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -46,15 +43,7 @@ const signinService = async (username, password) => {
 
   console.log(`✅ User signed in: ${user.username}`);
 
-  return {
-    username: user.username,
-    name: user.name,
-    email: user.email,
-    batch: user.batch.year,
-    campus: user.campus.name,
-    academicDegree: user.academicDegree.name,
-    major: user.major.name,
-  };
+  return user;
 };
 
 module.exports = { signupService, signinService };
