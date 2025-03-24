@@ -5,20 +5,14 @@ const { registerUserToServer } = require("../services/serverService");
 
 const signup = async (req, res) => {
   try {
-    const result = await signupService(req.user);
-    const user = result.user;
-
+    const { user } = await signupService(req.user);
+    console.log(user);
     if (!user) {
       return res.status(400).json({ error: "User registration failed" });
     }
 
     // Register user to server
-    const updatedUser = await registerUserToServer(
-      user._id,
-      user.batch,
-      user.major,
-      user.campus
-    );
+    const updatedUser = await registerUserToServer(user._id);
     return res
       .status(200)
       .json({ message: "User registered successfully", updatedUser });
