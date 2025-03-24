@@ -14,6 +14,8 @@ function SignupPage() {
   //  GoogleButton function
   const googleButton = () => {
     console.log("Sign Up Google Button Clicked "); //[FOR DEBUGGING ONLY]
+    if(!checked)
+      alert("Please agree with Terms & Conditions to continue.");
     if (checked)
       window.location.href = "http://localhost:8000/user/auth/google";
   };
