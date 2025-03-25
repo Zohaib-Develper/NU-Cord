@@ -19,8 +19,8 @@ const userSchema = new Schema(
       required: true,
       unique: true,
       match: [
-        /^[lipkfmc]\d{6}$/,
-        'Invalid student ID format. It should start with "l", "i", "p", "k", "c" or "m" followed by 6 digits.',
+        /^[lipkfm]\d{6}$/,
+        'Invalid student ID format. It should start with "l", "i", "p", "k", "f" or "m" followed by 6 digits.',
       ],
     },
     degree_name: { type: String, required: true },
