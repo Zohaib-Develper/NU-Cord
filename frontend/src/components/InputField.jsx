@@ -2,12 +2,10 @@ import { TextField, InputAdornment, IconButton } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useState } from "react";
 
-const InputField = ({ label, type }) => {
+const InputField = ({ label, type, onChange }) => {
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleClickShowPassword = () => {
-    setShowPassword(!showPassword);
-  };
+  const togglePasswordVisibility = () => setShowPassword((prev) => !prev);
 
   return (
     <TextField
@@ -16,39 +14,45 @@ const InputField = ({ label, type }) => {
       type={type === "password" && !showPassword ? "password" : "text"}
       variant="outlined"
       margin="normal"
+      onChange={onChange}
       sx={{
-        backgroundColor: "#f0f0f0", // Light gray background
+        backgroundColor: "#f0f0f0",
         fontFamily: "Poppins, sans-serif",
-        "& .MuiInputBase-input": {
-        //   color: "purple", // Text stays black
-        },
-        "& label": {
-          color: "black", // Label stays black
-        },
-        "& label.Mui-focused": {
-          color: "purple", // Label remains black when focused
-        },
+        "& .MuiInputBase-root": { backgroundColor: "#f0f0f0" },
+        "& .MuiInputBase-input": { color: "black" },
+        "& label": { color: "purple" },
+        "& label.Mui-focused": { color: "purple" },
         "& .MuiOutlinedInput-root": {
-          "& fieldset": {
-            borderColor: "black", // Default border color
-          },
-          "&:hover fieldset": {
-            borderColor: "purple", // Black border on hover
-          },
-          "&.Mui-focused fieldset": {
-            borderColor: "purple", // Black border when clicked
-          },
+          "& fieldset": { borderColor: "purple" },
+          "&:hover fieldset": { borderColor: "purple" },
+          "&.Mui-focused fieldset": { borderColor: "purple" },
+        },
+        "& input:-webkit-autofill": {
+          backgroundColor: "#f0f0f0 !important",
+          color: "black !important",
+          WebkitBoxShadow: "0 0 0px 1000px #f0f0f0 inset !important",
+          WebkitTextFillColor: "black !important",
         },
       }}
-      InputProps={{
-        endAdornment:
-          type === "password" ? (
-            <InputAdornment position="end">
-              <IconButton onClick={handleClickShowPassword} edge="end">
-                {showPassword ? <VisibilityOff /> : <Visibility />}
-              </IconButton>
-            </InputAdornment>
-          ) : null,
+      slotProps={{
+        input: {
+          endAdornment:
+            type === "password" ? (
+              <InputAdornment position="end">
+                <IconButton
+                  onClick={togglePasswordVisibility}
+                  edge="end"
+                  sx={{
+                    color: "black",
+                    "&:hover": { color: "purple" },
+                    "&:focus": { outline: "none" },
+                  }}
+                >
+                  {showPassword ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              </InputAdornment>
+            ) : null,
+        },
       }}
     />
   );

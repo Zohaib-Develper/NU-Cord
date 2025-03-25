@@ -11,7 +11,7 @@ const router = Router();
 // Google OAuth Routes
 router.get("/auth/google", googleAuth);
 router.get("/auth/google/callback", googleAuthCallback, signup);
-router.post("/auth/google/test", testGoogleAuth);                   //TEST ROUTE FOR GOOGLE AUTH
+router.post("/auth/google/test", testGoogleAuth); //TEST ROUTE FOR GOOGLE AUTH
 
 // Authentication Routes
 router.post("/signin", signin);
