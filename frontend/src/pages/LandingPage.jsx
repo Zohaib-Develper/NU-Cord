@@ -1,208 +1,126 @@
-import React from "react";
+import Navbar from "../components/Navbar";
+import React, { useState, useEffect } from "react";
+import Footer from "../components/Footer";
 
 const LandingPage = () => {
+  const colors = ["#5e17eb", "#ffffff"];
+  const [currentColor, setCurrentColor] = useState(colors[0]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentColor((prevColor) => {
+        const nextIndex = (colors.indexOf(prevColor) + 1) % colors.length;
+        return colors[nextIndex];
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const features = [
+    {
+      title: "Campus Communities",
+      description:
+        "Join dedicated channels for your batch, courses & interests!",
+    },
+    {
+      title: "Resource Sharing",
+      description: "Share notes, slides, and other study materials with ease.",
+    },
+    {
+      title: "Internship & Job Alerts",
+      description:
+        "Get Exclusive internship and job opportunities tailored for FAST students",
+    },
+    {
+      title: "Club & Society Channels",
+      description:
+        "Stay Updated with official clubs & societies at FAST - be it ACM, IEEE or SOFTEC",
+    },
+    {
+      title: "FAST Marketplace",
+      description: "Buy and sell items within the FAST community conveniently.",
+    },
+    {
+      title: "Memes & Rant Space",
+      description:
+        "Vent about surprise quizzes or share the latest FASTian meme trends",
+    },
+    {
+      title: "Study Rooms",
+      description:
+        "Host Group study sessions, share resources & ace your quizzes!",
+    },
+    {
+      title: "Game Nights",
+      description:
+        "Compete, chill, and vibe with fellow FASTians in gaming channels!",
+    },
+  ];
+
   return (
-    <div className="min-h-screen">
-      {/* Header */}
-      <header className="bg-gray-800 text-white p-4">
-        <div className="container mx-auto flex flex-col sm:flex-row justify-between items-center">
-          <div className="text-2xl font-bold mb-2 sm:mb-0">NU-Cord</div>
-          <nav className="flex flex-wrap gap-4">
-            <a href="#home" className="hover:text-gray-300">
-              Home
-            </a>
-            <a href="#features" className="hover:text-gray-300">
-              Features
-            </a>
-            <a href="#contact" className="hover:text-gray-300">
-              Contact
-            </a>
-            <a href="#community" className="hover:text-gray-300">
-              Community
-            </a>
-            <a href="#login" className="hover:text-gray-300">
-              Login
-            </a>
-            <a href="#signup" className="hover:text-gray-300">
-              Signup
-            </a>
-          </nav>
-        </div>
-      </header>
+    <div className="bg-gray-100 dark:bg-gray-900 min-h-screen">
+      <Navbar />
 
-      {/* Hero Section */}
-      <section id="home" className="bg-blue-600 text-white py-16 px-4">
-        <div className="container mx-auto text-center">
-          <h1 className="text-3xl sm:text-4xl font-bold mb-4">
-            Welcome to NU-Cord
-          </h1>
-          <p className="text-lg sm:text-xl mb-6">
-            Your FAST community; Just a Ping Away
-          </p>
-          <p className="text-base sm:text-lg mb-8 max-w-2xl mx-auto">
-            From coding chaos to chill convos, Nucord is your go-to space for
-            everything whether it be projects, memes or post mid rants!
-          </p>
-          <button className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition">
-            Get Started
-          </button>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section id="features" className="py-16 px-4">
-        <div className="container mx-auto">
-          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-10">
-            Why NU-Cord?
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-            <div className="p-6 border rounded-lg shadow-md hover:shadow-lg transition-shadow">
-              <h3 className="text-lg sm:text-xl font-semibold mb-2">
-                Campus Communities
-              </h3>
-              <p className="text-sm sm:text-base">
-                Join dedicated channels for your batch, courses & interests!
-              </p>
-            </div>
-            <div className="p-6 border rounded-lg shadow-md hover:shadow-lg transition-shadow">
-              <h3 className="text-lg sm:text-xl font-semibold mb-2">
-                Resource Sharing
-              </h3>
-              <p className="text-sm sm:text-base">
-                Upload and access study materials, past papers, and lecture
-                slides
-              </p>
-            </div>
-            <div className="p-6 border rounded-lg shadow-md hover:shadow-lg transition-shadow">
-              <h3 className="text-lg sm:text-xl font-semibold mb-2">
-                Study Rooms
-              </h3>
-              <p className="text-sm sm:text-base">
-                Host group study sessions, share resources & ace your quizzes!
-              </p>
-            </div>
-            <div className="p-6 border rounded-lg shadow-md hover:shadow-lg transition-shadow">
-              <h3 className="text-lg sm:text-xl font-semibold mb-2">
-                Club & Society Channels
-              </h3>
-              <p className="text-sm sm:text-base">
-                Stay updated with official clubs & societies at FAST—be it ACM,
-                IEEE or SOFTEC
-              </p>
-            </div>
-            <div className="p-6 border rounded-lg shadow-md hover:shadow-lg transition-shadow">
-              <h3 className="text-lg sm:text-xl font-semibold mb-2">
-                Game Nights
-              </h3>
-              <p className="text-sm sm:text-base">
-                Compete, chill, and vibe with fellow FASTians in gaming
-                channels!
-              </p>
-            </div>
-            <div className="p-6 border rounded-lg shadow-md hover:shadow-lg transition-shadow">
-              <h3 className="text-lg sm:text-xl font-semibold mb-2">
-                FAST Marketplace
-              </h3>
-              <p className="text-sm sm:text-base">
-                Buy & sell books, gadgets, or even find freelance gigs
-              </p>
-            </div>
-            <div className="p-6 border rounded-lg shadow-md hover:shadow-lg transition-shadow">
-              <h3 className="text-lg sm:text-xl font-semibold mb-2">
-                Startup & Networking
-              </h3>
-              <p className="text-sm sm:text-base">
-                Have a startup idea? Looking for teammates? Nucord got you
-                covered
-              </p>
-            </div>
-            <div className="p-6 border rounded-lg shadow-md hover:shadow-lg transition-shadow">
-              <h3 className="text-lg sm:text-xl font-semibold mb-2">
-                Memes & Rant Space
-              </h3>
-              <p className="text-sm sm:text-base">
-                Vent about surprise quizzes or share the latest FASTian meme
-                trends!
-              </p>
-            </div>
-            <div className="p-6 border rounded-lg shadow-md hover:shadow-lg transition-shadow">
-              <h3 className="text-lg sm:text-xl font-semibold mb-2">
-                Internship & Job Alerts
-              </h3>
-              <p className="text-sm sm:text-base">
-                Get exclusive internship and job opportunities tailored for FAST
-                students
-              </p>
-            </div>
+      <section className="text-center py-12">
+        <h1 className="text-6xl font-bold text-gray-900 dark:text-white mb-8">
+          Welcome to <span className="text-[#5e17eb] font-bold">NU-Cord</span>
+        </h1>
+        <h1 className="text-6xl font-bold text-gray-900 dark:text-white mb-8">
+          Your FAST community,
+          <br />
+          <div className="mt-8">
+            Just a{" "}
+            <span className="font-bold" style={{ color: currentColor }}>
+              {"Ping"}
+            </span>{" "}
+            Away
           </div>
+        </h1>
+        <p className="text-xl text-gray-700 dark:text-gray-300 max-w-2xl mx-auto mb-10">
+          From coding chaos to chill convos, NUcord is your go-to space for
+          everything whether it be projects, memes or post mid rants
+        </p>
+        <a
+          href="#"
+          className="mt-6 inline-block bg-[#5e17eb] text-white text-lg font-medium py-3 px-6 rounded-xl shadow-md hover:opacity-80 transition">
+          Get Started
+        </a>
+      </section>
+
+      <section className="py-10 bg-white dark:bg-gray-800 px-6">
+        <h2 className="text-3xl font-bold text-gray-900 dark:text-white text-center mb-12">
+          Why NU-Cord?
+        </h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-6xl mx-auto">
+          {features.map((feature, index) => (
+            <div
+              key={index}
+              className="p-5 bg-gray-200 dark:bg-gray-300 rounded-lg text-center shadow-md transform transition duration-300 hover:scale-105">
+              <p className="text-lg font-semibold text-black-900 dark:text-black mb-2">
+                {feature.title}
+              </p>
+              <p className="text-sm text-black-700 dark:text-black-300">
+                {feature.description}
+              </p>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* Suggestions Section */}
-      <section className="py-10 bg-gray-100 px-4">
-        <div className="container mx-auto text-center">
-          <p className="text-base sm:text-lg mb-4">Have Suggestions?</p>
-          <button className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition">
+      <section className="bg-gray-800 px-6 py-5">
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          <h3 className="text-3xl font-semibold mb-6 text-white transition duration-300 hover:text-[#5e17eb]">
+            Have Suggestions?
+          </h3>
+          <a
+            href="#contact"
+            className="mt-6 inline-block bg-[#5e17eb] text-white text-lg font-medium py-3 px-6 rounded-xl shadow-md hover:opacity-80 transition">
             Contact Our Team
-          </button>
+          </a>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-16 bg-blue-600 text-white px-4">
-        <div className="container mx-auto text-center">
-          <h2 className="text-2xl sm:text-3xl font-bold mb-4">
-            Ready to Join?
-          </h2>
-          <button className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition">
-            Join NU-Cord Now
-          </button>
-        </div>
-      </section>
-
-      {/* Closing Statement */}
-      <section className="py-10 px-4">
-        <div className="container mx-auto text-center">
-          <p className="text-base sm:text-lg max-w-2xl mx-auto">
-            NU-Cord isn’t just a chat platform—it’s your digital campus
-            experience designed to keep FASTians connected beyond classrooms
-          </p>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="bg-gray-800 text-white py-10 px-4">
-        <div className="container mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex flex-wrap gap-4">
-            <a href="#about" className="hover:text-gray-300">
-              About
-            </a>
-            <a href="#features" className="hover:text-gray-300">
-              Features
-            </a>
-            <a href="#faqs" className="hover:text-gray-300">
-              FAQs
-            </a>
-            <a href="#contact" className="hover:text-gray-300">
-              Contact Us
-            </a>
-            <a href="#privacy" className="hover:text-gray-300">
-              Privacy Policy
-            </a>
-          </div>
-          <div className="flex gap-4">
-            <a href="#" className="hover:text-gray-300">
-              FB
-            </a>
-            <a href="#" className="hover:text-gray-300">
-              TW
-            </a>
-            <a href="#" className="hover:text-gray-300">
-              IG
-            </a>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };
