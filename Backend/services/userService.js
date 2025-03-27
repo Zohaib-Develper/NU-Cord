@@ -5,18 +5,21 @@ const extractDetailsFromEmail = require("../utils/helpers/extractDetails");
 const isValidFastNuEmail = require("../utils/validators/emailValidator");
 
 const signupService = async (userProfile) => {
-  const validEmail = isValidFastNuEmail(userProfile.emails?.[0]?.value);
+  //Validate Email
+  const validEmail = isValidFastNuEmail(userProfile.email);
   if (!validEmail) {
     console.error("Authentication failed: Invalid Email");
     throw new Error("Authentication failed: Invalid Email");
   }
 
+  //Extract Details from Email
   const userDetails = extractDetailsFromEmail(userProfile);
+  console.log("userDetails", userDetails);
   let user = await User.findOne({ email: userDetails.email });
 
   if (!user) {
     console.log("✅ User does not exist, creating new user.");
-    console.log("Password aloted to User:", userDetails.password);              //For testing purposes only.
+
     userDetails.password = await encryptPassword(userDetails.password);
 
     user = await User.create(userDetails);
@@ -30,7 +33,7 @@ const signupService = async (userProfile) => {
 };
 
 const signinService = async (email, password) => {
-  const user = await User.findOne({ email })
+  const user = await User.findOne({ email });
 
   if (!user) {
     throw { statusCode: 400, message: "Invalid email" };

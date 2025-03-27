@@ -4,10 +4,7 @@ const User = require("../models/user");
 const registerUserToServer = async (userId) => {
   try {
     const user = await User.findById(userId);
-    console.log(user);
-
     const serverName = `${user.batch}-${user.degree_name}-${user.campus}`;
-
     let server = await Server.findOne({ name: serverName });
 
     if (!server) {

@@ -6,11 +6,9 @@ const testGoogleAuth = async (req, res) => {
 
     // Attach user data to req.user (same structure as in userController)
     req.user = {
-      emails: [{ value: req.body.email }],
-      name: {
-        familyName: req.body.familyName,
-        givenName: req.body.givenName,
-      },
+      email: req.body.email,
+      family_name: req.body.familyName,
+      given_name: req.body.givenName,
     };
 
     // Call signup directly
