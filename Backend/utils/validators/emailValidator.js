@@ -1,7 +1,7 @@
 function isValidFastNuEmail(email) {
   console.log("Validating Email:", email);
 
-  const campusCodes = ["l", "i", "k", "c", "p"];
+  const campusCodes = ["l", "i", "k", "f", "p"];
   const validDomains = [
     "lhr.nu.edu.pk",
     "isb.nu.edu.pk",
