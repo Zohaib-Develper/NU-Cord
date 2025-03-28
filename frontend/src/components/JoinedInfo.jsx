@@ -1,6 +1,18 @@
 import React, { useState } from "react";
 import ChannelPage from "../components/ChannelPage";
-
+import ProfileImage from "../assets/profile.jpeg";
+import Profile from "../components/Profile";
+import FriendsProfile from "../assets/profile2.jpeg"
+import {
+  FaVideoSlash,
+  FaMicrophoneSlash,
+  FaVideo,
+  FaMicrophone,
+  FaComments,
+  FaUserFriends,
+  FaUser,
+  FaVolumeUp
+} from "react-icons/fa";
 const dummyData = {
   servers: [
     {
@@ -24,14 +36,20 @@ const dummyData = {
       members: ["David", "Eve", "Frank"],
     },
   ],
-  dms: ["Mamoon-22", "JohnDoe", "JaneDoe"],
+  dms: ["Abdul Rafay", "Zohaib Musharaf", "Chaand Ali"],
 };
 
-const JoinedInfo = ({ selectedCategory, setSelectedChannel, setSelectedType }) => {
+const JoinedInfo = ({
+  selectedCategory,
+  setSelectedChannel,
+  setSelectedType,
+}) => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [selectedGroupSection, setSelectedGroupSection] = useState(null);
-
+  const [isMicMuted, setIsMicMuted] = useState(true);
+  const [isVideoOff, setIsVideoOff] = useState(true);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   return (
     <div className="flex flex-col w-80 h-screen bg-gray-800 text-white border-r-2 border-gray-600 p-4 overflow-y-auto">
       {/* Search Bar */}
@@ -40,7 +58,7 @@ const JoinedInfo = ({ selectedCategory, setSelectedChannel, setSelectedType }) =
         placeholder="Search..."
         className="w-full p-2 rounded-lg bg-gray-700 text-white mb-4 outline-none"
       />
-      
+
       {/* Server Section */}
       {selectedCategory === "server" && (
         <div>
@@ -49,8 +67,9 @@ const JoinedInfo = ({ selectedCategory, setSelectedChannel, setSelectedType }) =
             <div key={index} className="mb-3">
               <button
                 className="w-full text-left p-2 rounded-lg hover:bg-gray-600"
-                onClick={() => setSelectedItem(selectedItem === server ? null : server)}
-              >
+                onClick={() =>
+                  setSelectedItem(selectedItem === server ? null : server)
+                }>
                 {server.name}
               </button>
               {selectedItem === server && (
@@ -63,8 +82,7 @@ const JoinedInfo = ({ selectedCategory, setSelectedChannel, setSelectedType }) =
                       onClick={() => {
                         setSelectedChannel(channel);
                         setSelectedType("text");
-                      }}
-                    >
+                      }}>
                       # {channel}
                     </p>
                   ))}
@@ -72,13 +90,12 @@ const JoinedInfo = ({ selectedCategory, setSelectedChannel, setSelectedType }) =
                   {server.voiceChannels.map((channel, i) => (
                     <p
                       key={i}
-                      className="ml-2 text-gray-300 cursor-pointer hover:text-white"
+                      className="ml-2 text-gray-300 cursor-pointer hover:text-white flex gap-2"
                       onClick={() => {
                         setSelectedChannel(channel);
                         setSelectedType("voice");
-                      }}
-                    >
-                      🔊 {channel}
+                      }}>
+                      <FaVolumeUp className="mt-1"></FaVolumeUp> {channel}
                     </p>
                   ))}
                 </div>
@@ -96,32 +113,39 @@ const JoinedInfo = ({ selectedCategory, setSelectedChannel, setSelectedType }) =
             <div key={index} className="mb-3">
               <button
                 className="w-full text-left p-2 rounded-lg hover:bg-gray-600"
-                onClick={() => setSelectedGroup(selectedGroup === group ? null : group)}
-              >
+                onClick={() =>
+                  setSelectedGroup(selectedGroup === group ? null : group)
+                }>
                 {group.name}
               </button>
               {selectedGroup === group && (
                 <div className="ml-4 mt-2">
                   <button
-                    className="w-full text-left p-2 rounded-lg hover:bg-gray-600"
+                    className="w-full text-left p-2 rounded-lg hover:bg-gray-600 flex gap-3"
                     onClick={() => {
                       setSelectedChannel(group.name);
                       setSelectedType("group");
-                    }}
-                  >
-                    💬 Chat
+                    }}>
+                    <FaComments className="mt-1"></FaComments>
+                    Chat
                   </button>
                   <button
-                    className="w-full text-left p-2 rounded-lg hover:bg-gray-600 mt-1"
-                    onClick={() => setSelectedGroupSection(selectedGroupSection === "members" ? null : "members")}
-                  >
-                    👥 Members
+                    className="w-full text-left p-2 rounded-lg hover:bg-gray-600 mt-1 flex gap-3"
+                    onClick={() =>
+                      setSelectedGroupSection(
+                        selectedGroupSection === "members" ? null : "members"
+                      )
+                    }>
+                    <FaUserFriends className="mt-1"></FaUserFriends> Members
                   </button>
                   {selectedGroupSection === "members" && (
                     <div className="ml-4 mt-2">
                       <h3 className="font-semibold">Members</h3>
                       {group.members.map((member, i) => (
-                        <p key={i} className="ml-2 text-gray-300">👤 {member}</p>
+                        <p key={i} className="ml-2 mt-2 text-gray-300 flex gap-3">
+                          <FaUser className="text-sm mt-1"></FaUser>
+                           {member}
+                        </p>
                       ))}
                     </div>
                   )}
@@ -139,32 +163,58 @@ const JoinedInfo = ({ selectedCategory, setSelectedChannel, setSelectedType }) =
           {dummyData.dms.map((dm, index) => (
             <p
               key={index}
-              className="p-2 bg-gray-700 rounded-lg hover:bg-gray-600 mb-3 cursor-pointer"
+              className="p-2 rounded-lg hover:bg-gray-600 mb-3 cursor-pointer flex gap-3"
               onClick={() => {
                 setSelectedChannel(dm);
                 setSelectedType("dm");
-              }}
-            >
-              ✉️ {dm}
+              }}>
+              <img src={FriendsProfile} alt="User Profile"  className="h-7 w-7 rounded-full"/> {dm}
             </p>
           ))}
         </div>
       )}
-      
+
       {/* Profile Section */}
-      <div className="w-full bg-gray-900 text-white mt-auto flex items-center justify-between ">
-        <div className="flex items-center gap-2">
-          <img src="/path-to-profile-pic.jpg" alt="Profile" className="w-10 h-10 rounded-full" />
+      <div className="w-full bg-gray-900 text-white mt-auto flex items-center justify-between h-14 p-4">
+        <div
+          className="flex items-center gap-4 cursor-pointer"
+          onClick={() => setIsProfileOpen(true)}>
+          <img
+            src={ProfileImage}
+            alt="Profile"
+            className="w-10 h-10 rounded-full"
+          />
           <div>
-            <p className="text-sm font-semibold">John Doe</p>
-            <p className="text-xs text-gray-400">Batch 22</p>
+            <p className="text-sm font-semibold">Mamoon Ahmad</p>
+            <p className="text-xs text-gray-400">maamooon</p>
           </div>
         </div>
         <div className="flex gap-2">
-          <button className="text-xl text-gray-400 hover:text-white">🎤</button>
-          <button className="text-xl text-gray-400 hover:text-white">🎥</button>
+          <button
+            className={`text-xl ${
+              isMicMuted ? "text-red-600" : "text-white-500"
+            } hover:text-white`}
+            onClick={() => setIsMicMuted(!isMicMuted)}>
+            {isMicMuted ? (
+              <FaMicrophoneSlash className="text-xl cursor-pointer" />
+            ) : (
+              <FaMicrophone className="text-xl cursor-pointer" />
+            )}
+          </button>
+          <button
+            className={`text-xl ${
+              isVideoOff ? "text-red-600" : "text-white-500"
+            } hover:text-white`}
+            onClick={() => setIsVideoOff(!isVideoOff)}>
+            {isVideoOff ? (
+              <FaVideoSlash className="text-xl cursor-pointer" />
+            ) : (
+              <FaVideo className="text-xl cursor-pointer" />
+            )}
+          </button>
         </div>
       </div>
+      {isProfileOpen && <Profile onClose={() => setIsProfileOpen(false)} />}
     </div>
   );
 };

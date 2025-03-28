@@ -1,47 +1,32 @@
 import React, { useState } from "react";
-import JoinedInfo from "../components/JoinedInfo";
-import FriendsImage from "../assets/friends.png";
 import Sidebar from "../components/Sidebar";
+import JoinedInfo from "../components/JoinedInfo";
+import ChannelPage from "../components/ChannelPage";
 
 const HomePage = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
-
+  const [selectedChannel, setSelectedChannel] = useState(null);
+  const [selectedType, setSelectedType] = useState(null);
   return (
     <div className="flex h-screen w-full">
+      {/* Sidebar */}
       <div>
         <Sidebar setSelectedCategory={setSelectedCategory} />
       </div>
-      <div className="w-1/5">
-        <JoinedInfo selectedCategory={selectedCategory} />
-      </div>
-      <div className="w-4/5 bg-gray-800 text-white h-screen p-2 flex flex-col items-center justify-center">
-        <div className="space-y-4 flex flex-col items-center w-full ">
-          <div className="p-2 w-2/3 bg-[#5e17eb] text-center rounded-lg shadow-md hover:opacity-80 cursor-pointer ">
-            <h3 className="text-lg font-semibold">Invite your friends</h3>
-          </div>
-          <div className="p-2 w-2/3 bg-[#5e17eb] text-center rounded-lg shadow-md hover:opacity-80 cursor-pointer">
-            <h3 className="text-lg font-semibold">
-              Say Hi to your class fellows
-            </h3>
-          </div>
-          <div className="p-2 w-2/3 bg-[#5e17eb] text-center rounded-lg shadow-md hover:opacity-80 cursor-pointer">
-            <h3 className="text-lg font-semibold">
-              Study together for your exams
-            </h3>
-          </div>
-        </div>
 
-        <div className="flex items-center mt-10 gap-30">
-          <img
-            src={FriendsImage}
-            alt="Chatting"
-            className="w-80 rounded-lg mb-4"
-          />
-          <h2 className="text-8xl font-bold text-center">
-            Happy <br />
-            Chatting!
-          </h2>
-        </div>
+      {/* Joined Info (Left Panel) */}
+      <div className="">
+        <JoinedInfo 
+          selectedCategory={selectedCategory} 
+          setSelectedChannel={setSelectedChannel} 
+          selectedChannel={selectedChannel}
+          setSelectedType={setSelectedType}  
+        />
+      </div>
+
+      {/* Channel Page (Right Panel) */}
+      <div className="">
+        <ChannelPage selectedChannel={selectedChannel} selectedType={selectedType}/>
       </div>
     </div>
   );
