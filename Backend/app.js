@@ -16,8 +16,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-//Authentication Middleware
-app.use(checkForAuthentication("token"));
+//Authentication Middleware Global (not used)
+// app.use(checkForAuthentication("token"));
 
 //CORS Middleware
 app.use(

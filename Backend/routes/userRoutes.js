@@ -23,12 +23,8 @@ router.post("/auth/google/test", testGoogleAuth);
 router.post("/signin", signin);
 router.get("/logout", logout);
 
-//Protected Routes(Below all routes would require user to be signed in before accesing that route)
-router.use(checkForAuthentication("token")); // Middleware applied to all routes below
-router.get("/profile", getUserProfile); //DEMO USAGE (getProfile is a controller)
-//FOR TESTING MIDDLEWARE AUTHENTICATION ONLY (REMOVE IN PRODUCTION) 
-router.get("/profile", (req, res) => {
-  res.json({ message: "User Profile", user: req.user });
-});
+//Protected Routes(Below are all the routes that would require user to be signed in before accesing)
+router.use(checkForAuthentication("token")); //Authentication Middleware applied to all routes below
+router.get("/profile", getUserProfile); //Extracts all the data from cookie payload that is required to view user profile
 
 module.exports = router;

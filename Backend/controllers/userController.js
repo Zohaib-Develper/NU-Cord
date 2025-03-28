@@ -74,17 +74,19 @@ const getUserProfile = async (req, res) => {
 };
 
 const logout = (req, res) => {
-  try {
-    res.cookie("token", "", {
-      httpOnly: true,
-      expires: new Date(0),
-    });
-    console.log("Logged Out successfully");
-    res.status(200).json({ message: "Logged out successfully" });
-  } catch {
-    console.error("Error in log out:", error);
-    res.status(error.statusCode || 500).json({ error: error.message });
-  }
+  if (req.cookies.token) {
+    try {
+      res.cookie("token", "", {
+        httpOnly: true,
+        expires: new Date(0),
+      });
+      console.log("Logged Out successfully");
+      res.status(200).json({ message: "Logged out successfully" });
+    } catch {
+      console.error("Error in log out:", error);
+      res.status(error.statusCode || 500).json({ error: error.message });
+    }
+  } else res.status(200).json({ message: "User already logged out" });
 };
 
 module.exports = { signup, signin, logout, getUserProfile };
