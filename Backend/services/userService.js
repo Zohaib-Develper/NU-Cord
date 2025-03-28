@@ -3,6 +3,7 @@ const User = require("../models/user");
 const encryptPassword = require("../utils/helpers/encryptPassword");
 const extractDetailsFromEmail = require("../utils/helpers/extractDetails");
 const isValidFastNuEmail = require("../utils/validators/emailValidator");
+const { createTokenForUser } = require("../utils/authentication/auth");
 
 const signupService = async (userProfile) => {
   //Validate Email
@@ -32,11 +33,12 @@ const signupService = async (userProfile) => {
   return { user };
 };
 
-const signinService = async (email, password) => {
-  const user = await User.findOne({ email });
+const signinService = async function (username, password) {
+  const user = await User.findOne({ username });
 
   if (!user) {
-    throw { statusCode: 400, message: "Invalid email" };
+    console.log("User not found.");
+    throw { statusCode: 400, message: "Invalid username" };
   }
 
   const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -44,9 +46,9 @@ const signinService = async (email, password) => {
     throw { statusCode: 400, message: "Invalid password" };
   }
 
+  const token = createTokenForUser(user);
   console.log(`✅ User signed in: ${user.username}`);
-
-  return user;
+  return token;
 };
 
 module.exports = { signupService, signinService };

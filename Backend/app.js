@@ -3,6 +3,8 @@ const express = require("express");
 const cors = require("cors");
 const connectDB = require("./config/dbConfig.js");
 const userRoutes = require("./routes/userRoutes.js");
+const checkForAuthentication = require("./middleware/userMiddleware.js");
+const cookieParser = require("cookie-parser");
 
 const app = express();
 
@@ -12,6 +14,10 @@ connectDB();
 //Parsing Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+
+//Authentication Middleware
+app.use(checkForAuthentication("token"));
 
 //CORS Middleware
 app.use(
@@ -22,8 +28,8 @@ app.use(
   })
 );
 
-//Routes 
-app.get("/", (req, res) => res.send("Homepage!"));
+//Routes
+app.get("/homepage", (req, res) => res.send("Homepage!"));
 app.use("/user", userRoutes);
 
 //Error Handling Middleware
