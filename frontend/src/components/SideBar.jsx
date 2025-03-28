@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState }  from "react";
 import {
   FaSignOutAlt,
   FaUserFriends,
@@ -7,8 +7,9 @@ import {
   FaCog,
 } from "react-icons/fa";
 import Logo from "../assets/logo.png";
-
+import Settings from "./Settings";
 const Sidebar = ({ setSelectedCategory }) => {
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   return (
     <div className="w-24 bg-gray-800 text-white h-screen flex flex-col items-center p-4 justify-between border-r-2 border-gray-700">
       <div>
@@ -36,12 +37,15 @@ const Sidebar = ({ setSelectedCategory }) => {
           >
             <FaPaperPlane className="text-xl text-white" />
           </div>
-          <div className="w-11 h-11 flex items-center justify-center rounded-full bg-gray-700 hover:bg-gray-600 cursor-pointer">
+          <div className="w-11 h-11 flex items-center justify-center rounded-full bg-gray-700 hover:bg-gray-600 cursor-pointer"
+          onClick={() => setIsSettingsOpen(true)}
+          >
             <FaCog className="text-xl text-white" />
           </div>
         </div>
       </div>
       <FaSignOutAlt className="text-xl text-white hover:text-red-600 cursor-pointer" />
+      {isSettingsOpen && <Settings onClose={() => setIsSettingsOpen(false)} />}
     </div>
   );
 };
