@@ -40,6 +40,7 @@ const signin = async (req, res) => {
   }
 };
 
+//Retrives all necessary data to be displayed on user profile
 const getUserProfile = async (req, res) => {
   try {
     const token = req.cookies.token;
