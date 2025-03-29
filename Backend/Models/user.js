@@ -36,17 +36,17 @@ const userSchema = new Schema(
       instagram: {
         type: String,
         validate: [urlValidator, "Invalid Instagram URL"],
-        default: "",
+        default: "www.instagram.com",
       },
       github: {
         type: String,
         validate: [urlValidator, "Invalid GitHub URL"],
-        default: "",
+        default: "www.github.com",
       },
       linkedin: {
         type: String,
         validate: [urlValidator, "Invalid LinkedIn URL"],
-        default: "",
+        default: "www.linkedin.com",
       },
     },
     friends: [{ type: Schema.Types.ObjectId, ref: "User" }],

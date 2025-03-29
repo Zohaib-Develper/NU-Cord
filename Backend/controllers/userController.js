@@ -3,7 +3,6 @@ const Server = require("../models/server");
 const { signupService, signinService } = require("../services/userService");
 const { registerUserToServer } = require("../services/serverService");
 const { validateToken } = require("../utils/authentication/auth");
-const { validateToken } = require("../utils/authentication/auth");
 
 const signup = async (req, res) => {
   try {
