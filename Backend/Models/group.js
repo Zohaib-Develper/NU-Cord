@@ -9,6 +9,7 @@ const serverSchema = new Schema(
     joining_restriction: { type: String, enum: ["allowed", "adminApproval"] },
     joining_requests: [{ type: Schema.Types.ObjectId, ref: "User" }],
     coverImageURL: { type: String, default: "/images/batchpfp.png" },
+    inviteURL: { type: String },
   },
   { timestamps: true }
 );

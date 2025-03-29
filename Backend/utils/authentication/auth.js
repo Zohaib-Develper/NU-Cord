@@ -16,6 +16,7 @@ function createTokenForUser(user) {
     friendRequestsReceived: user.friendRequestsReceived,
     servers: user.servers,
     groups: user.groups,
+    socials: user.socials,
   };
   const token = JWT.sign(payload, process.env.JWT_SECRET, { expiresIn: "7d" });
   return token;

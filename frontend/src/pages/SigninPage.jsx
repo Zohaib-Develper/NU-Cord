@@ -11,19 +11,21 @@ import InputField from "../components/InputField";
 import "../style/signin.css";
 
 const SigninPage = () => {
-  const [email, setEmail] = useState("");
+  const [username, setusername] = useState("");
   const [password, setPassword] = useState("");
   const [checked, setChecked] = useState(false);
 
   const handleCredentialsLogin = async () => {
     console.log("Sign in button clicked"); //Debugging
+    console.log("Username", username);
+    console.log("Password", password);
     try {
       const response = await fetch("http://localhost:8000/user/signin", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ username, password }),
       });
 
       const data = await response.json();
@@ -66,7 +68,7 @@ const SigninPage = () => {
           <InputField
             label="example@campus.nu.edu.pk"
             type="text"
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => setusername(e.target.value)}
           />
           <InputField
             label="password"
