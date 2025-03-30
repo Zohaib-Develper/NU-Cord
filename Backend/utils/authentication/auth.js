@@ -4,19 +4,11 @@ function createTokenForUser(user) {
   const payload = {
     _id: user._id,
     name: user.name,
-    pfp: user.pfp,
+    roll_no: user.roll_no,
     email: user.email,
-    username: user.username,
     batch: user.batch,
     campus: user.campus,
-    roll_no: user.roll_no,
     degree_name: user.degree_name,
-    role: user.role,
-    friends: user.friends,
-    friendRequestsReceived: user.friendRequestsReceived,
-    servers: user.servers,
-    groups: user.groups,
-    socials: user.socials,
   };
   const token = JWT.sign(payload, process.env.JWT_SECRET, { expiresIn: "7d" });
   return token;

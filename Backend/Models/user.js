@@ -59,4 +59,20 @@ const userSchema = new Schema(
   { timestamps: true }
 );
 
+// Static method to fetch user's friends names and their profile pictures (pfp)
+userSchema.statics.getUserFriends = async function (userId) {
+  try {
+    const user = await this.findById(userId).populate("friends", "name pfp");
+    return user
+      ? user.friends.map(({ name, pfp }) => ({
+          name,
+          pfp: pfp || "/images/userpfp.png",
+        }))
+      : [];
+  } catch (error) {
+    console.error("Error fetching user friends:", error);
+    return [];
+  }
+};
+
 module.exports = mongoose.model("User", userSchema);

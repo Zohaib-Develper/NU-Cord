@@ -42,32 +42,31 @@ const signin = async (req, res) => {
 //Retrives all necessary data to be displayed on user profile
 const getUserProfile = async (req, res) => {
   try {
-    const token = req.cookies.token;
-    if (!token) {
-      return res
-        .status(401)
-        .json({ error: "Unauthorized. No token provided." });
-    }
-
-    // Decode the token and get the user payload
-    const user = validateToken(token);
+    const user = await User.findById(req.user._id).lean();
     if (!user) {
-      return res.status(401).json({ error: "Invalid or expired token." });
+      return res.status(404).json({ error: "User not found" });
     }
 
-    let servers = user.servers || [];
+    const serverIds = user.servers || [];
+    const friendsIds = user.friends || [];
 
-    // Retrieve server names of all servers that the user is part of(servers IDs are stored in DB so below snippet is to get server names from their corresponding IDs)
-    servers = await Promise.all(
-      servers.map(async (serverId) => {
-        const server = await Server.findOne({ _id: serverId });
-        return server ? server.name : "Unknown Server";
-      })
-    );
+    const [servers, friends] = await Promise.all([
+      Server.getServerNames(serverIds),
+      User.getUserFriends(friendsIds),
+    ]);
 
     res.status(200).json({
       message: "User profile retrieved successfully",
-      user: { ...user, servers },
+      user: {
+        name: user.name,
+        batch: user.batch,
+        pfp: user.pfp,
+        campus: user.campus,
+        degree_name: user.degree_name,
+        username: user.username,
+        servers,
+        friends,
+      },
     });
   } catch (error) {
     console.error("Error in getUserProfile:", error);
@@ -91,4 +90,9 @@ const logout = (req, res) => {
   } else res.status(200).json({ message: "User already logged out" });
 };
 
-module.exports = { signup, signin, logout, getUserProfile };
+module.exports = {
+  signup,
+  signin,
+  logout,
+  getUserProfile,
+};
