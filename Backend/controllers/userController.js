@@ -3,6 +3,7 @@ const Server = require("../models/server");
 const { signupService, signinService } = require("../services/userService");
 const { registerUserToServer } = require("../services/serverService");
 const { validateToken } = require("../utils/authentication/auth");
+
 const signup = async (req, res) => {
   try {
     //Register User in DB
@@ -38,6 +39,7 @@ const signin = async (req, res) => {
   }
 };
 
+//Retrives all necessary data to be displayed on user profile
 const getUserProfile = async (req, res) => {
   try {
     const token = req.cookies.token;
