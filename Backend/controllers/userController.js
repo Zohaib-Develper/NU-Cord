@@ -57,7 +57,7 @@ const getUserProfile = async (req, res) => {
 
     let servers = user.servers || [];
 
-    // Retrieve server names of all servers that the user is part of(servers IDs are stored in DB so below snippet is to get server names from their subsequent IDs)
+    // Retrieve server names of all servers that the user is part of(servers IDs are stored in DB so below snippet is to get server names from their corresponding IDs)
     servers = await Promise.all(
       servers.map(async (serverId) => {
         const server = await Server.findOne({ _id: serverId });
