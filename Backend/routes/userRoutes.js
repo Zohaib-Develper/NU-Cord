@@ -8,6 +8,12 @@ const {
   signin,
   logout,
   getUserProfile,
+  blockUser,
+  unblockUser,
+  sendFriendRequest,
+  acceptFriendRequest,
+  rejectFriendRequest,
+  removeFriend,
 } = require("../controllers/userController");
 const { testGoogleAuth } = require("../test/googleAuth");
 const checkForAuthentication = require("../middleware/userMiddleware");
@@ -24,7 +30,13 @@ router.post("/signin", signin);
 router.get("/logout", logout);
 
 //Protected Routes(Below are all the routes that would require user to be signed in before accesing)
-router.use(checkForAuthentication("token")); //Authentication Middleware applied to all routes below
-router.get("/profile", getUserProfile); //Extracts all the data from cookie payload that is required to view user profile
+router.use(checkForAuthentication("token"));
+router.get("/profile", getUserProfile);
+router.post("/block/:userIdToBlock", blockUser);
+router.post("/unblock/:blockedUserId", unblockUser);
+router.post("/friends/send/:receiverId", sendFriendRequest);
+router.post("/friends/accept/:senderId", acceptFriendRequest);
+router.post("/friends/reject/:senderId", rejectFriendRequest);
+router.delete("/friends/remove/:friendId", removeFriend);
 
 module.exports = router;
