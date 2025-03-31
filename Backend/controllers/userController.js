@@ -94,13 +94,13 @@ const blockUser = async (req, res) => {
       return res.status(400).json({ error: "User is already blocked" });
     }
 
-    // 1️⃣ Unfriend the blocked user
+    //Unfriend the blocked user
     user.friends = user.friends.filter((id) => id.toString() !== userIdToBlock);
     blockedUser.friends = blockedUser.friends.filter(
       (id) => id.toString() !== userId
     );
 
-    // 2️⃣ Remove any pending friend requests
+    //Remove any pending friend requests
     user.friendRequestsSent = user.friendRequestsSent.filter(
       (id) => id.toString() !== userIdToBlock
     );
@@ -116,7 +116,7 @@ const blockUser = async (req, res) => {
         (id) => id.toString() !== userId
       );
 
-    // 3️⃣ Add to blocked users list
+    //Add to blocked users list
     user.blockedUsers.push(userIdToBlock);
 
     await user.save();
@@ -141,12 +141,12 @@ const unblockUser = async (req, res) => {
     if (!user || !blockedUser)
       return res.status(404).json({ error: "User not found" });
 
-    // Check if the user is actually blocked
+    //Check if the user is actually blocked
     if (!user.blockedUsers.includes(blockedUserId)) {
       return res.status(400).json({ error: "User is not blocked" });
     }
 
-    // Remove from blocked list
+    //Remove from blocked list
     user.blockedUsers = user.blockedUsers.filter(
       (id) => id.toString() !== blockedUserId
     );
@@ -159,7 +159,6 @@ const unblockUser = async (req, res) => {
     res.status(500).json({ error: "Failed to unblock user" });
   }
 };
-
 
 const logout = (req, res) => {
   if (req.cookies.token) {
@@ -184,5 +183,4 @@ module.exports = {
   getUserProfile,
   blockUser,
   unblockUser,
-
 };

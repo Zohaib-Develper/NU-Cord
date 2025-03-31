@@ -29,6 +29,7 @@ router.get("/logout", logout);
 //Protected Routes(Below are all the routes that would require user to be signed in before accesing)
 router.use(checkForAuthentication("token"));
 router.get("/profile", getUserProfile);
+router.use("/friends", friendsRoutes);
 router.post("/block/:userIdToBlock", blockUser);
 router.post("/unblock/:blockedUserId", unblockUser);
 

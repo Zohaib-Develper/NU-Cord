@@ -4,7 +4,6 @@ const Server = require("../models/server");
 // Sending Friend Requests to Users
 const sendFriendRequest = async (req, res) => {
   try {
-    console.log("HI from send routes");
     const { receiverId } = req.params;
     const senderId = req.user._id;
 
@@ -26,11 +25,17 @@ const sendFriendRequest = async (req, res) => {
         .json({ error: "You cannot send a friend request to this user" });
     }
 
+    // Check if a friend request is already present in either direction
     if (
       sender.friendRequestsSent.includes(receiverId) ||
-      receiver.friendRequestsReceived.includes(senderId)
+      receiver.friendRequestsSent.includes(senderId)
     ) {
-      return res.status(400).json({ error: "Friend request already sent" });
+      return res
+        .status(400)
+        .json({
+          error:
+            "A friend request already exists. Kindly only accept/reject the already present request.",
+        });
     }
 
     sender.friendRequestsSent.push(receiverId);
@@ -59,16 +64,6 @@ const acceptFriendRequest = async (req, res) => {
 
     if (!receiver.friendRequestsReceived.includes(senderId))
       return res.status(400).json({ error: "No friend request found" });
-
-    // Block check: sender or receiver must not have blocked each other
-    if (
-      receiver.blockedUsers.includes(senderId) ||
-      sender.blockedUsers.includes(receiverId)
-    ) {
-      return res
-        .status(403)
-        .json({ error: "You cannot accept a friend request from this user" });
-    }
 
     // Remove request from both users' lists
     receiver.friendRequestsReceived = receiver.friendRequestsReceived.filter(
@@ -101,19 +96,16 @@ const rejectFriendRequest = async (req, res) => {
     const receiver = await User.findById(receiverId);
     const sender = await User.findById(senderId);
 
-    if (!receiver || !sender)
+    if (!receiver || !sender) {
       return res.status(404).json({ error: "User not found" });
-
-    // Block check: sender or receiver must not have blocked each other
-    if (
-      receiver.blockedUsers.includes(senderId) ||
-      sender.blockedUsers.includes(receiverId)
-    ) {
-      return res
-        .status(403)
-        .json({ error: "You cannot interact with this user" });
     }
 
+    // Ensure the receiver actually received a request from the sender
+    if (!receiver.friendRequestsReceived.includes(senderId)) {
+      return res.status(400).json({ error: "No friend request to reject" });
+    }
+
+    // Remove the friend request
     receiver.friendRequestsReceived = receiver.friendRequestsReceived.filter(
       (id) => id.toString() !== senderId
     );
@@ -124,10 +116,48 @@ const rejectFriendRequest = async (req, res) => {
     await receiver.save();
     await sender.save();
 
-    res.status(200).json({ message: "Friend request rejected" });
+    res.status(200).json({ message: "Friend request rejected successfully" });
   } catch (error) {
     console.error("Error rejecting friend request:", error);
     res.status(500).json({ error: "Failed to reject friend request" });
+  }
+};
+
+// Cancel Friend Request
+const cancelFriendRequest = async (req, res) => {
+  try {
+    const { receiverId } = req.params;
+    const senderId = req.user._id;
+
+    const sender = await User.findById(senderId);
+    const receiver = await User.findById(receiverId);
+
+    if (!sender || !receiver) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Ensure the sender actually sent a request to the receiver
+    if (!sender.friendRequestsSent.includes(receiverId)) {
+      return res
+        .status(400)
+        .json({ error: "No pending friend request to cancel" });
+    }
+
+    // Remove the request from both users' lists
+    sender.friendRequestsSent = sender.friendRequestsSent.filter(
+      (id) => id.toString() !== receiverId
+    );
+    receiver.friendRequestsReceived = receiver.friendRequestsReceived.filter(
+      (id) => id.toString() !== senderId
+    );
+
+    await sender.save();
+    await receiver.save();
+
+    res.status(200).json({ message: "Friend request canceled successfully" });
+  } catch (error) {
+    console.error("Error canceling friend request:", error);
+    res.status(500).json({ error: "Failed to cancel friend request" });
   }
 };
 
@@ -170,4 +200,5 @@ module.exports = {
   acceptFriendRequest,
   removeFriend,
   rejectFriendRequest,
+  cancelFriendRequest,
 };
