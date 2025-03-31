@@ -1,4 +1,5 @@
 const { Router } = require("express");
+const friendsRoutes = require("./friendsRoutes");
 const {
   googleAuth,
   googleAuthCallback,
@@ -10,10 +11,6 @@ const {
   getUserProfile,
   blockUser,
   unblockUser,
-  sendFriendRequest,
-  acceptFriendRequest,
-  rejectFriendRequest,
-  removeFriend,
 } = require("../controllers/userController");
 const { testGoogleAuth } = require("../test/googleAuth");
 const checkForAuthentication = require("../middleware/userMiddleware");
@@ -34,9 +31,5 @@ router.use(checkForAuthentication("token"));
 router.get("/profile", getUserProfile);
 router.post("/block/:userIdToBlock", blockUser);
 router.post("/unblock/:blockedUserId", unblockUser);
-router.post("/friends/send/:receiverId", sendFriendRequest);
-router.post("/friends/accept/:senderId", acceptFriendRequest);
-router.post("/friends/reject/:senderId", rejectFriendRequest);
-router.delete("/friends/remove/:friendId", removeFriend);
 
 module.exports = router;
