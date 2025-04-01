@@ -74,6 +74,92 @@ const getUserProfile = async (req, res) => {
   }
 };
 
+//Block a User
+const blockUser = async (req, res) => {
+  try {
+    const { userIdToBlock } = req.params;
+    const userId = req.user._id;
+    if (userId === userIdToBlock)
+      return res.status(400).json({ error: "You cannot block yourself" });
+
+    const user = await User.findById(userId);
+    const blockedUser = await User.findById(userIdToBlock);
+    console.log(blockedUser);
+
+    if (!user || !blockedUser)
+      return res.status(404).json({ error: "User not found" });
+
+    // Check if already blocked
+    if (user.blockedUsers.includes(userIdToBlock)) {
+      return res.status(400).json({ error: "User is already blocked" });
+    }
+
+    //Unfriend the blocked user
+    user.friends = user.friends.filter((id) => id.toString() !== userIdToBlock);
+    blockedUser.friends = blockedUser.friends.filter(
+      (id) => id.toString() !== userId
+    );
+
+    //Remove any pending friend requests
+    user.friendRequestsSent = user.friendRequestsSent.filter(
+      (id) => id.toString() !== userIdToBlock
+    );
+    user.friendRequestsReceived = user.friendRequestsReceived.filter(
+      (id) => id.toString() !== userIdToBlock
+    );
+
+    blockedUser.friendRequestsSent = blockedUser.friendRequestsSent.filter(
+      (id) => id.toString() !== userId
+    );
+    blockedUser.friendRequestsReceived =
+      blockedUser.friendRequestsReceived.filter(
+        (id) => id.toString() !== userId
+      );
+
+    //Add to blocked users list
+    user.blockedUsers.push(userIdToBlock);
+
+    await user.save();
+    await blockedUser.save();
+
+    res.status(200).json({ message: "User blocked successfully" });
+  } catch (error) {
+    console.error("Error blocking user:", error);
+    res.status(500).json({ error: "Failed to block user" });
+  }
+};
+
+//Unblock a User
+const unblockUser = async (req, res) => {
+  try {
+    const { blockedUserId } = req.params;
+    const userId = req.user._id;
+
+    const user = await User.findById(userId);
+    const blockedUser = await User.findById(blockedUserId);
+
+    if (!user || !blockedUser)
+      return res.status(404).json({ error: "User not found" });
+
+    //Check if the user is actually blocked
+    if (!user.blockedUsers.includes(blockedUserId)) {
+      return res.status(400).json({ error: "User is not blocked" });
+    }
+
+    //Remove from blocked list
+    user.blockedUsers = user.blockedUsers.filter(
+      (id) => id.toString() !== blockedUserId
+    );
+
+    await user.save();
+
+    res.status(200).json({ message: "User unblocked successfully" });
+  } catch (error) {
+    console.error("Error unblocking user:", error);
+    res.status(500).json({ error: "Failed to unblock user" });
+  }
+};
+
 const logout = (req, res) => {
   if (req.cookies.token) {
     try {
@@ -95,4 +181,6 @@ module.exports = {
   signin,
   logout,
   getUserProfile,
+  blockUser,
+  unblockUser,
 };

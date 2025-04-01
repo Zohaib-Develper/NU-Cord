@@ -52,6 +52,7 @@ const userSchema = new Schema(
     friends: [{ type: Schema.Types.ObjectId, ref: "User" }],
     friendRequestsReceived: [{ type: Schema.Types.ObjectId, ref: "User" }],
     friendRequestsSent: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    blockedUsers: [{ type: Schema.Types.ObjectId, ref: "User" }],
     servers: [{ type: Schema.Types.ObjectId, ref: "Server" }],
     requested_servers: [{ type: Schema.Types.ObjectId, ref: "Group" }],
     groups: [{ type: Schema.Types.ObjectId, ref: "Group" }],
