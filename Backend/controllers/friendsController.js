@@ -123,7 +123,7 @@ const rejectFriendRequest = async (req, res) => {
   }
 };
 
-// Cancel Friend Request
+// Canceling Sent Friend Request
 const cancelFriendRequest = async (req, res) => {
   try {
     const { receiverId } = req.params;
