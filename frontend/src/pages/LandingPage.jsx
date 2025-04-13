@@ -1,8 +1,10 @@
-import Navbar from "../components/Navbar";
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 
 const LandingPage = () => {
+  const navigate = useNavigate();
   const colors = ["#5e17eb", "#ffffff"];
   const [currentColor, setCurrentColor] = useState(colors[0]);
 
@@ -80,11 +82,14 @@ const LandingPage = () => {
           From coding chaos to chill convos, NUcord is your go-to space for
           everything whether it be projects, memes or post mid rants
         </p>
-        <a
-          href="#"
-          className="mt-6 inline-block bg-[#5e17eb] text-white text-lg font-medium py-3 px-6 rounded-xl shadow-md hover:opacity-80 transition">
-          Get Started
-        </a>
+
+        <div className="flex justify-center gap-4">
+          <button
+            onClick={() => navigate("/signup")}
+            className="bg-[#5e17eb] text-white text-lg font-medium py-3 px-6 rounded-xl shadow-md hover:opacity-80 transition cursor-pointer">
+            Get Started
+          </button>
+        </div>
       </section>
 
       <section className="py-10 bg-white dark:bg-gray-800 px-6">
@@ -96,12 +101,10 @@ const LandingPage = () => {
             <div
               key={index}
               className="p-5 bg-gray-200 dark:bg-gray-300 rounded-lg text-center shadow-md transform transition duration-300 hover:scale-105">
-              <p className="text-lg font-semibold text-black-900 dark:text-black mb-2">
+              <p className="text-lg font-semibold text-black mb-2">
                 {feature.title}
               </p>
-              <p className="text-sm text-black-700 dark:text-black-300">
-                {feature.description}
-              </p>
+              <p className="text-sm text-black">{feature.description}</p>
             </div>
           ))}
         </div>

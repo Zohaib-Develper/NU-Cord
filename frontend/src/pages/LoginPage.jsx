@@ -8,12 +8,20 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import Login from "../assets/signin.png";
 import Google from "../assets/google.svg";
-const LoginPage = () => {
+import { useNavigate, Link } from "react-router-dom";
+const LoginPage = ({ onLogin }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
+  const navigate = useNavigate();
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    onLogin();
+    navigate("/home");
+  };
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-700 to-indigo-800 p-4 relative overflow-hidden">
       {/* Falling Stars Animation */}
@@ -65,7 +73,7 @@ const LoginPage = () => {
             </div>
           </div>
 
-          <form>
+          <form onSubmit={handleSubmit}>
             <div className="space-y-4">
               {/* Email Input */}
               <div>
@@ -151,9 +159,9 @@ const LoginPage = () => {
           {/* Register Link */}
           <p className="mt-6 text-center text-gray-600">
             Don't have an account?{" "}
-            <a href="#" className="text-[#6C3CE9] hover:text-[#5731ba]">
+            <Link href="#" className="text-[#6C3CE9] hover:text-[#5731ba]" to="/signup">
               Register
-            </a>
+            </Link>
           </p>
         </div>
       </div>

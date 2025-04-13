@@ -38,7 +38,7 @@ const SignUp = () => {
               <div className="w-full max-w-md">
                 <div className="h-px bg-gray-200 my-8" />
 
-                <button className="w-full py-3 text-base font-medium flex items-center justify-center gap-2 border border-gray-300 shadow-md hover:shadow-lg transition-all duration-200 hover:bg-purple-600 hover:text-white rounded-md cursor-pointer">
+                <button className="w-full py-3 text-base font-medium flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all duration-200 hover:bg-purple-600 hover:text-white rounded-md cursor-pointer">
                   <img
                     src={Google}
                     alt="Google logo"
