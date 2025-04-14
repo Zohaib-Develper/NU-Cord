@@ -1,5 +1,7 @@
 const Server = require("./server");
 const mongoose = require("mongoose");
+const urlValidator = require("../utils/validators/urlValidator");
+const isValidRollNumber = require("../utils/validators/rollNumberValidator");
 const { Schema } = mongoose;
 
 const userSchema = new Schema(
@@ -18,9 +20,9 @@ const userSchema = new Schema(
       type: String,
       required: true,
       unique: true,
-      match: [
-        /^[lipkfm]\d{6}$/,
-        'Invalid student ID format. It should start with "l", "i", "p", "k", "f" or "m" followed by 6 digits.',
+      validate: [
+        isValidRollNumber,
+        "Invalid student ID format. It should start with 'l', 'i', 'p', 'k', 'f', or 'm' followed by 6 digits.",
       ],
     },
     degree_name: { type: String, required: true },
@@ -30,15 +32,48 @@ const userSchema = new Schema(
       default: "USER",
       required: true,
     },
+    socials: {
+      instagram: {
+        type: String,
+        validate: [urlValidator, "Invalid Instagram URL"],
+        default: "www.instagram.com",
+      },
+      github: {
+        type: String,
+        validate: [urlValidator, "Invalid GitHub URL"],
+        default: "www.github.com",
+      },
+      linkedin: {
+        type: String,
+        validate: [urlValidator, "Invalid LinkedIn URL"],
+        default: "www.linkedin.com",
+      },
+    },
     friends: [{ type: Schema.Types.ObjectId, ref: "User" }],
     friendRequestsReceived: [{ type: Schema.Types.ObjectId, ref: "User" }],
     friendRequestsSent: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    blockedUsers: [{ type: Schema.Types.ObjectId, ref: "User" }],
     servers: [{ type: Schema.Types.ObjectId, ref: "Server" }],
     requested_servers: [{ type: Schema.Types.ObjectId, ref: "Group" }],
     groups: [{ type: Schema.Types.ObjectId, ref: "Group" }],
-    requested_groups: [{ type: Schema.Types.ObjectId, ref: "Group" }],
   },
   { timestamps: true }
 );
+
+// Static method to fetch user's friends names and their profile pictures (pfp)
+userSchema.statics.getUserFriends = async function (userId) {
+  try {
+    const user = await this.findById(userId).populate("friends", "name pfp");
+    return user
+      ? user.friends.map(({ name, pfp }) => ({
+          name,
+          pfp: pfp || "/images/userpfp.png",
+        }))
+      : [];
+  } catch (error) {
+    console.error("Error fetching user friends:", error);
+    return [];
+  }
+};
 
 module.exports = mongoose.model("User", userSchema);

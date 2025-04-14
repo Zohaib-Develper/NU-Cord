@@ -1,25 +1,31 @@
 function isValidFastNuEmail(email) {
-    console.log("Validating Email:", email);
-    const campusCodes = ['l', 'i', 'k', 'c', 'p']; 
-    const validDomains = ['lhr.nu.edu.pk', 'isb.nu.edu.pk', 'khi.nu.edu.pk', 'cfd.nu.edu.pk', 'pwr.nu.edu.pk'];
+  console.log("Validating Email:", email);
 
-    const [localPart, domain] = email.split('@');
+  const campusCodes = ["l", "i", "k", "f", "p"];
+  const validDomains = [
+    "lhr.nu.edu.pk",
+    "isb.nu.edu.pk",
+    "khi.nu.edu.pk",
+    "cfd.nu.edu.pk",
+    "pwr.nu.edu.pk",
+  ];
 
-    if (!validDomains.includes(domain)) {
-        return false;
-    }
+  const [localPart, domain] = email.split("@");
+  if (!domain || !validDomains.includes(domain)) {
+    return false;
+  }
 
-    const campusCode = localPart.charAt(0);
-    if (!campusCodes.includes(campusCode)) {
-        return false;
-    }
+  const campusCode = localPart.charAt(0);
+  if (!campusCodes.includes(campusCode)) {
+    return false;
+  }
 
-    const studentID = localPart.slice(1);
-    if (!/^\d{6}$/.test(studentID)) {
-        return false;
-    }
+  const studentID = localPart.slice(1);
+  if (!/^\d{6}$/.test(studentID)) {
+    return false;
+  }
 
-    return true;
+  return true;
 }
 
 module.exports = isValidFastNuEmail;

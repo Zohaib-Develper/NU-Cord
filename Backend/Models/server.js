@@ -11,4 +11,21 @@ const serverSchema = new Schema(
   { timestamps: true }
 );
 
+// Static method to fetch servers names and their cover images
+serverSchema.statics.getServerNames = async function (serverIds) {
+  try {
+    const servers = await this.find(
+      { _id: { $in: serverIds } },
+      "name coverImgURL"
+    );
+    return servers.map(({ _id, name, coverImageURL }) => ({
+      name,
+      coverImgURL: coverImageURL || "/images/batchpfp.png",
+    }));
+  } catch (error) {
+    console.error("Error fetching server names:", error);
+    return [];
+  }
+};
+
 module.exports = mongoose.model("Server", serverSchema);
