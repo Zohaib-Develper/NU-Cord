@@ -26,13 +26,13 @@ const Settings = ({ onClose }) => {
       className="fixed inset-0 bg-transparent bg-opacity-50 backdrop-blur-lg flex justify-center items-center"
       onClick={onClose}>
       <div
-        className="bg-gray-900 text-white p-6 rounded-lg w-auto shadow-lg relative h-auto flex flex-col"
+        className="bg-gray-900 text-white p-6 rounded-lg w-full max-w-xl sm:max-w-2xl lg:max-w-4xl max-h-[80vh] shadow-lg relative flex flex-col overflow-y-auto"
         onClick={(e) => e.stopPropagation()}>
         <h2 className="text-2xl font-bold mb-4 border-b border-gray-700 pb-2">
           Settings
         </h2>
 
-        <div className="flex flex-col gap-4 flex-grow">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow">
           {/* Username (Editable) */}
           <div>
             <label className="text-gray-400">Username</label>
@@ -98,7 +98,7 @@ const Settings = ({ onClose }) => {
           </div>
 
           {/* Social Links */}
-          <div>
+          <div className="md:col-span-2">
             <label className="text-gray-400">Social Links</label>
             <div className="flex gap-2 mt-1">
               <select

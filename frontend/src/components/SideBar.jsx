@@ -1,4 +1,5 @@
 import React, { useState }  from "react";
+import { useNavigate, Link } from "react-router-dom";
 import {
   FaSignOutAlt,
   FaUserFriends,
@@ -8,6 +9,7 @@ import {
 } from "react-icons/fa";
 import Logo from "../assets/logo.png";
 import Settings from "./Settings";
+
 const Sidebar = ({ setSelectedCategory }) => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   return (

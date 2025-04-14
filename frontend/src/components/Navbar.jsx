@@ -1,5 +1,7 @@
 import React from "react";
-import Logo from "../assets/logo.png"
+import { Link } from "react-router-dom";
+import Logo from "../assets/logo.png";
+
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
@@ -10,63 +12,31 @@ const Navbar = () => {
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
             <div className="md:flex md:items-center md:gap-12 text-[#5e17eb] font-semibold">
-              <a className="flex items-end gap-1" href="#">
+              <Link className="flex items-end gap-1" to="/">
                 <img src={Logo} alt="Logo" className="h-10 w-auto" />
                 <p className="text-xl py-1">NU-Cord</p>
-              </a>
+              </Link>
             </div>
 
-            {/* Desktop Navigation */}
-            <div className="hidden md:block">
-              <nav aria-label="Global">
-                <ul className="flex items-center gap-18 text-md">
-                  <li>
-                    <a
-                      className="text-gray-500 transition hover:text-[#5e17eb] dark:text-white dark:hover:text-white/75"
-                      href="#">
-                      Home
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      className="text-gray-500 transition hover:text-[#5e17eb] dark:text-white dark:hover:text-white/75"
-                      href="#">
-                      Features
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      className="text-gray-500 transition hover:text-[#5e17eb] dark:text-white dark:hover:text-white/75"
-                      href="#">
-                      Contact
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      className="text-gray-500 transition hover:text-[#5e17eb] dark:text-white dark:hover:text-white/75"
-                      href="#">
-                      Community
-                    </a>
-                  </li>
-                </ul>
-              </nav>
-            </div>
-
+            
+            {/* Auth Buttons */}
             <div className="flex items-center gap-4">
               <div className="sm:flex sm:gap-4">
-                <a
+                <Link
                   className="rounded-xl bg-[#5e17eb] px-5 py-2.5 text-sm font-medium text-white shadow-sm hover:opacity-80"
-                  href="#">
+                  to="/login">
                   Login
-                </a>
+                </Link>
                 <div className="hidden sm:flex">
-                  <a
+                  <Link
                     className="rounded-xl px-5 py-2.5 text-sm font-medium text-white hover:bg-white hover:text-[#5e17eb]"
-                    href="#">
+                    to="/signup">
                     Register
-                  </a>
+                  </Link>
                 </div>
               </div>
+
+              {/* Mobile menu button */}
               <div className="block md:hidden">
                 <button
                   className="rounded-sm bg-gray-100 p-2 text-gray-600 transition hover:text-gray-600/75 dark:bg-gray-800 dark:text-white dark:hover:text-white/75"
@@ -90,56 +60,56 @@ const Navbar = () => {
           </div>
         </div>
 
+        {/* Mobile Menu */}
         {isMobileMenuOpen && (
           <>
             <div
               className="fixed inset-0 bg-transparent bg-opacity-50 backdrop-blur-xs z-40 md:hidden"
-              onClick={() => setIsMobileMenuOpen(false)} // Close menu when clicking outside
+              onClick={() => setIsMobileMenuOpen(false)}
             />
-
             <div className="fixed top-0 right-0 w-2/3 h-full bg-white dark:bg-gray-900 z-50 md:hidden shadow-lg">
               <nav className="flex flex-col h-full p-4">
                 <ul className="flex flex-col gap-6 text-sm">
                   <li>
-                    <a
-                      className="text-gray-500 transition hover:text-gray-500/75 dark:text-white dark:hover:text-white/75"
-                      href="#"
+                    <Link
+                      className="text-gray-500 transition hover:text-[#5e17eb] dark:text-white dark:hover:text-white/75"
+                      to="/"
                       onClick={() => setIsMobileMenuOpen(false)}>
                       Home
-                    </a>
+                    </Link>
                   </li>
                   <li>
                     <a
-                      className="text-gray-500 transition hover:text-gray-500/75 dark:text-white dark:hover:text-white/75"
-                      href="#"
+                      className="text-gray-500 transition hover:text-[#5e17eb] dark:text-white dark:hover:text-white/75"
+                      href="#features"
                       onClick={() => setIsMobileMenuOpen(false)}>
                       Features
                     </a>
                   </li>
                   <li>
                     <a
-                      className="text-gray-500 transition hover:text-gray-500/75 dark:text-white dark:hover:text-white/75"
-                      href="#"
+                      className="text-gray-500 transition hover:text-[#5e17eb] dark:text-white dark:hover:text-white/75"
+                      href="#contact"
                       onClick={() => setIsMobileMenuOpen(false)}>
                       Contact
                     </a>
                   </li>
                   <li>
                     <a
-                      className="text-gray-500 transition hover:text-gray-500/75 dark:text-white dark:hover:text-white/75"
-                      href="#"
+                      className="text-gray-500 transition hover:text-[#5e17eb] dark:text-white dark:hover:text-white/75"
+                      href="#community"
                       onClick={() => setIsMobileMenuOpen(false)}>
                       Community
                     </a>
                   </li>
                 </ul>
                 <div className="mt-auto pb-4">
-                  <a
-                    className="rounded-xl px-5 py-2.5 text-sm font-medium text-white hover:bg-white hover:text-[#5e17eb]"
-                    href="#"
+                  <Link
+                    className="rounded-xl bg-[#5e17eb] px-5 py-2.5 text-sm font-medium text-white shadow-sm hover:opacity-80"
+                    to="/signup"
                     onClick={() => setIsMobileMenuOpen(false)}>
                     Register
-                  </a>
+                  </Link>
                 </div>
               </nav>
             </div>
