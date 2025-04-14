@@ -6,7 +6,8 @@ const Settings = ({ onClose }) => {
   const [name, setName] = useState("Mamoon Ahmad");
   const [email] = useState("l226880@lhr.nu.edu.pk");
   const [campus] = useState("Lahore");
-  const [batch] = useState("CS-22");
+  const [batch] = useState("2022");
+  const [program] = useState("BS(CS)");
   const [socials, setSocials] = useState([]);
   const [selectedSocial, setSelectedSocial] = useState("GitHub");
   const [socialLink, setSocialLink] = useState("");
@@ -82,6 +83,15 @@ const Settings = ({ onClose }) => {
             <input
               type="text"
               value={batch}
+              readOnly
+              className="w-full bg-gray-800 text-gray-400 p-2 rounded mt-1 cursor-not-allowed"
+            />
+          </div>
+          <div>
+            <label className="text-gray-400">Programme</label>
+            <input
+              type="text"
+              value={program}
               readOnly
               className="w-full bg-gray-800 text-gray-400 p-2 rounded mt-1 cursor-not-allowed"
             />

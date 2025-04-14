@@ -1,2 +1,16 @@
  @import "tailwindcss";
  
+ @keyframes fall {
+    0% {
+      transform: translateY(-100%); /* Start from above the screen */
+      opacity: 1; /* Make them visible at the top */
+    }
+    100% {
+      transform: translateY(100vh); /* Move to the bottom of the screen */
+      opacity: 0; /* Fade them out as they fall */
+    }
+  }
+  
+  .animate-fall {
+    animation: fall 4s linear infinite; /* Set duration to 4s for a slower fall */
+  }
