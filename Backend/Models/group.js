@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
-const serverSchema = new Schema(
+const groupSchema = new Schema(
   {
     admin: { type: Schema.Types.ObjectId, ref: "User" },
     name: { type: String, required: true },
@@ -14,4 +14,4 @@ const serverSchema = new Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Group", serverSchema);
+module.exports = mongoose.model("Group", groupSchema);

@@ -1,3 +1,5 @@
+const User = require("../models/user");
+const jwt = require("jsonwebtoken");
 const axios = require("axios");
 require("dotenv").config();
 
@@ -43,4 +45,61 @@ const googleAuthCallback = async (req, res, next) => {
   }
 };
 
-module.exports = { googleAuth, googleAuthCallback };
+const Protect = async (req, res, next) => {
+  console.log("Hello from Protect middleware!");
+
+  try {
+    let token;
+
+    // 1. Get token from header or cookie
+    if (
+      req.headers.authorization &&
+      req.headers.authorization.startsWith("Bearer")
+    ) {
+      token = req.headers.authorization.split(" ")[1];
+      console.log("Token found in header:", token);
+    } else if (req.cookies && req.cookies.token) {
+      token = req.cookies.token;
+      console.log("Token found in cookie:", token);
+    }
+
+    if (!token) {
+      return res.status(401).json({
+        error: "You are not logged in! Please log in to get access.",
+      });
+    }
+
+    // 2. Verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // 3. Check if user exists
+    const currentUser = await User.findById(decoded.id);
+    if (!currentUser) {
+      return res.status(401).json({
+        error: "The user belonging to this token no longer exists.",
+      });
+    }
+
+    // 4. Attach user to request
+    req.user = currentUser;
+    next();
+  } catch (error) {
+    console.error("Error in Protect middleware:", error.message);
+    return res.status(500).json({
+      error: "Authentication failed. Please try again.",
+    });
+  }
+};
+
+const RestrictTo = (...roles) => {
+  return (req, res, next) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      return res.status(403).json({
+        error: "You do not have permission to perform this action.",
+      });
+    }
+    next();
+  };
+};
+
+module.exports = { googleAuth, googleAuthCallback, Protect, RestrictTo };

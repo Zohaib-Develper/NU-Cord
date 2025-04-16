@@ -4,6 +4,7 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const connectDB = require("./config/dbConfig.js");
 const userRoutes = require("./routes/userRoutes.js");
+const groupRoutes = require('./routes/groupRoutes.js')
 const checkForAuthentication = require("./middleware/userMiddleware.js");
 
 const app = express();
@@ -31,6 +32,7 @@ app.use(
 //Routes
 app.get("/homepage", (req, res) => res.send("Homepage!"));
 app.use("/user", userRoutes);
+app.use("/api/group", groupRoutes)
 
 //Error Handling Middleware
 app.use((err, req, res, next) => {

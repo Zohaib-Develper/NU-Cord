@@ -28,4 +28,4 @@ serverSchema.statics.getServerNames = async function (serverIds) {
   }
 };
 
-module.exports = mongoose.model("Server", serverSchema);
+module.exports = mongoose.models.Server || mongoose.model("Server", serverSchema);
