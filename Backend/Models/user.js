@@ -66,9 +66,9 @@ userSchema.statics.getUserFriends = async function (userId) {
     const user = await this.findById(userId).populate("friends", "name pfp");
     return user
       ? user.friends.map(({ name, pfp }) => ({
-          name,
-          pfp: pfp || "/images/userpfp.png",
-        }))
+        name,
+        pfp: pfp || "/images/userpfp.png",
+      }))
       : [];
   } catch (error) {
     console.error("Error fetching user friends:", error);
@@ -76,4 +76,4 @@ userSchema.statics.getUserFriends = async function (userId) {
   }
 };
 
-module.exports = mongoose.model("User", userSchema);
+module.exports = mongoose.models.User || mongoose.model("User", userSchema);
