@@ -19,6 +19,7 @@
     "@mui/icons-material": "^6.4.8",
     "@mui/material": "^6.4.8",
     "@tailwindcss/vite": "^4.0.15",
+    "axios": "^1.8.4",
     "lucide-react": "^0.487.0",
     "mui": "^0.0.1",
     "react": "^19.0.0",

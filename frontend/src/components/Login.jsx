@@ -3,16 +3,52 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faEye,
   faEyeSlash,
-  faEnvelope,
+  faUser,
   faKey,
 } from "@fortawesome/free-solid-svg-icons";
 import loginPng from "../assets/signin.png";
 import Google from "../assets/google.svg";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const handleGoogleLogin = () => {
+    window.location.href = "http://localhost:8000/user/auth/google";
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      const response = await axios.post("http://localhost:8000/user/signin", {
+        username,
+        password,
+      });
+
+      if (response.data.token) {
+        // Store token in localStorage if remember me is checked
+        if (rememberMe) {
+          localStorage.setItem("token", response.data.token);
+        }
+        // Navigate to home page or dashboard
+        navigate("/");
+      }
+    } catch (err) {
+      setError(err.response?.data?.error || "An error occurred during login");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-700 to-indigo-800 p-4 relative overflow-hidden">
@@ -51,7 +87,10 @@ const Login = () => {
           </div>
 
           {/* Google Login Button */}
-          <button className="w-full mb-4 flex items-center justify-center gap-2 border border-gray-300 rounded-lg py-3 px-4 text-gray-700 hover:bg-purple-600 hover:text-white transition-colors cursor-pointer">
+          <button 
+            onClick={handleGoogleLogin}
+            className="w-full mb-4 flex items-center justify-center gap-2 border border-gray-300 rounded-lg py-3 px-4 text-gray-700 hover:bg-purple-600 hover:text-white transition-colors cursor-pointer"
+          >
             <img src={Google} alt="Google" className="w-5 h-5" />
             <span>Login with NU mail</span>
           </button>
@@ -65,26 +104,27 @@ const Login = () => {
             </div>
           </div>
 
-          <form>
+          <form onSubmit={handleSubmit}>
             <div className="space-y-4">
-              {/* Email Input */}
+              {/* Username Input */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email
+                  Username
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <FontAwesomeIcon
-                      icon={faEnvelope}
+                      icon={faUser}
                       className="h-5 w-5 text-gray-400"
                     />
                   </div>
                   <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="example@nu.edu.pk"
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="Enter your username"
                     className="block w-full pl-10 pr-3 py-3 bg-gray-100 border-transparent rounded-lg focus:border-[#6C3CE9] focus:ring-[#6C3CE9] focus:outline-none"
+                    required
                   />
                 </div>
               </div>
@@ -106,6 +146,7 @@ const Login = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="block w-full pl-10 pr-10 py-3 bg-gray-100 border-transparent rounded-lg focus:border-[#6C3CE9] focus:ring-[#6C3CE9] focus:outline-none"
+                    required
                   />
                   <button
                     type="button"
@@ -119,6 +160,10 @@ const Login = () => {
                   </button>
                 </div>
               </div>
+
+              {error && (
+                <div className="text-red-500 text-sm text-center">{error}</div>
+              )}
 
               {/* Remember Me and Forgot Password */}
               <div className="flex items-center justify-between">
@@ -144,9 +189,10 @@ const Login = () => {
               {/* Login Button */}
               <button
                 type="submit"
-                className="w-full bg-[#6C3CE9] text-white rounded-lg py-3 px-4 hover:bg-[#5731ba] transition-colors"
+                disabled={loading}
+                className="w-full bg-[#6C3CE9] text-white rounded-lg py-3 px-4 hover:bg-[#5731ba] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Login
+                {loading ? "Logging in..." : "Login"}
               </button>
             </div>
           </form>
