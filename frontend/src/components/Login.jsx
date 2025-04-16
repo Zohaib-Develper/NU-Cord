@@ -11,7 +11,7 @@ import Google from "../assets/google.svg";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-const Login = () => {
+const Login = ({ onLogin }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -21,6 +21,8 @@ const Login = () => {
   const navigate = useNavigate();
 
   const handleGoogleLogin = () => {
+    setLoading(true);
+    setError("");
     window.location.href = "http://localhost:8000/user/auth/google";
   };
 
@@ -30,19 +32,15 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post("http://localhost:8000/user/signin", {
-        username,
-        password,
-      });
+      const response = await axios.post(
+        "http://localhost:8000/user/signin",
+        { username, password },
+        { withCredentials: true }
+      );
 
-      if (response.data.token) {
-        // Store token in localStorage if remember me is checked
-        if (rememberMe) {
-          localStorage.setItem("token", response.data.token);
-        }
-        // Navigate to home page or dashboard
-        navigate("/");
-      }
+      localStorage.setItem("isAuthenticated", "true");
+      onLogin();
+      navigate("/home");
     } catch (err) {
       setError(err.response?.data?.error || "An error occurred during login");
     } finally {
@@ -87,7 +85,7 @@ const Login = () => {
           </div>
 
           {/* Google Login Button */}
-          <button 
+          <button
             onClick={handleGoogleLogin}
             className="w-full mb-4 flex items-center justify-center gap-2 border border-gray-300 rounded-lg py-3 px-4 text-gray-700 hover:bg-purple-600 hover:text-white transition-colors cursor-pointer"
           >
