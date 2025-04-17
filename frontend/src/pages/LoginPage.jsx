@@ -1,10 +1,10 @@
 import React from "react";
 import Login from "../components/Login";
 
-const LoginPage = () => {
+const LoginPage = ({ onLogin }) => {
   return (
     <>
-      <Login />
+      <Login onLogin={onLogin} />
     </>
   );
 };

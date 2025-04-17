@@ -6,19 +6,27 @@ const { validateToken } = require("../utils/authentication/auth");
 
 const signup = async (req, res) => {
   try {
-    //Register User in DB
-    const { user } = await signupService(req.user);
-    if (!user) {
-      return res.status(400).json({ error: "User registration failed" });
+    const result = await signupService(req.user);
+
+    if (result.status === "new") {
+      const updatedUser = await registerUserToServer(result.user._id);
+      return res.status(200).json({
+        message: "User registered successfully",
+        updatedUser,
+      });
+    } else if (result.status === "existing") {
+      if (validateToken(result.token)) {
+        return res
+          .status(200)
+          .json({ message: "Sign in successful", token: result.token });
+      } else {
+        return res.status(401).json({ error: "Invalid token" });
+      }
     }
 
-    // Register User to default Server
-    const updatedUser = await registerUserToServer(user._id);
-    return res
-      .status(200)
-      .json({ message: "User registered successfully", updatedUser });
+    return res.status(400).json({ error: "Unexpected signup response" });
   } catch (error) {
-    console.error("Error in signup:", error);
+    console.error("❌ Error in signup:", error);
     return res.status(500).json({ error: "User registration failed" });
   }
 };
@@ -26,16 +34,22 @@ const signup = async (req, res) => {
 const signin = async (req, res) => {
   try {
     const { username, password } = req.body;
-    const token = await signinService(username, password);
+    console.log("🔐 Attempting sign in:", username);
+
+    const token = await signinService({ username, password });
+
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
     });
+
     res.status(200).json({ message: "Sign in successful", token });
   } catch (error) {
-    console.error("Error in sign in:", error);
-    res.status(error.statusCode || 500).json({ error: error.message });
+    console.error("❌ Error in sign in:", error);
+    res
+      .status(error.statusCode || 500)
+      .json({ error: error.message || "Internal Server Error" });
   }
 };
 
@@ -161,19 +175,21 @@ const unblockUser = async (req, res) => {
 };
 
 const logout = (req, res) => {
-  if (req.cookies.token) {
-    try {
+  try {
+    if (req.cookies.token) {
       res.cookie("token", "", {
         httpOnly: true,
         expires: new Date(0),
       });
-      console.log("Logged Out successfully");
-      res.status(200).json({ message: "Logged out successfully" });
-    } catch {
-      console.error("Error in log out:", error);
-      res.status(error.statusCode || 500).json({ error: error.message });
+      console.log("🚪 Logged out successfully");
+      return res.status(200).json({ message: "Logged out successfully" });
+    } else {
+      return res.status(200).json({ message: "User already logged out" });
     }
-  } else res.status(200).json({ message: "User already logged out" });
+  } catch (error) {
+    console.error("❌ Error in logout:", error);
+    return res.status(500).json({ error: error.message || "Logout failed" });
+  }
 };
 
 module.exports = {
