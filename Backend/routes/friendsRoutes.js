@@ -8,7 +8,7 @@ const {
 } = require("../controllers/friendsController");
 
 const router = Router();
-
+// '/api/friend/--'
 router.post("/send/:receiverId", sendFriendRequest);
 router.post("/accept/:senderId", acceptFriendRequest);
 router.post("/reject/:senderId", rejectFriendRequest);
