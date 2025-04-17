@@ -1,5 +1,6 @@
 const Server = require("../models/server");
 const User = require("../models/user");
+const Channel = require('../Models/channel')
 
 const registerUserToServer = async (userId) => {
   try {
@@ -9,10 +10,25 @@ const registerUserToServer = async (userId) => {
 
     if (!server) {
       server = new Server({
-        name: serverName, 
+        name: serverName,
         users: [userId],
       });
       await server.save();
+      const defaultChannels = [
+        { name: "💬 general chat" },
+        { name: "📢 announcements" },
+        { name: "📚 resources" },
+        { name: "🔊 voice chat" },
+      ];
+
+      for (const ch of defaultChannels) {
+        const channel = new Channel({
+          name: ch.name,
+          owner_server: server._id,
+        });
+        await channel.save();
+      }
+
       console.log(`✅ New server ${server.name} created & User added in it.`);
     } else {
       if (!server.users.includes(userId)) {
