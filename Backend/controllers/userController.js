@@ -44,7 +44,16 @@ const signin = async (req, res) => {
       sameSite: "strict",
     });
 
-    res.status(200).json({ message: "Sign in successful", token });
+    const user = await User.findOne({ username })
+      .populate("friends")
+      .populate("friendRequestsReceived")
+      .populate("friendRequestsSent")
+      .populate("blockedUsers")
+      .populate("servers")
+      .populate("requested_servers")
+      .populate("groups");
+
+    res.status(200).json({ message: "Sign in successful", token, user });
   } catch (error) {
     console.error("❌ Error in sign in:", error);
     res

@@ -1,27 +1,35 @@
 import React, { useState } from "react";
 import ProfileImage from "../assets/profile.jpeg";
 import { FaGithub, FaLinkedin, FaInstagram } from "react-icons/fa";
+import DefaultProfile from "../assets/me.png";
 
 const Profile = ({ onClose }) => {
   const [activeTab, setActiveTab] = useState("info");
-
+  const user = JSON.parse(localStorage.getItem("user"));
+  
+  // console.log(user);
+  function handleSearchFriend() {
+    
+  }
   return (
     <div
       className="fixed inset-0 bg-transparent bg-opacity-50 backdrop-blur-lg flex justify-center items-center"
-      onClick={onClose}>
+      onClick={onClose}
+    >
       <div
         className="bg-gray-900 text-white p-6 rounded-lg w-200 shadow-lg relative h-auto flex flex-col"
-        onClick={(e) => e.stopPropagation()}>
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Profile Header */}
         <div className="flex items-center gap-4 border-b border-gray-700 pb-4">
           <img
-            src={ProfileImage}
+            src={user?.pfp || DefaultProfile}
             alt="Profile"
             className="w-28 h-28 rounded-full"
           />
           <div>
-            <h2 className="text-2xl font-bold">Mamoon Ahmad</h2>
-            <p className="text-gray-400">maamooon</p>
+            <h2 className="text-2xl font-bold">{user?.name}</h2>
+            <p className="text-gray-400">{user.name}</p>
           </div>
         </div>
 
@@ -31,7 +39,8 @@ const Profile = ({ onClose }) => {
             className={`hover:text-white cursor-pointer ${
               activeTab === "info" ? "border-b-2 border-white" : "text-gray-400"
             }`}
-            onClick={() => setActiveTab("info")}>
+            onClick={() => setActiveTab("info")}
+          >
             User Info
           </button>
           <button
@@ -40,7 +49,8 @@ const Profile = ({ onClose }) => {
                 ? "border-b-2 border-white"
                 : "text-gray-400"
             }`}
-            onClick={() => setActiveTab("friends")}>
+            onClick={() => setActiveTab("friends")}
+          >
             Friends
           </button>
           <button
@@ -49,8 +59,39 @@ const Profile = ({ onClose }) => {
                 ? "border-b-2 border-white"
                 : "text-gray-400"
             }`}
-            onClick={() => setActiveTab("servers")}>
+            onClick={() => setActiveTab("servers")}
+          >
             Servers
+          </button>
+          <button
+            className={`hover:text-white cursor-pointer ${
+              activeTab === "groups"
+                ? "border-b-2 border-white"
+                : "text-gray-400"
+            }`}
+            onClick={() => setActiveTab("groups")}
+          >
+            Groups
+          </button>
+          <button
+            className={`hover:text-white cursor-pointer ${
+              activeTab === "friendrequests"
+                ? "border-b-2 border-white"
+                : "text-gray-400"
+            }`}
+            onClick={() => setActiveTab("friendrequests")}
+          >
+            Friends Requests
+          </button>
+          <button
+            className={`hover:text-white cursor-pointer ${
+              activeTab === "searchfriend"
+                ? "border-b-2 border-white"
+                : "text-gray-400"
+            }`}
+            onClick={() => setActiveTab("searchfriend")}
+          >
+            Search Friend
           </button>
         </div>
 
@@ -64,21 +105,42 @@ const Profile = ({ onClose }) => {
                 applications. Always learning and exploring new technologies.
               </p>
               <h3 className="text-lg font-semibold mt-2">Batch</h3>
-              <p className="text-gray-300 text-sm ">2022</p>
+              <p className="text-gray-300 text-sm ">{user?.batch}</p>
               <h3 className="text-lg font-semibold">Program</h3>
-              <p className="text-gray-300 text-sm">BS(CS)</p>
+              <p className="text-gray-300 text-sm">{user?.degree_name}</p>
               <h3 className="text-lg font-semibold">Campus</h3>
-              <p className="text-gray-300 text-sm">Lahore</p>
+              <p className="text-gray-300 text-sm">{user?.campus}</p>
             </div>
           )}
 
           {activeTab === "friends" && (
             <div>
               <h3 className="text-lg font-semibold">Friends</h3>
-              <ul className="mt-2">
-                <li className="text-gray-300">John Doe</li>
+              <ul className="mt-2 space-y-3">
+                {user?.friends?.length > 0 ? (
+                  user.friends.map((friend) => (
+                    <li
+                      key={friend._id}
+                      className="flex items-center gap-4 p-2 rounded-lg hover:bg-gray-800 transition"
+                    >
+                      <img
+                        src={friend.pfp}
+                        alt={friend.name}
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
+                      <span className="text-gray-300 font-medium">
+                        {friend.name}
+                      </span>
+                    </li>
+                  ))
+                ) : (
+                  <li className="text-gray-300">No friends added yet</li>
+                )}
+                {/* </ul> */}
+
+                {/* <li className="text-gray-300">John Doe</li>
                 <li className="text-gray-300">Jane Doe</li>
-                <li className="text-gray-300">Alice</li>
+                <li className="text-gray-300">Alice</li> */}
               </ul>
             </div>
           )}
@@ -87,9 +149,100 @@ const Profile = ({ onClose }) => {
             <div>
               <h3 className="text-lg font-semibold">Servers</h3>
               <ul className="mt-2">
-                <li className="text-gray-300">Batch 22</li>
-                <li className="text-gray-300">Gaming Hub</li>
+                {user.servers.map((server) => {
+                  return (
+                    <li
+                      key={server._id}
+                      className="flex items-center gap-4 p-2 rounded-lg hover:bg-gray-800 transition"
+                    >
+                      {/* <img
+                          src={server.pfp}
+                          alt={server.name}
+                          className="w-10 h-10 rounded-full object-cover"
+                        /> */}
+                      <span className="text-gray-300 font-medium">
+                        {server.name}
+                      </span>
+                    </li>
+                  );
+                })}
               </ul>
+            </div>
+          )}
+
+          {activeTab === "groups" && (
+            <div>
+              <h3 className="text-lg font-semibold">Groups</h3>
+              <ul className="mt-2 space-y-3">
+                {user.groups.length === 0 ? (
+                  <li className="text-gray-300">No groups added yet</li>
+                ) : (
+                  user.groups.map((group) => (
+                    <li
+                      key={group._id}
+                      className="flex items-center gap-4 p-2 rounded-lg hover:bg-gray-800 transition"
+                    >
+                      {/* <img
+              src={group.pfp || "/images/default-group.png"}
+              alt={group.name}
+              className="w-10 h-10 rounded-full object-cover"
+            /> */}
+                      <span className="text-gray-300 font-medium">
+                        {group.name}
+                      </span>
+                    </li>
+                  ))
+                )}
+              </ul>
+            </div>
+          )}
+
+          {activeTab === "friendrequests" && (
+            <div>
+              <h3 className="text-lg font-semibold">Friend Requests</h3>
+              <ul className="mt-2 space-y-3">
+                {user.friendRequestsReceived.length === 0 ? (
+                  <li className="text-gray-300">No friend requests yet</li>
+                ) : (
+                  user.friendRequestsReceived.map((f) => (
+                    <li
+                      key={f._id}
+                      className="flex items-center justify-between gap-4 p-2 rounded-lg hover:bg-gray-800 transition"
+                    >
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={f.pfp || "/images/userpfp.png"}
+                          alt={f.name}
+                          className="w-10 h-10 rounded-full object-cover"
+                        />
+                        <span className="text-gray-300 font-medium">
+                          {f.name}
+                        </span>
+                      </div>
+                      <button
+                        // onClick={() => handleAcceptRequest(f._id)}
+                        className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-md text-sm"
+                      >
+                        Accept
+                      </button>
+                    </li>
+                  ))
+                )}
+              </ul>
+            </div>
+          )}
+
+          {activeTab === "searchfriend" && (
+            <div>
+              <h3 className="text-lg font-semibold">Search Friend</h3>
+              <input
+                type="text"
+                placeholder="Search by name"
+                className="mt-2 p-2 w-full bg-gray-800 text-gray-300 rounded-md"
+              />
+              <button className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-sm mt-2" onClick={handleSearchFriend}>
+                Search
+              </button>
             </div>
           )}
         </div>
@@ -99,19 +252,22 @@ const Profile = ({ onClose }) => {
           <a
             href="https://github.com"
             target="_blank"
-            rel="noopener noreferrer">
+            rel="noopener noreferrer"
+          >
             <FaGithub className="text-gray-300 text-2xl hover:text-white" />
           </a>
           <a
             href="https://linkedin.com"
             target="_blank"
-            rel="noopener noreferrer">
+            rel="noopener noreferrer"
+          >
             <FaLinkedin className="text-gray-300 text-2xl hover:text-white" />
           </a>
           <a
             href="https://instagram.com"
             target="_blank"
-            rel="noopener noreferrer">
+            rel="noopener noreferrer"
+          >
             <FaInstagram className="text-gray-300 text-2xl hover:text-white" />
           </a>
         </div>
@@ -121,4 +277,3 @@ const Profile = ({ onClose }) => {
 };
 
 export default Profile;
-

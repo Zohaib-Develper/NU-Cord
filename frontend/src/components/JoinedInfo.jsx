@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import ChannelPage from "../components/ChannelPage";
 import ProfileImage from "../assets/profile.jpeg";
 import Profile from "../components/Profile";
-import FriendsProfile from "../assets/profile2.jpeg"
+import FriendsProfile from "../assets/profile2.jpeg";
 import {
   FaVideoSlash,
   FaMicrophoneSlash,
@@ -11,7 +11,7 @@ import {
   FaComments,
   FaUserFriends,
   FaUser,
-  FaVolumeUp
+  FaVolumeUp,
 } from "react-icons/fa";
 const dummyData = {
   servers: [
@@ -50,6 +50,7 @@ const JoinedInfo = ({
   const [isMicMuted, setIsMicMuted] = useState(true);
   const [isVideoOff, setIsVideoOff] = useState(true);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const user = JSON.parse(localStorage.getItem("user"));
   return (
     <div className="flex flex-col w-80 h-screen bg-gray-800 text-white border-r-2 border-gray-600 p-4 overflow-y-auto">
       {/* Search Bar */}
@@ -69,7 +70,8 @@ const JoinedInfo = ({
                 className="w-full text-left p-2 rounded-lg hover:bg-gray-600"
                 onClick={() =>
                   setSelectedItem(selectedItem === server ? null : server)
-                }>
+                }
+              >
                 {server.name}
               </button>
               {selectedItem === server && (
@@ -82,7 +84,8 @@ const JoinedInfo = ({
                       onClick={() => {
                         setSelectedChannel(channel);
                         setSelectedType("text");
-                      }}>
+                      }}
+                    >
                       # {channel}
                     </p>
                   ))}
@@ -94,7 +97,8 @@ const JoinedInfo = ({
                       onClick={() => {
                         setSelectedChannel(channel);
                         setSelectedType("voice");
-                      }}>
+                      }}
+                    >
                       <FaVolumeUp className="mt-1"></FaVolumeUp> {channel}
                     </p>
                   ))}
@@ -115,7 +119,8 @@ const JoinedInfo = ({
                 className="w-full text-left p-2 rounded-lg hover:bg-gray-600"
                 onClick={() =>
                   setSelectedGroup(selectedGroup === group ? null : group)
-                }>
+                }
+              >
                 {group.name}
               </button>
               {selectedGroup === group && (
@@ -125,7 +130,8 @@ const JoinedInfo = ({
                     onClick={() => {
                       setSelectedChannel(group.name);
                       setSelectedType("group");
-                    }}>
+                    }}
+                  >
                     <FaComments className="mt-1"></FaComments>
                     Chat
                   </button>
@@ -135,16 +141,20 @@ const JoinedInfo = ({
                       setSelectedGroupSection(
                         selectedGroupSection === "members" ? null : "members"
                       )
-                    }>
+                    }
+                  >
                     <FaUserFriends className="mt-1"></FaUserFriends> Members
                   </button>
                   {selectedGroupSection === "members" && (
                     <div className="ml-4 mt-2">
                       <h3 className="font-semibold">Members</h3>
                       {group.members.map((member, i) => (
-                        <p key={i} className="ml-2 mt-2 text-gray-300 flex gap-3">
+                        <p
+                          key={i}
+                          className="ml-2 mt-2 text-gray-300 flex gap-3"
+                        >
                           <FaUser className="text-sm mt-1"></FaUser>
-                           {member}
+                          {member}
                         </p>
                       ))}
                     </div>
@@ -167,8 +177,14 @@ const JoinedInfo = ({
               onClick={() => {
                 setSelectedChannel(dm);
                 setSelectedType("dm");
-              }}>
-              <img src={FriendsProfile} alt="User Profile"  className="h-7 w-7 rounded-full"/> {dm}
+              }}
+            >
+              <img
+                src={FriendsProfile}
+                alt="User Profile"
+                className="h-7 w-7 rounded-full"
+              />{" "}
+              {dm}
             </p>
           ))}
         </div>
@@ -178,15 +194,16 @@ const JoinedInfo = ({
       <div className="w-full bg-gray-900 text-white mt-auto flex items-center justify-between h-14 p-4">
         <div
           className="flex items-center gap-4 cursor-pointer"
-          onClick={() => setIsProfileOpen(true)}>
+          onClick={() => setIsProfileOpen(true)}
+        >
           <img
-            src={ProfileImage}
+            src={user.pfp}
             alt="Profile"
             className="w-10 h-10 rounded-full"
           />
           <div>
-            <p className="text-sm font-semibold">Mamoon Ahmad</p>
-            <p className="text-xs text-gray-400">maamooon</p>
+            <p className="text-sm font-semibold">{user.name}</p>
+            <p className="text-xs text-gray-400">{user.name}</p>
           </div>
         </div>
         <div className="flex gap-2">
@@ -194,7 +211,8 @@ const JoinedInfo = ({
             className={`text-xl ${
               isMicMuted ? "text-red-600" : "text-white-500"
             } hover:text-white`}
-            onClick={() => setIsMicMuted(!isMicMuted)}>
+            onClick={() => setIsMicMuted(!isMicMuted)}
+          >
             {isMicMuted ? (
               <FaMicrophoneSlash className="text-xl cursor-pointer" />
             ) : (
@@ -205,7 +223,8 @@ const JoinedInfo = ({
             className={`text-xl ${
               isVideoOff ? "text-red-600" : "text-white-500"
             } hover:text-white`}
-            onClick={() => setIsVideoOff(!isVideoOff)}>
+            onClick={() => setIsVideoOff(!isVideoOff)}
+          >
             {isVideoOff ? (
               <FaVideoSlash className="text-xl cursor-pointer" />
             ) : (
