@@ -71,9 +71,13 @@ const Protect = async (req, res, next) => {
 
     // 2. Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log("Decoded token:", decoded);
+    console.log("Proocess env JWT_SECRET:", process.env.JWT_SECRET);
+    
+    
 
     // 3. Check if user exists
-    const currentUser = await User.findById(decoded.id);
+    const currentUser = await User.findById(decoded._id);
     if (!currentUser) {
       return res.status(401).json({
         error: "The user belonging to this token no longer exists.",
