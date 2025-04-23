@@ -16,17 +16,20 @@ const HomePage = () => {
 
       {/* Joined Info (Left Panel) */}
       <div className="">
-        <JoinedInfo 
-          selectedCategory={selectedCategory} 
-          setSelectedChannel={setSelectedChannel} 
+        <JoinedInfo
+          selectedCategory={selectedCategory}
+          setSelectedChannel={setSelectedChannel}
           selectedChannel={selectedChannel}
-          setSelectedType={setSelectedType}  
+          setSelectedType={setSelectedType}
         />
       </div>
 
       {/* Channel Page (Right Panel) */}
       <div className="">
-        <ChannelPage selectedChannel={selectedChannel} selectedType={selectedType}/>
+        <ChannelPage
+          selectedChannel={selectedChannel}
+          selectedType={selectedType}
+        />
       </div>
     </div>
   );
