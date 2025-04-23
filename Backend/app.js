@@ -7,7 +7,6 @@ const userRoutes = require("./routes/userRoutes.js");
 const groupRoutes = require("./routes/groupRoutes.js");
 const friendRoutes = require("./routes/friendsRoutes.js");
 const channelRoutes = require("./routes/channelRoutes.js");
-const checkForAuthentication = require("./middleware/userMiddleware.js");
 
 const app = express();
 

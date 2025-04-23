@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Sidebar from "../components/Sidebar";
 import JoinedInfo from "../components/JoinedInfo";
 import ChannelPage from "../components/ChannelPage";
+import Landing from "../components/Landing";
 
 const HomePage = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -26,10 +27,14 @@ const HomePage = () => {
 
       {/* Channel Page (Right Panel) */}
       <div className="">
-        <ChannelPage
-          selectedChannel={selectedChannel}
-          selectedType={selectedType}
-        />
+        {selectedCategory == "LandingPage" ? (
+          <Landing />
+        ) : (
+          <ChannelPage
+            selectedChannel={selectedChannel}
+            selectedType={selectedType}
+          />
+        )}
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import ChannelPage from "../components/ChannelPage";
 import ProfileImage from "../assets/profile.jpeg";
 import Profile from "../components/Profile";
@@ -13,6 +13,8 @@ import {
   FaUser,
   FaVolumeUp,
 } from "react-icons/fa";
+import { AuthContext } from "../utils/AuthContext";
+import DirectMessages from "./DirectMessages";
 const dummyData = {
   servers: [
     {
@@ -50,7 +52,7 @@ const JoinedInfo = ({
   const [isMicMuted, setIsMicMuted] = useState(true);
   const [isVideoOff, setIsVideoOff] = useState(true);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const user = JSON.parse(localStorage.getItem("user"));
+  const user = useContext(AuthContext).user;
   return (
     <div className="flex flex-col w-80 h-screen bg-gray-800 text-white border-r-2 border-gray-600 p-4 overflow-y-auto">
       {/* Search Bar */}
@@ -167,28 +169,7 @@ const JoinedInfo = ({
       )}
 
       {/* Direct Messages */}
-      {selectedCategory === "dm" && (
-        <div>
-          <h2 className="text-xl font-bold mb-3">Direct Messages</h2>
-          {dummyData.dms.map((dm, index) => (
-            <p
-              key={index}
-              className="p-2 rounded-lg hover:bg-gray-600 mb-3 cursor-pointer flex gap-3"
-              onClick={() => {
-                setSelectedChannel(dm);
-                setSelectedType("dm");
-              }}
-            >
-              <img
-                src={FriendsProfile}
-                alt="User Profile"
-                className="h-7 w-7 rounded-full"
-              />{" "}
-              {dm}
-            </p>
-          ))}
-        </div>
-      )}
+      {selectedCategory === "dm" && <DirectMessages />}
 
       {/* Profile Section */}
       <div className="w-full bg-gray-900 text-white mt-auto flex items-center justify-between h-14 p-4">
