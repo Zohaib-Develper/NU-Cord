@@ -11,7 +11,7 @@ const {
   getUserProfile,
   blockUser,
   unblockUser,
-  searchUserByName
+  searchUserByName,
 } = require("../controllers/userController");
 const { testGoogleAuth } = require("../test/googleAuth");
 const checkForAuthentication = require("../middleware/userMiddleware");
@@ -30,7 +30,7 @@ router.get("/logout", logout);
 router.get("/search", searchUserByName);
 
 //Protected Routes(Below are all the routes that would require user to be signed in before accesing)
-// router.use(checkForAuthentication("token"));
+router.use(checkForAuthentication("token"));
 router.get("/profile", getUserProfile);
 router.use("/friends", friendsRoutes);
 router.post("/block/:userIdToBlock", blockUser);

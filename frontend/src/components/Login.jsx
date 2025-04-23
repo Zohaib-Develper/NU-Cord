@@ -11,7 +11,7 @@ import Google from "../assets/google.svg";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-const Login = ({ onLogin }) => {
+const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -39,9 +39,9 @@ const Login = ({ onLogin }) => {
       );
       // console.log("Login response:", response.data);
 
-      localStorage.setItem("isAuthenticated", "true");
-      localStorage.setItem("user", JSON.stringify(response.data.user));
-      onLogin();
+      // localStorage.setItem("isAuthenticated", "true");
+      // localStorage.setItem("user", JSON.stringify(response.data.user));
+      // onLogin();
       navigate("/home");
     } catch (err) {
       setError(err.response?.data?.error || "An error occurred during login");
