@@ -10,15 +10,20 @@ const signup = async (req, res) => {
 
     if (result.status === "new") {
       const updatedUser = await registerUserToServer(result.user._id);
-      return res.status(200).json({
-        message: "User registered successfully",
-        updatedUser,
+      res.cookie("token", result.token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
       });
+      return res.redirect("http://localhost:5173/home");
     } else if (result.status === "existing") {
       if (validateToken(result.token)) {
-        return res
-          .status(200)
-          .json({ message: "Sign in successful", token: result.token });
+        res.cookie("token", result.token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "strict",
+        });
+        return res.redirect("http://localhost:5173/home");
       } else {
         return res.status(401).json({ error: "Invalid token" });
       }
@@ -53,7 +58,7 @@ const signin = async (req, res) => {
       .populate("requested_servers")
       .populate("groups");
 
-    res.status(200).json({ message: "Sign in successful", token, user });
+    res.redirect("http://localhost:5173/home");
   } catch (error) {
     console.error("❌ Error in sign in:", error);
     res
@@ -204,14 +209,13 @@ const logout = (req, res) => {
 const searchUserByName = async (req, res) => {
   try {
     console.log("Hello from searchUserByName");
-    
-    
+
     const { name } = req.query;
     const users = await User.find({
       name: { $regex: name, $options: "i" },
     }).limit(10);
     // console.log(users);
-    
+
     if (users.length === 0) {
       return res.status(404).json({ message: "No users found" });
     }
@@ -221,7 +225,7 @@ const searchUserByName = async (req, res) => {
     console.error("Error searching for user:", error);
     res.status(500).json({ error: "Failed to search for user" });
   }
-}
+};
 
 module.exports = {
   signup,
@@ -230,5 +234,5 @@ module.exports = {
   getUserProfile,
   blockUser,
   unblockUser,
-  searchUserByName
+  searchUserByName,
 };

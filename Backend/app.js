@@ -4,9 +4,9 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const connectDB = require("./config/dbConfig.js");
 const userRoutes = require("./routes/userRoutes.js");
-const groupRoutes = require('./routes/groupRoutes.js')
-const friendRoutes = require('./routes/friendsRoutes.js')
-const channelRoutes = require('./routes/channelRoutes.js')
+const groupRoutes = require("./routes/groupRoutes.js");
+const friendRoutes = require("./routes/friendsRoutes.js");
+const channelRoutes = require("./routes/channelRoutes.js");
 const checkForAuthentication = require("./middleware/userMiddleware.js");
 
 const app = express();
@@ -33,10 +33,10 @@ app.use(
 
 //Routes
 // app.get("/homepage", (req, res) => res.send("Homepage!"));
-app.use("/api/user", userRoutes);
-app.use("/api/group", groupRoutes)
-app.use("/api/friend", friendRoutes)
-app.use("/api/server", channelRoutes) // For handling channel routes e-g creating Channel 😁
+app.use("/user", userRoutes);
+app.use("/api/group", groupRoutes);
+app.use("/api/friend", friendRoutes);
+app.use("/api/server", channelRoutes); // For handling channel routes e-g creating Channel 😁
 
 //Error Handling Middleware
 app.use((err, req, res, next) => {
