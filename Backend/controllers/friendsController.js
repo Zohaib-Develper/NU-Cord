@@ -4,8 +4,6 @@ const Server = require("../models/server");
 // Sending Friend Requests to Users
 const sendFriendRequest = async (req, res) => {
   try {
-    console.log("Hello from sendFriendRequest controller!");
-    
     const { receiverId } = req.params;
     const senderId = req.user._id;
 

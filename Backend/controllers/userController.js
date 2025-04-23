@@ -201,28 +201,6 @@ const logout = (req, res) => {
   }
 };
 
-const searchUserByName = async (req, res) => {
-  try {
-    console.log("Hello from searchUserByName");
-    
-    
-    const { name } = req.query;
-    const users = await User.find({
-      name: { $regex: name, $options: "i" },
-    }).limit(10);
-    // console.log(users);
-    
-    if (users.length === 0) {
-      return res.status(404).json({ message: "No users found" });
-    }
-
-    res.status(200).json(users);
-  } catch (error) {
-    console.error("Error searching for user:", error);
-    res.status(500).json({ error: "Failed to search for user" });
-  }
-}
-
 module.exports = {
   signup,
   signin,
@@ -230,5 +208,4 @@ module.exports = {
   getUserProfile,
   blockUser,
   unblockUser,
-  searchUserByName
 };

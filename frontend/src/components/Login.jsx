@@ -33,7 +33,7 @@ const Login = ({ onLogin }) => {
 
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/user/signin",
+        "http://localhost:8000/user/signin",
         { username, password },
         { withCredentials: true }
       );

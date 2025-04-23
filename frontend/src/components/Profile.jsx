@@ -1,73 +1,16 @@
 import React, { useState } from "react";
 import ProfileImage from "../assets/profile.jpeg";
 import { FaGithub, FaLinkedin, FaInstagram } from "react-icons/fa";
-import axios from "axios";
 import DefaultProfile from "../assets/me.png";
 
 const Profile = ({ onClose }) => {
   const [activeTab, setActiveTab] = useState("info");
   const user = JSON.parse(localStorage.getItem("user"));
-
-  const [query, setQuery] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
-  const [searchError, setSearchError] = useState("");
-
-  async function handleSearchFriend() {
-    if (!query.trim()) return;
-
-    try {
-      console.log("Searching for:", query);
-
-      const res = await axios.get(`http://localhost:8000/api/user/search`, {
-        params: { name: query },
-        withCredentials: true,
-      });
-      console.log("Search results:", res);
-
-      setSearchResults(res.data);
-      setSearchError("");
-    } catch (err) {
-      console.error("Axios search error:", err);
-      setSearchResults([]);
-      setSearchError("No users found");
-    }
+  
+  // console.log(user);
+  function handleSearchFriend() {
+    
   }
-
-  const handleSendFriendRequest = async (receiverId) => {
-    try {
-      const res = await axios.post(
-        `http://localhost:8000/api/friend/send/${receiverId}`,
-        {},
-        { withCredentials: true }
-      );
-      console.log("✅ Friend request sent:", res.data.message);
-    } catch (error) {
-      console.error(
-        "❌ Error sending friend request:",
-        error.response?.data || error.message
-      );
-    }
-  };
-
-  const handleAcceptRequest = async (requesterId) => {
-    try {
-      const res = await axios.post(
-        `http://localhost:8000/api/friend/accept/${requesterId}`,
-        {},
-        {
-          withCredentials: true,
-        }
-      );
-
-      console.log(res.data);
-    } catch (error) {
-      console.error(
-        "Error accepting friend request:",
-        error.response?.data || error.message
-      );
-    }
-  };
-
   return (
     <div
       className="fixed inset-0 bg-transparent bg-opacity-50 backdrop-blur-lg flex justify-center items-center"
@@ -188,8 +131,6 @@ const Profile = ({ onClose }) => {
                       <span className="text-gray-300 font-medium">
                         {friend.name}
                       </span>
-                      <span>{friend.roll_no}</span>
-                      <span>{friend.degree_name}</span>
                     </li>
                   ))
                 ) : (
@@ -279,7 +220,7 @@ const Profile = ({ onClose }) => {
                         </span>
                       </div>
                       <button
-                        onClick={() => handleAcceptRequest(f._id)}
+                        // onClick={() => handleAcceptRequest(f._id)}
                         className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-md text-sm"
                       >
                         Accept
@@ -297,48 +238,11 @@ const Profile = ({ onClose }) => {
               <input
                 type="text"
                 placeholder="Search by name"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
                 className="mt-2 p-2 w-full bg-gray-800 text-gray-300 rounded-md"
               />
-              <button
-                className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-sm mt-2"
-                onClick={handleSearchFriend}
-              >
+              <button className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-sm mt-2" onClick={handleSearchFriend}>
                 Search
               </button>
-
-              <div className="mt-4 space-y-3">
-                {searchError && <p className="text-red-500">{searchError}</p>}
-
-                {searchResults.length > 0 &&
-                  searchResults.map((user) => (
-                    <div
-                      key={user._id}
-                      className="flex items-center justify-between p-2 bg-gray-800 rounded-md"
-                    >
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={user.pfp || "/images/userpfp.png"}
-                          alt={user.name}
-                          className="w-10 h-10 rounded-full object-cover"
-                        />
-                        <div>
-                          <p className="text-white font-medium">{user.name}</p>
-                          <p className="text-gray-400 text-sm">
-                            @{user.username}
-                          </p>
-                        </div>
-                      </div>
-                      <button
-                        className="bg-green-600 hover:bg-green-700 text-white text-sm px-3 py-1 rounded-md"
-                        onClick={() => handleSendFriendRequest(user._id)}
-                      >
-                        Send Request
-                      </button>
-                    </div>
-                  ))}
-              </div>
             </div>
           )}
         </div>
