@@ -191,10 +191,7 @@ const unblockUser = async (req, res) => {
 const logout = (req, res) => {
   try {
     if (req.cookies.token) {
-      res.cookie("token", "", {
-        httpOnly: true,
-        expires: new Date(0),
-      });
+      res.clearCookie("token");
       console.log("🚪 Logged out successfully");
       return res.status(200).json({ message: "Logged out successfully" });
     } else {
