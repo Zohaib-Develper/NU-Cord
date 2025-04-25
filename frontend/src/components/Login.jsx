@@ -37,11 +37,7 @@ const Login = () => {
         { username, password },
         { withCredentials: true }
       );
-      // console.log("Login response:", response.data);
 
-      // localStorage.setItem("isAuthenticated", "true");
-      // localStorage.setItem("user", JSON.stringify(response.data.user));
-      // onLogin();
       navigate("/home");
     } catch (err) {
       setError(err.response?.data?.error || "An error occurred during login");

@@ -10,6 +10,9 @@ import SignUp from "./pages/SignUpPage";
 import Login from "./pages/LoginPage";
 import { AuthProvider } from "./utils/AuthContext";
 import PrivateRoute from "./utils/PrivateRoute";
+import ServersPage from "./pages/ServersPage";
+import DirectMessagesPage from "./pages/DirectMessagesPage";
+import GroupsPage from "./pages/GroupsPage";
 function App() {
   return (
     <AuthProvider>
@@ -25,6 +28,30 @@ function App() {
             element={
               <PrivateRoute>
                 <HomePage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/servers"
+            element={
+              <PrivateRoute>
+                <ServersPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/directmessages"
+            element={
+              <PrivateRoute>
+                <DirectMessagesPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/groups"
+            element={
+              <PrivateRoute>
+                <GroupsPage />
               </PrivateRoute>
             }
           />
