@@ -23,12 +23,12 @@ const DirectMessages = () => {
           key={index}
           className="p-2 rounded-lg hover:bg-gray-600 mb-3 cursor-pointer flex gap-3"
           onClick={() => {
-            setSelectedChannel(dm);
-            setSelectedType("dm");
+            // setSelectedChannel(dm);
+            // setSelectedType("dm");
           }}
         >
           <img
-            src={FriendsProfile}
+            // src={FriendsProfile}
             alt="User Profile"
             className="h-7 w-7 rounded-full"
           />{" "}

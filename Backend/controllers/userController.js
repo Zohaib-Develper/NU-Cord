@@ -227,6 +227,84 @@ const searchUserByName = async (req, res) => {
   }
 };
 
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find()
+    console.log(users);
+
+    if (!users) {
+      return res.status(404).json({ error: "No users found" });
+    }
+
+    res.status(200).json({
+      status: "success",
+      users
+    });
+
+  } catch (error) {
+    console.error("Error fetching all users:", error);
+    res.status(500).json({ error: "Failed to fetch users" });
+  }
+}
+
+const deleteUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findByIdAndDelete(userId);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.status(200).json({ message: "User deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    res.status(500).json({ error: "Failed to delete user" });
+  }
+};
+
+const suspendUser = async (req, res) => {
+  try {
+
+    const { userId } = req.params;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    user.isSuspended = true;
+    await user.save();
+
+    res.status(200).json({ message: "User suspended successfully" });
+
+  } catch (error) {
+    console.error("Error suspending user:", error);
+    res.status(500).json({ error: "Failed to suspend user" });
+
+  }
+}
+
+const unSuspendUser = async (req, res) => {
+  try {
+
+    const { userId } = req.params;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    user.isSuspended = false;
+    await user.save();
+
+    res.status(200).json({ message: "User unsuspended successfully" });
+
+  } catch (error) {
+    console.error("Error unsuspending user:", error);
+    res.status(500).json({ error: "Failed to unsuspend user" });
+
+  }
+}
+
 module.exports = {
   signup,
   signin,
@@ -235,4 +313,8 @@ module.exports = {
   blockUser,
   unblockUser,
   searchUserByName,
+  getAllUsers,
+  deleteUser,
+  suspendUser,
+  unSuspendUser
 };
