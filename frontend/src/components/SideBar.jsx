@@ -61,10 +61,12 @@ const Sidebar = ({ setSelectedCategory }) => {
           </div>
         </div>
       </div>
-      <FaSignOutAlt 
-        className="text-xl text-white hover:text-red-600 cursor-pointer" 
-        onClick={handleLogout}
-      />
+      <div className="w-full flex justify-center items-center bg-gray-800 p-3">
+        <FaSignOutAlt 
+          className="text-xl text-white hover:text-red-600 cursor-pointer" 
+          onClick={handleLogout}
+        />
+      </div>
       {isSettingsOpen && <Settings onClose={() => setIsSettingsOpen(false)} />}
     </div>
   );

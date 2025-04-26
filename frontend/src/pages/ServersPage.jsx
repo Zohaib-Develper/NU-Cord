@@ -24,20 +24,19 @@ const ServersPage = () => {
     fetchGroups();
   }, []);
   return (
-    <div className="flex h-screen w-full">
+    <div className="flex flex-col md:flex-row min-h-screen w-full">
       {/* Sidebar */}
-      <div>
+      <div className="w-full md:w-auto">
         <Sidebar />
       </div>
-      <div>
-        {" "}
+      <div className="w-full md:w-64 lg:w-80 border-r border-gray-700 bg-gray-900">
         <PageSpecificSidebar
           pageName="servers"
           data={serversData}
           setSelected={setSelectedChannel}
         />
       </div>
-      <div className="flex-1">
+      <div className="flex-1 bg-[#151e2c] p-4 overflow-auto">
         <ChannelPage selectedChannel={selectedChannel} />
       </div>
     </div>

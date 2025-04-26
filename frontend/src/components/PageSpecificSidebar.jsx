@@ -24,7 +24,7 @@ const PageSpecificSidebar = ({ pageName, data, setSelected }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const user = useContext(AuthContext).user;
   return (
-    <div className="flex flex-col w-80 h-screen bg-gray-800 text-white border-r-2 border-gray-600 p-4 overflow-y-auto">
+    <div className="flex flex-col w-80 min-h-screen bg-gray-800 text-white border-r-2 border-gray-600 p-4 overflow-y-auto">
       {/* Search Bar */}
       <input
         type="text"

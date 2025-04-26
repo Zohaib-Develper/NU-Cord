@@ -31,21 +31,20 @@ const GroupsPage = () => {
   }, []);
 
   return (
-    <div className="flex h-screen w-full">
+    <div className="flex flex-col md:flex-row min-h-screen w-full">
       {/* Sidebar */}
-      <div>
+      <div className="w-full md:w-auto">
         <Sidebar />
       </div>
-      <div>
-        {" "}
+      <div className="w-full md:w-64 lg:w-80 border-r border-gray-700 bg-gray-900">
         <PageSpecificSidebar
           pageName="groups"
           data={groupsData}
           setSelected={setSelectedGroup}
         />
       </div>
-      <div>
-        <ChannelPage />
+      <div className="flex-1 bg-[#151e2c] p-4 overflow-auto">
+        <ChannelPage selectedChannel={selectedGroup} />
       </div>
     </div>
   );

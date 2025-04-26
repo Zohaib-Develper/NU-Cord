@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FaComments, FaUserFriends, FaUser, FaCrown } from "react-icons/fa";
+import { FaComments, FaUserFriends, FaUser, FaCrown, FaSignOutAlt } from "react-icons/fa";
 
 const GroupsSideBar = ({ groups, setSelectedGroup }) => {
   const [expandedGroup, setExpandedGroup] = useState(null);
