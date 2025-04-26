@@ -58,7 +58,7 @@ const signin = async (req, res) => {
       .populate("requested_servers")
       .populate("groups");
 
-    res.redirect("http://localhost:5173/home");
+    res.status(200).json({ user, token });
   } catch (error) {
     console.error("❌ Error in sign in:", error);
     res

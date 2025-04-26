@@ -11,7 +11,7 @@ const {
 } = require("./../controllers/groupController");
 const router = Router();
 
-router.get("/", getGroups);
+router.get("/", Protect, getGroups);
 router.route("/").post(Protect, createGroup);
 router.delete("/:groupId", Protect, deleteGroup);
 router.get("/join/:inviteCode", Protect, joinGroup);

@@ -3,14 +3,21 @@ const Group = require("./../Models/group");
 
 const getGroups = async (req, res) => {
   try {
-    console.log("Hello from groups controller");
-    const groups = await user.findById(req.user._id).populate({
-      path: "groups",
-      populate: { path: "users", model: "User" },
-    }).groups;
-    res.status(200).json({ groups });
+    console.log("Hello from groups controller", req.user);
+    const userWithGroups = await user.findById(req.user._id)
+      .populate({
+        path: "groups",
+        populate: { path: "users", model: "User" }
+      });
+    
+    if (!userWithGroups) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.status(200).json({ groups: userWithGroups.groups || [] });
   } catch (err) {
     console.log("Error at backend: ", err);
+    res.status(500).json({ error: "Failed to fetch groups" });
   }
 };
 
