@@ -1,12 +1,28 @@
 import React, { useState } from "react";
 import Sidebar from "../components/Sidebar";
-import JoinedInfo from "../components/JoinedInfo";
 import ChannelPage from "../components/ChannelPage";
-import Landing from "../components/Home";
-import ServersSideBar from "../components/ServersSideBar";
 import PageSpecificSidebar from "../components/PageSpecificSidebar";
+import { useEffect } from "react";
+import axios from "axios";
 
 const GroupsPage = () => {
+  const [groupsData, setGroupsData] = useState([]);
+  const [selectedGroup, setSelectedGroup] = useState({});
+
+  useEffect(() => {
+    const fetchGroups = async () => {
+      try {
+        const response = await axios.get("http://localhost:8000/api/groups"); // adjust the URL based on your backend route
+        console.log("GROUPS: ", response.data);
+        setGroupsData(response.data.groups);
+      } catch (error) {
+        console.error("Error fetching groups:", error);
+      }
+    };
+
+    fetchGroups();
+  }, []);
+
   return (
     <div className="flex h-screen w-full">
       {/* Sidebar */}
@@ -15,7 +31,11 @@ const GroupsPage = () => {
       </div>
       <div>
         {" "}
-        <PageSpecificSidebar pageName="groups" />
+        <PageSpecificSidebar
+          pageName="groups"
+          data={groupsData}
+          onGroupSelect={setSelectedGroup}
+        />
       </div>
       <div>
         <ChannelPage />

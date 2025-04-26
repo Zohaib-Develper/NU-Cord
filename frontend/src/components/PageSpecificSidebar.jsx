@@ -17,36 +17,8 @@ import { AuthContext } from "../utils/AuthContext";
 import DirectMessages from "./DirectMessages";
 import ServersSideBar from "./ServersSideBar";
 import GroupsSideBar from "./GroupsSidebar";
-const dummyData = {
-  servers: [
-    {
-      name: "Batch 22",
-      textChannels: ["general", "resources", "announcements"],
-      voiceChannels: ["Study Room 1", "Study Room 2"],
-    },
-    {
-      name: "Gaming Hub",
-      textChannels: ["chat", "memes"],
-      voiceChannels: ["Game Night 1", "Game Night 2"],
-    },
-  ],
-  groups: [
-    {
-      name: "Project Team",
-      members: ["Alice", "Bob", "Charlie"],
-    },
-    {
-      name: "Study Buddies",
-      members: ["David", "Eve", "Frank"],
-    },
-  ],
-  dms: ["Abdul Rafay", "Zohaib Musharaf", "Chaand Ali"],
-};
 
-const PageSpecificSidebar = ({ pageName }) => {
-  const [selectedItem, setSelectedItem] = useState(null);
-  const [selectedGroup, setSelectedGroup] = useState(null);
-  const [selectedGroupSection, setSelectedGroupSection] = useState(null);
+const PageSpecificSidebar = ({ pageName, data, setSelected }) => {
   const [isMicMuted, setIsMicMuted] = useState(true);
   const [isVideoOff, setIsVideoOff] = useState(true);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -61,13 +33,19 @@ const PageSpecificSidebar = ({ pageName }) => {
       />
 
       {/* Server Section */}
-      {pageName === "servers" && <ServersSideBar />}
+      {pageName === "servers" && (
+        <ServersSideBar servers={data} setSelectedChannel={setSelected} />
+      )}
 
       {/* Group Section */}
-      {pageName === "groups" && <GroupsSideBar />}
+      {pageName === "groups" && (
+        <GroupsSideBar groups={data} setSelectedGroup={setSelected} />
+      )}
 
       {/* Direct Messages */}
-      {pageName === "directMessages" && <DirectMessages />}
+      {pageName === "directMessages" && (
+        <DirectMessages directMessages={data} setSelectedDM={setSelected} />
+      )}
 
       {/* Profile Section */}
       <div className="w-full bg-gray-900 text-white mt-auto flex items-center justify-between h-14 p-4">

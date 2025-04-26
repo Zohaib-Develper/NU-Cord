@@ -7,6 +7,7 @@ const serverSchema = new Schema(
     users: [{ type: Schema.Types.ObjectId, ref: "User" }],
     joining_requests: [{ type: Schema.Types.ObjectId, ref: "User" }],
     coverImageURL: { type: String, default: "/images/batchpfp.png" },
+    channels: [{ type: Schema.Types.ObjectId, ref: "Channel" }],
   },
   { timestamps: true }
 );
@@ -28,4 +29,5 @@ serverSchema.statics.getServerNames = async function (serverIds) {
   }
 };
 
-module.exports = mongoose.models.Server || mongoose.model("Server", serverSchema);
+module.exports =
+  mongoose.models.Server || mongoose.model("Server", serverSchema);

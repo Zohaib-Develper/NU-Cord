@@ -1,12 +1,22 @@
 import React, { useState } from "react";
 import Sidebar from "../components/Sidebar";
-import JoinedInfo from "../components/JoinedInfo";
 import ChannelPage from "../components/ChannelPage";
-import Landing from "../components/Home";
-import ServersSideBar from "../components/ServersSideBar";
 import PageSpecificSidebar from "../components/PageSpecificSidebar";
 
 const DirectMessagesPage = () => {
+  const [directMessagesData, setDirectMessagesData] = useState([]);
+  const [selectedDM, setSelectedDM] = useState({});
+  useEffect(() => {
+    axios
+      .get("http://localhost:8000/user/friends", { withCredentials: true })
+      .then((res) => {
+        console.log(res.data.friends);
+        setDirectMessagesData(res.data.friends);
+      })
+      .catch((err) => {
+        console.log("Error from backend: ", err);
+      });
+  }, []);
   return (
     <div className="flex h-screen w-full">
       {/* Sidebar */}
@@ -15,7 +25,11 @@ const DirectMessagesPage = () => {
       </div>
       <div>
         {" "}
-        <PageSpecificSidebar pageName="directmessages" />
+        <PageSpecificSidebar
+          pageName="directmessages"
+          data={directMessagesData}
+          setSelected={setSelectedDM}
+        />
       </div>
       <div>
         <ChannelPage />
