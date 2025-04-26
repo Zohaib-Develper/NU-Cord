@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faEye,
@@ -10,6 +10,7 @@ import loginPng from "../assets/signin.png";
 import Google from "../assets/google.svg";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../utils/AuthContext";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -19,6 +20,7 @@ const Login = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useContext(AuthContext);
 
   const handleGoogleLogin = () => {
     setLoading(true);
@@ -38,6 +40,7 @@ const Login = () => {
         { withCredentials: true }
       );
 
+      login(response.data.user);
       navigate("/home");
     } catch (err) {
       setError(err.response?.data?.error || "An error occurred during login");

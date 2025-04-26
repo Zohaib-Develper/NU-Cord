@@ -14,7 +14,7 @@ import {
   FaVolumeUp,
 } from "react-icons/fa";
 import { AuthContext } from "../utils/AuthContext";
-import DirectMessages from "./DirectMessages";
+import DirectMessagesSidebar from "./DirectMessagesSidebar";
 import ServersSideBar from "./ServersSideBar";
 import GroupsSideBar from "./GroupsSidebar";
 
@@ -44,7 +44,7 @@ const PageSpecificSidebar = ({ pageName, data, setSelected }) => {
 
       {/* Direct Messages */}
       {pageName === "directMessages" && (
-        <DirectMessages directMessages={data} setSelectedDM={setSelected} />
+        <DirectMessagesSidebar directMessages={data} setSelectedDM={setSelected} />
       )}
 
       {/* Profile Section */}

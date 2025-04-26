@@ -12,12 +12,12 @@ const ServersSideBar = ({ servers, setSelectedChannel }) => {
           <button
             className="w-full text-left p-2 rounded-lg hover:bg-gray-600"
             onClick={() =>
-              setSelectedItem(selectedItem.id === server.id ? null : server)
+              setSelectedItem(selectedItem?.id === server.id ? null : server)
             }
           >
             {server.name}
           </button>
-          {selectedItem.id === server.id && (
+          {selectedItem?.id === server.id && (
             <div className="ml-4 mt-2">
               {server.channels.map((channel, i) => (
                 <p

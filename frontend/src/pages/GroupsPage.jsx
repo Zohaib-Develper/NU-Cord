@@ -12,11 +12,18 @@ const GroupsPage = () => {
   useEffect(() => {
     const fetchGroups = async () => {
       try {
-        const response = await axios.get("http://localhost:8000/api/groups"); // adjust the URL based on your backend route
-        console.log("GROUPS: ", response.data);
-        setGroupsData(response.data.groups);
+        const response = await axios.get("http://localhost:8000/api/groups", {
+          withCredentials: true
+        });
+        console.log("GROUPS RESPONSE: ", response.data);
+        if (response.data && response.data.groups) {
+          setGroupsData(response.data.groups);
+        } else {
+          setGroupsData([]);
+        }
       } catch (error) {
         console.error("Error fetching groups:", error);
+        setGroupsData([]);
       }
     };
 
@@ -34,7 +41,7 @@ const GroupsPage = () => {
         <PageSpecificSidebar
           pageName="groups"
           data={groupsData}
-          onGroupSelect={setSelectedGroup}
+          setSelected={setSelectedGroup}
         />
       </div>
       <div>

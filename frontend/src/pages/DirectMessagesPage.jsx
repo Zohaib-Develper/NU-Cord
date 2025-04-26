@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import ChannelPage from "../components/ChannelPage";
 import PageSpecificSidebar from "../components/PageSpecificSidebar";
+import axios from "axios";
 
 const DirectMessagesPage = () => {
   const [directMessagesData, setDirectMessagesData] = useState([]);

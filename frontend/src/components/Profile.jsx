@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ProfileImage from "../assets/profile.jpeg";
 import { FaGithub, FaLinkedin, FaInstagram } from "react-icons/fa";
 import axios from "axios";
@@ -6,11 +6,74 @@ import DefaultProfile from "../assets/me.png";
 
 const Profile = ({ onClose }) => {
   const [activeTab, setActiveTab] = useState("info");
-  const user = JSON.parse(localStorage.getItem("user"));
+  const [user, setUser] = useState(JSON.parse(localStorage.getItem("user")));
+  const [groups, setGroups] = useState([]);
+  const [friends, setFriends] = useState([]);
+  const [friendRequests, setFriendRequests] = useState([]);
+  const [servers, setServers] = useState([]);
 
   const [query, setQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [searchError, setSearchError] = useState("");
+
+  useEffect(() => {
+    const fetchGroups = async () => {
+      try {
+        const response = await axios.get("http://localhost:8000/api/groups", {
+          withCredentials: true
+        });
+        if (response.data && response.data.groups) {
+          setGroups(response.data.groups);
+        }
+      } catch (error) {
+        console.error("Error fetching groups:", error);
+      }
+    };
+
+    const fetchFriends = async () => {
+      try {
+        const response = await axios.get("http://localhost:8000/api/friend", {
+          withCredentials: true
+        });
+        if (response.data && response.data.friends) {
+          setFriends(response.data.friends);
+        }
+      } catch (error) {
+        console.error("Error fetching friends:", error);
+      }
+    };
+
+    const fetchFriendRequests = async () => {
+      try {
+        const response = await axios.get("http://localhost:8000/api/friend/requests", {
+          withCredentials: true
+        });
+        if (response.data && response.data.requests) {
+          setFriendRequests(response.data.requests);
+        }
+      } catch (error) {
+        console.error("Error fetching friend requests:", error);
+      }
+    };
+
+    const fetchServers = async () => {
+      try {
+        const response = await axios.get("http://localhost:8000/api/servers", {
+          withCredentials: true
+        });
+        if (response.data && response.data.servers) {
+          setServers(response.data.servers);
+        }
+      } catch (error) {
+        console.error("Error fetching servers:", error);
+      }
+    };
+
+    fetchGroups();
+    fetchFriends();
+    fetchFriendRequests();
+    fetchServers();
+  }, []);
 
   async function handleSearchFriend() {
     if (!query.trim()) return;
@@ -51,20 +114,20 @@ const Profile = ({ onClose }) => {
 
   const handleAcceptRequest = async (requesterId) => {
     try {
-      const res = await axios.post(
+      await axios.post(
         `http://localhost:8000/api/friend/accept/${requesterId}`,
         {},
-        {
-          withCredentials: true,
-        }
+        { withCredentials: true }
       );
-
-      console.log(res.data);
+      // Refresh friend requests after accepting
+      const response = await axios.get("http://localhost:8000/api/friend/requests", {
+        withCredentials: true
+      });
+      if (response.data && response.data.requests) {
+        setFriendRequests(response.data.requests);
+      }
     } catch (error) {
-      console.error(
-        "Error accepting friend request:",
-        error.response?.data || error.message
-      );
+      console.error("Error accepting friend request:", error);
     }
   };
 
@@ -86,7 +149,7 @@ const Profile = ({ onClose }) => {
           />
           <div>
             <h2 className="text-2xl font-bold">{user?.name}</h2>
-            <p className="text-gray-400">{user.name}</p>
+            <p className="text-gray-400">{user?.username}</p>
           </div>
         </div>
 
@@ -102,9 +165,7 @@ const Profile = ({ onClose }) => {
           </button>
           <button
             className={`hover:text-white cursor-pointer ${
-              activeTab === "friends"
-                ? "border-b-2 border-white"
-                : "text-gray-400"
+              activeTab === "friends" ? "border-b-2 border-white" : "text-gray-400"
             }`}
             onClick={() => setActiveTab("friends")}
           >
@@ -112,19 +173,15 @@ const Profile = ({ onClose }) => {
           </button>
           <button
             className={`hover:text-white cursor-pointer ${
-              activeTab === "servers"
-                ? "border-b-2 border-white"
-                : "text-gray-400"
+              activeTab === "friendrequests" ? "border-b-2 border-white" : "text-gray-400"
             }`}
-            onClick={() => setActiveTab("servers")}
+            onClick={() => setActiveTab("friendrequests")}
           >
-            Servers
+            Friend Requests
           </button>
           <button
             className={`hover:text-white cursor-pointer ${
-              activeTab === "groups"
-                ? "border-b-2 border-white"
-                : "text-gray-400"
+              activeTab === "groups" ? "border-b-2 border-white" : "text-gray-400"
             }`}
             onClick={() => setActiveTab("groups")}
           >
@@ -132,23 +189,11 @@ const Profile = ({ onClose }) => {
           </button>
           <button
             className={`hover:text-white cursor-pointer ${
-              activeTab === "friendrequests"
-                ? "border-b-2 border-white"
-                : "text-gray-400"
+              activeTab === "servers" ? "border-b-2 border-white" : "text-gray-400"
             }`}
-            onClick={() => setActiveTab("friendrequests")}
+            onClick={() => setActiveTab("servers")}
           >
-            Friends Requests
-          </button>
-          <button
-            className={`hover:text-white cursor-pointer ${
-              activeTab === "searchfriend"
-                ? "border-b-2 border-white"
-                : "text-gray-400"
-            }`}
-            onClick={() => setActiveTab("searchfriend")}
-          >
-            Search Friend
+            Servers
           </button>
         </div>
 
@@ -173,84 +218,20 @@ const Profile = ({ onClose }) => {
           {activeTab === "friends" && (
             <div>
               <h3 className="text-lg font-semibold">Friends</h3>
-              <ul className="mt-2 space-y-3">
-                {user?.friends?.length > 0 ? (
-                  user.friends.map((friend) => (
+              <ul className="mt-2">
+                {friends.length > 0 ? (
+                  friends.map((friend) => (
                     <li
                       key={friend._id}
                       className="flex items-center gap-4 p-2 rounded-lg hover:bg-gray-800 transition"
                     >
-                      <img
-                        src={friend.pfp}
-                        alt={friend.name}
-                        className="w-10 h-10 rounded-full object-cover"
-                      />
                       <span className="text-gray-300 font-medium">
                         {friend.name}
                       </span>
-                      <span>{friend.roll_no}</span>
-                      <span>{friend.degree_name}</span>
                     </li>
                   ))
                 ) : (
                   <li className="text-gray-300">No friends added yet</li>
-                )}
-                {/* </ul> */}
-
-                {/* <li className="text-gray-300">John Doe</li>
-                <li className="text-gray-300">Jane Doe</li>
-                <li className="text-gray-300">Alice</li> */}
-              </ul>
-            </div>
-          )}
-
-          {activeTab === "servers" && (
-            <div>
-              <h3 className="text-lg font-semibold">Servers</h3>
-              <ul className="mt-2">
-                {user.servers.map((server) => {
-                  return (
-                    <li
-                      key={server._id}
-                      className="flex items-center gap-4 p-2 rounded-lg hover:bg-gray-800 transition"
-                    >
-                      {/* <img
-                          src={server.pfp}
-                          alt={server.name}
-                          className="w-10 h-10 rounded-full object-cover"
-                        /> */}
-                      <span className="text-gray-300 font-medium">
-                        {server.name}
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          )}
-
-          {activeTab === "groups" && (
-            <div>
-              <h3 className="text-lg font-semibold">Groups</h3>
-              <ul className="mt-2 space-y-3">
-                {user.groups.length === 0 ? (
-                  <li className="text-gray-300">No groups added yet</li>
-                ) : (
-                  user.groups.map((group) => (
-                    <li
-                      key={group._id}
-                      className="flex items-center gap-4 p-2 rounded-lg hover:bg-gray-800 transition"
-                    >
-                      {/* <img
-              src={group.pfp || "/images/default-group.png"}
-              alt={group.name}
-              className="w-10 h-10 rounded-full object-cover"
-            /> */}
-                      <span className="text-gray-300 font-medium">
-                        {group.name}
-                      </span>
-                    </li>
-                  ))
                 )}
               </ul>
             </div>
@@ -259,111 +240,85 @@ const Profile = ({ onClose }) => {
           {activeTab === "friendrequests" && (
             <div>
               <h3 className="text-lg font-semibold">Friend Requests</h3>
-              <ul className="mt-2 space-y-3">
-                {user.friendRequestsReceived.length === 0 ? (
-                  <li className="text-gray-300">No friend requests yet</li>
-                ) : (
-                  user.friendRequestsReceived.map((f) => (
+              <ul className="mt-2">
+                {friendRequests.length > 0 ? (
+                  friendRequests.map((request) => (
                     <li
-                      key={f._id}
+                      key={request._id}
                       className="flex items-center justify-between gap-4 p-2 rounded-lg hover:bg-gray-800 transition"
                     >
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={f.pfp || "/images/userpfp.png"}
-                          alt={f.name}
-                          className="w-10 h-10 rounded-full object-cover"
-                        />
-                        <span className="text-gray-300 font-medium">
-                          {f.name}
-                        </span>
-                      </div>
+                      <span className="text-gray-300 font-medium">
+                        {request.name}
+                      </span>
                       <button
-                        onClick={() => handleAcceptRequest(f._id)}
-                        className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-md text-sm"
+                        onClick={() => handleAcceptRequest(request._id)}
+                        className="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-sm"
                       >
                         Accept
                       </button>
                     </li>
                   ))
+                ) : (
+                  <li className="text-gray-300">No friend requests</li>
                 )}
               </ul>
             </div>
           )}
 
-          {activeTab === "searchfriend" && (
+          {activeTab === "groups" && (
             <div>
-              <h3 className="text-lg font-semibold">Search Friend</h3>
-              <input
-                type="text"
-                placeholder="Search by name"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                className="mt-2 p-2 w-full bg-gray-800 text-gray-300 rounded-md"
-              />
-              <button
-                className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-sm mt-2"
-                onClick={handleSearchFriend}
-              >
-                Search
-              </button>
-
-              <div className="mt-4 space-y-3">
-                {searchError && <p className="text-red-500">{searchError}</p>}
-
-                {searchResults.length > 0 &&
-                  searchResults.map((user) => (
-                    <div
-                      key={user._id}
-                      className="flex items-center justify-between p-2 bg-gray-800 rounded-md"
+              <h3 className="text-lg font-semibold">Groups</h3>
+              <ul className="mt-2">
+                {groups.length > 0 ? (
+                  groups.map((group) => (
+                    <li
+                      key={group._id}
+                      className="flex items-center gap-4 p-2 rounded-lg hover:bg-gray-800 transition"
                     >
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={user.pfp || "/images/userpfp.png"}
-                          alt={user.name}
-                          className="w-10 h-10 rounded-full object-cover"
-                        />
-                        <div>
-                          <p className="text-white font-medium">{user.name}</p>
-                          <p className="text-gray-400 text-sm">
-                            @{user.username}
-                          </p>
-                        </div>
-                      </div>
-                      <button
-                        className="bg-green-600 hover:bg-green-700 text-white text-sm px-3 py-1 rounded-md"
-                        onClick={() => handleSendFriendRequest(user._id)}
-                      >
-                        Send Request
-                      </button>
-                    </div>
-                  ))}
-              </div>
+                      <span className="text-gray-300 font-medium">
+                        {group.name}
+                      </span>
+                    </li>
+                  ))
+                ) : (
+                  <li className="text-gray-300">No groups joined yet</li>
+                )}
+              </ul>
+            </div>
+          )}
+
+          {activeTab === "servers" && (
+            <div>
+              <h3 className="text-lg font-semibold">Servers</h3>
+              <ul className="mt-2">
+                {servers.length > 0 ? (
+                  servers.map((server) => (
+                    <li
+                      key={server._id}
+                      className="flex items-center gap-4 p-2 rounded-lg hover:bg-gray-800 transition"
+                    >
+                      <span className="text-gray-300 font-medium">
+                        {server.name}
+                      </span>
+                    </li>
+                  ))
+                ) : (
+                  <li className="text-gray-300">No servers joined yet</li>
+                )}
+              </ul>
             </div>
           )}
         </div>
 
-        {/* if user wants to add social media icons to contact there they can choose and add accordingly */}
+        {/* Social Media Icons */}
         <div className="flex justify-center gap-6 border-t border-gray-700 pt-4 mt-auto">
-          <a
-            href="https://github.com"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <a href="https://github.com" target="_blank" rel="noopener noreferrer">
             <FaGithub className="text-gray-300 text-2xl hover:text-white" />
           </a>
-          <a
-            href="https://linkedin.com"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer">
             <FaLinkedin className="text-gray-300 text-2xl hover:text-white" />
           </a>
-          <a
-            href="https://instagram.com"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
             <FaInstagram className="text-gray-300 text-2xl hover:text-white" />
           </a>
         </div>
