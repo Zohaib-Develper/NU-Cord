@@ -3,6 +3,7 @@ const friendsRoutes = require("./friendsRoutes");
 const {
   googleAuth,
   googleAuthCallback,
+  Protect,
 } = require("../middleware/authMiddleware");
 const {
   signup,
@@ -12,12 +13,22 @@ const {
   blockUser,
   unblockUser,
   searchUserByName,
+  getAllUsers,
+  deleteUser,
+  suspendUser,
+  unSuspendUser,
+  getAllStats
 } = require("../controllers/userController");
 const { testGoogleAuth } = require("../test/googleAuth");
-const checkForAuthentication = require("../middleware/userMiddleware");
 console.log("Hello from userRoutes.js");
 
 const router = Router();
+
+router.get("/all", getAllUsers)
+router.delete('/:userId', deleteUser)
+router.post('/suspend/:userId', suspendUser)
+router.post('/unSuspend/:userId', unSuspendUser)
+router.get('/stats', getAllStats)
 
 //OAuth Routes
 router.get("/auth/google", googleAuth);
@@ -30,10 +41,11 @@ router.get("/logout", logout);
 router.get("/search", searchUserByName);
 
 //Protected Routes(Below are all the routes that would require user to be signed in before accesing)
-router.use(checkForAuthentication("token"));
+router.use(Protect);
 router.get("/profile", getUserProfile);
 router.use("/friends", friendsRoutes);
 router.post("/block/:userIdToBlock", blockUser);
 router.post("/unblock/:blockedUserId", unblockUser);
+
 
 module.exports = router;

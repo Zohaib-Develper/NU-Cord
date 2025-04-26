@@ -5,7 +5,7 @@ const Server = require("../models/server");
 const sendFriendRequest = async (req, res) => {
   try {
     console.log("Hello from sendFriendRequest controller!");
-    
+
     const { receiverId } = req.params;
     const senderId = req.user._id;
 
@@ -32,12 +32,10 @@ const sendFriendRequest = async (req, res) => {
       sender.friendRequestsSent.includes(receiverId) ||
       receiver.friendRequestsSent.includes(senderId)
     ) {
-      return res
-        .status(400)
-        .json({
-          error:
-            "A friend request already exists. Kindly only accept/reject the already present request.",
-        });
+      return res.status(400).json({
+        error:
+          "A friend request already exists. Kindly only accept/reject the already present request.",
+      });
     }
 
     sender.friendRequestsSent.push(receiverId);
@@ -197,10 +195,22 @@ const removeFriend = async (req, res) => {
   }
 };
 
+const getFriends = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).populate("friends");
+    console.log("FRIENDS");
+    res.status(200).json({ friends: user.friends });
+  } catch (error) {
+    console.log("Error: Getting friends: ", error);
+    res.status(500).json({ error: "Error in getting friends" });
+  }
+};
+
 module.exports = {
   sendFriendRequest,
   acceptFriendRequest,
   removeFriend,
   rejectFriendRequest,
   cancelFriendRequest,
+  getFriends,
 };
