@@ -35,7 +35,7 @@ app.use(
 app.use("/user", userRoutes);
 app.use("/api/groups", groupRoutes);
 app.use("/api/friend", friendRoutes);
-app.use("/api/servers", channelRoutes); // For handling channel routes e-g creating Channel 😁
+app.use("/api/servers", channelRoutes); 
 
 //Error Handling Middleware
 app.use((err, req, res, next) => {
