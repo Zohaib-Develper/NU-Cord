@@ -14,21 +14,32 @@ const registerUserToServer = async (userId) => {
         users: [userId],
       });
       await server.save();
-      const defaultChannels = [
-        { name: "💬 general chat" },
+
+      // Create default text channels
+      const defaultTextChannels = [
         { name: "📢 announcements" },
+        { name: "💬 general chat" },
+        { name: "🤓 for the nerds" },
         { name: "📚 resources" },
-        { name: "🔊 voice chat" },
       ];
 
-      for (const ch of defaultChannels) {
+      // Create default voice channels
+      const defaultVoiceChannels = [
+        { name: "🔊 general voice" },
+        { name: "📖 study room" },
+      ];
+
+      // Create all default channels
+      for (const ch of [...defaultTextChannels, ...defaultVoiceChannels]) {
         const channel = new Channel({
           name: ch.name,
           owner_server: server._id,
         });
         await channel.save();
+        server.channels.push(channel._id);
       }
 
+      await server.save();
       console.log(`✅ New server ${server.name} created & User added in it.`);
     } else {
       if (!server.users.includes(userId)) {

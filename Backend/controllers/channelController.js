@@ -1,5 +1,5 @@
 const Channel = require("../Models/channel");
-const Server = require("../models/server");
+const Server = require("../Models/server");
 
 const createChannel = async (req, res) => {
   try {
@@ -12,7 +12,6 @@ const createChannel = async (req, res) => {
     const channel = new Channel({
       owner_server: serverId,
       name: req.body.name,
-      coverImageURL: req.body?.coverImageURL || "/images/batchpfp.png",
     });
     await channel.save();
 
@@ -89,6 +88,7 @@ const getAllChannels = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
 module.exports = {
   createChannel,
   getAllChannels,

@@ -14,7 +14,6 @@ const ServersPage = () => {
         const response = await axios.get("http://localhost:8000/api/servers", {
           withCredentials: true,
         });
-        // console.log("GROUPS: ", response.data);
         setServersData(response.data.servers);
       } catch (error) {
         console.error("Error fetching servers:", error);
@@ -23,6 +22,7 @@ const ServersPage = () => {
 
     fetchGroups();
   }, []);
+
   return (
     <div className="flex flex-col md:flex-row min-h-screen w-full">
       {/* Sidebar */}
