@@ -16,7 +16,8 @@ const {
   getAllUsers,
   deleteUser,
   suspendUser,
-  unSuspendUser
+  unSuspendUser,
+  getAllStats
 } = require("../controllers/userController");
 const { testGoogleAuth } = require("../test/googleAuth");
 console.log("Hello from userRoutes.js");
@@ -27,6 +28,7 @@ router.get("/all", getAllUsers)
 router.delete('/:userId', deleteUser)
 router.post('/suspend/:userId', suspendUser)
 router.post('/unSuspend/:userId', unSuspendUser)
+router.get('/stats', getAllStats)
 
 //OAuth Routes
 router.get("/auth/google", googleAuth);

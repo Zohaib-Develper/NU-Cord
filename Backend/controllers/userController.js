@@ -1,5 +1,7 @@
 const User = require("../models/user");
 const Server = require("../models/server");
+const Group = require("../models/group");
+const Channel = require("../models/channel");
 const { signupService, signinService } = require("../services/userService");
 const { registerUserToServer } = require("../services/serverService");
 const { validateToken } = require("../utils/authentication/auth");
@@ -305,6 +307,35 @@ const unSuspendUser = async (req, res) => {
   }
 }
 
+const getAllStats = async (req, res) => {
+  try {
+    const totalUsers = await User.find();
+    const totalServers = await Server.countDocuments();
+    const totalGroups = await Group.countDocuments();
+    const totalChannels = await Channel.countDocuments();
+
+
+    const campuses = []
+    totalUsers.map((user) => {
+      if (!campuses.includes(user.campus)) {
+        campuses.push(user.campus)
+      }
+    })
+
+
+    res.status(200).json({
+      totalUsers: totalUsers.length,
+      totalServers: totalServers,
+      totalCampuses: campuses.length,
+      totalGroups: totalGroups,
+      totalChannels: totalChannels,
+    });
+  } catch (error) {
+    console.error("Error fetching stats:", error);
+    res.status(500).json({ error: "Failed to fetch stats" });
+  }
+};
+
 module.exports = {
   signup,
   signin,
@@ -316,5 +347,6 @@ module.exports = {
   getAllUsers,
   deleteUser,
   suspendUser,
-  unSuspendUser
+  unSuspendUser,
+  getAllStats
 };
