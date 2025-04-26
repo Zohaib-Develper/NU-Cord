@@ -64,6 +64,7 @@ const Protect = async (req, res, next) => {
     }
 
     if (!token) {
+      console.log("NOT ALLOWSED:");
       return res.status(401).json({
         error: "You are not logged in! Please log in to get access.",
       });
@@ -73,8 +74,6 @@ const Protect = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     console.log("Decoded token:", decoded);
     console.log("Proocess env JWT_SECRET:", process.env.JWT_SECRET);
-    
-    
 
     // 3. Check if user exists
     const currentUser = await User.findById(decoded._id);
