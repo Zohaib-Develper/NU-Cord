@@ -92,6 +92,7 @@ const getUserProfile = async (req, res) => {
         campus: user.campus,
         degree_name: user.degree_name,
         username: user.username,
+        email: user.email,
         servers,
         friends,
       },
