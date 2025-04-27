@@ -13,11 +13,22 @@ const {
   blockUser,
   unblockUser,
   searchUserByName,
+  getAllUsers,
+  deleteUser,
+  suspendUser,
+  unSuspendUser,
+  getAllStats
 } = require("../controllers/userController");
 const { testGoogleAuth } = require("../test/googleAuth");
 console.log("Hello from userRoutes.js");
 
 const router = Router();
+
+router.get("/all", getAllUsers)
+router.delete('/:userId', deleteUser)
+router.post('/suspend/:userId', suspendUser)
+router.post('/unSuspend/:userId', unSuspendUser)
+router.get('/stats', getAllStats)
 
 //OAuth Routes
 router.get("/auth/google", googleAuth);
@@ -35,5 +46,6 @@ router.get("/profile", getUserProfile);
 router.use("/friends", friendsRoutes);
 router.post("/block/:userIdToBlock", blockUser);
 router.post("/unblock/:blockedUserId", unblockUser);
+
 
 module.exports = router;

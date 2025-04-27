@@ -7,17 +7,26 @@ const {
   getChannelById,
   deleteChannel,
 } = require("./../controllers/channelController");
-const { getServers } = require("../controllers/serverController");
+const {
+  getAllServers,
+  getAllUsersInServer,
+  removeUserFromServer,
+  deleteServer,
+} = require("../controllers/serverController");
 
 // /api/server/
-router.get("/", Protect, getServers);
+router.route("/").get(getAllServers);
+router.route("/:serverId/users").get(getAllUsersInServer);
+router.delete("/:serverId/removeUser/:userId", removeUserFromServer);
+router.route("/:serverId").delete(deleteServer);
+
 router
-  .route("/:serverId/channel")
+  .route("/:serverId/channels")
   .post(Protect, RestrictTo(""), createChannel)
-  .get(Protect, getAllChannels);
+  .get(getAllChannels);
 router
   .route("/:serverId/channel/:channelId")
   .get(Protect, getChannelById)
-  .delete(Protect, deleteChannel);
+  .delete(/*Protect,*/ deleteChannel);
 
 module.exports = router;

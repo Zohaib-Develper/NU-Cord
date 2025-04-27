@@ -4,12 +4,11 @@ const Group = require("./../Models/group");
 const getGroups = async (req, res) => {
   try {
     console.log("Hello from groups controller", req.user);
-    const userWithGroups = await user.findById(req.user._id)
-      .populate({
-        path: "groups",
-        populate: { path: "users", model: "User" }
-      });
-    
+    const userWithGroups = await user.findById(req.user._id).populate({
+      path: "groups",
+      populate: { path: "users", model: "User" },
+    });
+
     if (!userWithGroups) {
       return res.status(404).json({ error: "User not found" });
     }
@@ -217,6 +216,26 @@ const deleteGroup = async (req, res) => {
       return res.status(404).json({ error: "Group not found" });
     }
 
+    if (
+      req.user.role !== "ADMIN" &&
+      group.admin.toString() !== req.user._id.toString()
+    ) {
+      return res.status(403).json({
+        error: "Access denied. Only the group admin can delete this group.",
+      });
+    }
+
+    // Delete group
+    await Group.findByIdAndDelete(groupId);
+
+    // Remove group reference from users if applicable
+    await User.updateMany({ groups: groupId }, { $pull: { groups: groupId } });
+
+    res.status(200).json({
+      status: "success",
+      message: "Group deleted successfully",
+    });
+
     if (group.admin.toString() !== req.user._id.toString()) {
       return res.status(403).json({
         error: "Access denied. Only the group admin can delete this group.",
@@ -239,6 +258,21 @@ const deleteGroup = async (req, res) => {
   }
 };
 
+const getAllGroups = async (req, res) => {
+  try {
+    const groups = await Group.find({})
+      .populate("admin", "name")
+      .populate("users", "name");
+    res.status(200).json({
+      status: "success",
+      groups,
+    });
+  } catch (error) {
+    console.error("Error fetching groups:", error);
+    res.status(500).json({ error: "Failed to fetch groups" });
+  }
+};
+
 module.exports = {
   createGroup,
   joinGroup,
@@ -246,5 +280,5 @@ module.exports = {
   rejectJoinRequest,
   leaveGroup,
   deleteGroup,
-  getGroups,
+  getAllGroups,
 };
