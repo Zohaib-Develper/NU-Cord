@@ -14,45 +14,18 @@ import {
   FaVolumeUp,
 } from "react-icons/fa";
 import { AuthContext } from "../utils/AuthContext";
-import DirectMessages from "./DirectMessages";
+import DirectMessagesSidebar from "./DirectMessagesSidebar";
 import ServersSideBar from "./ServersSideBar";
 import GroupsSideBar from "./GroupsSidebar";
-const dummyData = {
-  servers: [
-    {
-      name: "Batch 22",
-      textChannels: ["general", "resources", "announcements"],
-      voiceChannels: ["Study Room 1", "Study Room 2"],
-    },
-    {
-      name: "Gaming Hub",
-      textChannels: ["chat", "memes"],
-      voiceChannels: ["Game Night 1", "Game Night 2"],
-    },
-  ],
-  groups: [
-    {
-      name: "Project Team",
-      members: ["Alice", "Bob", "Charlie"],
-    },
-    {
-      name: "Study Buddies",
-      members: ["David", "Eve", "Frank"],
-    },
-  ],
-  dms: ["Abdul Rafay", "Zohaib Musharaf", "Chaand Ali"],
-};
 
-const PageSpecificSidebar = ({ pageName }) => {
-  const [selectedItem, setSelectedItem] = useState(null);
-  const [selectedGroup, setSelectedGroup] = useState(null);
-  const [selectedGroupSection, setSelectedGroupSection] = useState(null);
+const PageSpecificSidebar = ({ pageName, data, setSelected }) => {
   const [isMicMuted, setIsMicMuted] = useState(true);
   const [isVideoOff, setIsVideoOff] = useState(true);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const user = useContext(AuthContext).user;
+
   return (
-    <div className="flex flex-col w-80 h-screen bg-gray-800 text-white border-r-2 border-gray-600 p-4 overflow-y-auto">
+    <div className="flex flex-col  min-h-screen bg-gray-800 text-white border-r-2 border-gray-600 p-4 overflow-y-auto">
       {/* Search Bar */}
       <input
         type="text"
@@ -61,13 +34,22 @@ const PageSpecificSidebar = ({ pageName }) => {
       />
 
       {/* Server Section */}
-      {pageName === "servers" && <ServersSideBar />}
+      {pageName === "servers" && (
+        <ServersSideBar servers={data} setSelectedChannel={setSelected} />
+      )}
 
       {/* Group Section */}
-      {pageName === "groups" && <GroupsSideBar />}
+      {pageName === "groups" && (
+        <GroupsSideBar groups={data} setSelectedGroup={setSelected} />
+      )}
 
       {/* Direct Messages */}
-      {pageName === "directMessages" && <DirectMessages />}
+      {pageName === "directMessages" && (
+        <DirectMessagesSidebar
+          directMessages={data}
+          setSelectedDM={setSelected}
+        />
+      )}
 
       {/* Profile Section */}
       <div className="w-full bg-gray-900 text-white mt-auto flex items-center justify-between h-14 p-4">

@@ -1,80 +1,90 @@
 import React from "react";
 import { useState } from "react";
+import { FaChevronDown, FaChevronRight, FaHashtag, FaVolumeUp } from "react-icons/fa";
 
-const ServersSideBar = () => {
-  const dummyData = {
-    servers: [
-      {
-        name: "Batch 22",
-        textChannels: ["general", "resources", "announcements"],
-        voiceChannels: ["Study Room 1", "Study Room 2"],
-      },
-      {
-        name: "Gaming Hub",
-        textChannels: ["chat", "memes"],
-        voiceChannels: ["Game Night 1", "Game Night 2"],
-      },
-    ],
-    groups: [
-      {
-        name: "Project Team",
-        members: ["Alice", "Bob", "Charlie"],
-      },
-      {
-        name: "Study Buddies",
-        members: ["David", "Eve", "Frank"],
-      },
-    ],
-    dms: ["Abdul Rafay", "Zohaib Musharaf", "Chaand Ali"],
+const ServersSideBar = ({ servers, setSelectedChannel }) => {
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [expandedCategories, setExpandedCategories] = useState({});
+
+  const handleServerClick = (server) => {
+    setSelectedItem(selectedItem?._id === server._id ? null : server);
   };
 
-  const [selectedItem, setSelectedItem] = useState(null);
+  const handleChannelClick = (channel) => {
+    setSelectedChannel(channel);
+  };
+
+  const toggleCategory = (category) => {
+    setExpandedCategories(prev => ({
+      ...prev,
+      [category]: !prev[category]
+    }));
+  };
+
+  const renderChannelList = (channels, type) => {
+    return channels.map((channel, i) => (
+      <p
+        key={channel._id || i}
+        className="ml-2 text-gray-300 cursor-pointer hover:text-white flex items-center gap-2"
+        onClick={() => handleChannelClick(channel)}
+      >
+        {type === 'text' ? <FaHashtag className="text-xs" /> : <FaVolumeUp className="text-xs" />}
+        {channel.name}
+      </p>
+    ));
+  };
+
+  const renderCategory = (title, channels, type) => {
+    const isExpanded = expandedCategories[title];
+    return (
+      <div className="mb-2">
+        <div 
+          className="flex items-center gap-1 text-gray-400 cursor-pointer hover:text-gray-300"
+          onClick={() => toggleCategory(title)}
+        >
+          {isExpanded ? <FaChevronDown className="text-xs" /> : <FaChevronRight className="text-xs" />}
+          <span className="text-sm font-semibold">{title}</span>
+        </div>
+        {isExpanded && (
+          <div className="ml-4 mt-1">
+            {renderChannelList(channels, type)}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div>
       <h2 className="text-xl font-bold mb-3">Joined Servers</h2>
-      {dummyData.servers.map((server, index) => (
-        <div key={index} className="mb-3">
-          <button
-            className="w-full text-left p-2 rounded-lg hover:bg-gray-600"
-            onClick={() =>
-              setSelectedItem(selectedItem === server ? null : server)
-            }
-          >
-            {server.name}
-          </button>
-          {selectedItem === server && (
-            <div className="ml-4 mt-2">
-              <h3 className="font-semibold">Text Channels</h3>
-              {server.textChannels.map((channel, i) => (
-                <p
-                  key={i}
-                  className="ml-2 text-gray-300 cursor-pointer hover:text-white"
-                  onClick={() => {
-                    setSelectedChannel(channel);
-                    setSelectedType("text");
-                  }}
-                >
-                  # {channel}
-                </p>
-              ))}
-              <h3 className="font-semibold mt-2">Voice Channels</h3>
-              {server.voiceChannels.map((channel, i) => (
-                <p
-                  key={i}
-                  className="ml-2 text-gray-300 cursor-pointer hover:text-white flex gap-2"
-                  onClick={() => {
-                    setSelectedChannel(channel);
-                    setSelectedType("voice");
-                  }}
-                >
-                  <FaVolumeUp className="mt-1"></FaVolumeUp> {channel}
-                </p>
-              ))}
-            </div>
-          )}
-        </div>
-      ))}
+      {servers && servers.length > 0 ? (
+        servers.map((server, index) => (
+          <div key={server._id || index} className="mb-3">
+            <button
+              className="w-full text-left p-2 rounded-lg hover:bg-gray-600"
+              onClick={() => handleServerClick(server)}
+            >
+              {server.name}
+            </button>
+            {selectedItem?._id === server._id && server.channels && (
+              <div className="ml-4 mt-2">
+                {renderCategory(
+                  "Text Channels",
+                  server.channels.filter(channel => !channel.name.toLowerCase().includes('voice') && !channel.name.toLowerCase().includes('study')),
+                  'text'
+                )}
+                {renderCategory(
+                  "Voice Channels",
+                  server.channels.filter(channel => channel.name.toLowerCase().includes('voice') || channel.name.toLowerCase().includes('study')),
+                  'voice'
+                )}
+              </div>
+            )}
+          </div>
+        ))
+      ) : (
+        <p className="text-gray-400">No servers joined yet.</p>
+      )}
     </div>
   );
 };
