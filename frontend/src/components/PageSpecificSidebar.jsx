@@ -25,7 +25,7 @@ const PageSpecificSidebar = ({ pageName, data, setSelected }) => {
   const user = useContext(AuthContext).user;
 
   return (
-    <div className="flex flex-col w-80 min-h-screen bg-gray-800 text-white border-r-2 border-gray-600 p-4 overflow-y-auto">
+    <div className="flex flex-col  min-h-screen bg-gray-800 text-white border-r-2 border-gray-600 p-4 overflow-y-auto">
       {/* Search Bar */}
       <input
         type="text"
@@ -45,7 +45,10 @@ const PageSpecificSidebar = ({ pageName, data, setSelected }) => {
 
       {/* Direct Messages */}
       {pageName === "directMessages" && (
-        <DirectMessagesSidebar directMessages={data} setSelectedDM={setSelected} />
+        <DirectMessagesSidebar
+          directMessages={data}
+          setSelectedDM={setSelected}
+        />
       )}
 
       {/* Profile Section */}

@@ -13,7 +13,7 @@ const GroupsPage = () => {
     const fetchGroups = async () => {
       try {
         const response = await axios.get("http://localhost:8000/api/groups", {
-          withCredentials: true
+          withCredentials: true,
         });
         console.log("GROUPS RESPONSE: ", response.data);
         if (response.data && response.data.groups) {
@@ -36,7 +36,7 @@ const GroupsPage = () => {
       <div className="w-full md:w-auto">
         <Sidebar />
       </div>
-      <div className="w-full md:w-64 lg:w-80 border-r border-gray-700 bg-gray-900">
+      <div className="w-full md:max-w-64 lg:max-w-80 border-r border-gray-700 bg-gray-900">
         <PageSpecificSidebar
           pageName="groups"
           data={groupsData}

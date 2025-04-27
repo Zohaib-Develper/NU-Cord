@@ -12,7 +12,7 @@ import FriendsImage from "../assets/friends.png";
 
 const ChannelPage = ({ selectedChannel }) => {
   return (
-    <div className="w-280 bg-gray-900 text-white h-screen flex flex-col">
+    <div className="max-w-280 bg-gray-900 text-white max-h-screen flex flex-col">
       {/* Header */}
       <div className="p-4 bg-gray-800 flex justify-between items-center border-b border-gray-700">
         <h2 className="text-2xl font-bold">
