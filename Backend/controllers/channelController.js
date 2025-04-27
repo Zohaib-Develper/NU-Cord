@@ -1,5 +1,5 @@
-const Channel = require("../Models/channel");
-const Server = require("../Models/server");
+const Channel = require("../models/channel");
+const Server = require("../models/server");
 
 const createChannel = async (req, res) => {
   try {

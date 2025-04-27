@@ -1,6 +1,6 @@
-const Server = require("./../Models/server");
+const Server = require("../models/server");
 const User = require("../models/user");
-const Channel = require("../Models/channel");
+const Channel = require("../models/channel");
 const { registerUserToServer } = require("../services/serverService");
 
 const registerUserToServerController = async (req, res) => {

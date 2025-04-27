@@ -1,6 +1,6 @@
 const Server = require("../models/server");
 const User = require("../models/user");
-const Channel = require('../Models/channel')
+const Channel = require("../models/channel");
 
 const registerUserToServer = async (userId) => {
   try {
@@ -45,7 +45,9 @@ const registerUserToServer = async (userId) => {
       if (!server.users.includes(userId)) {
         server.users.push(userId);
         await server.save();
-        console.log(`✅ User ${user.username} added to the existing server: ${server.name}`);
+        console.log(
+          `✅ User ${user.username} added to the existing server: ${server.name}`
+        );
       } else {
         console.log(`ℹ️ User already in server: ${server.name}`);
       }

@@ -1,5 +1,5 @@
 const User = require("../models/user");
-const Server = require("../models/server");
+const Server = require("../models/se");
 const Group = require("../models/group");
 const Channel = require("../models/channel");
 const { signupService, signinService } = require("../services/userService");
@@ -232,7 +232,7 @@ const searchUserByName = async (req, res) => {
 
 const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find()
+    const users = await User.find();
     console.log(users);
 
     if (!users) {
@@ -241,14 +241,13 @@ const getAllUsers = async (req, res) => {
 
     res.status(200).json({
       status: "success",
-      users
+      users,
     });
-
   } catch (error) {
     console.error("Error fetching all users:", error);
     res.status(500).json({ error: "Failed to fetch users" });
   }
-}
+};
 
 const deleteUser = async (req, res) => {
   try {
@@ -268,7 +267,6 @@ const deleteUser = async (req, res) => {
 
 const suspendUser = async (req, res) => {
   try {
-
     const { userId } = req.params;
     const user = await User.findById(userId);
     if (!user) {
@@ -279,17 +277,14 @@ const suspendUser = async (req, res) => {
     await user.save();
 
     res.status(200).json({ message: "User suspended successfully" });
-
   } catch (error) {
     console.error("Error suspending user:", error);
     res.status(500).json({ error: "Failed to suspend user" });
-
   }
-}
+};
 
 const unSuspendUser = async (req, res) => {
   try {
-
     const { userId } = req.params;
     const user = await User.findById(userId);
     if (!user) {
@@ -300,13 +295,11 @@ const unSuspendUser = async (req, res) => {
     await user.save();
 
     res.status(200).json({ message: "User unsuspended successfully" });
-
   } catch (error) {
     console.error("Error unsuspending user:", error);
     res.status(500).json({ error: "Failed to unsuspend user" });
-
   }
-}
+};
 
 const getAllStats = async (req, res) => {
   try {
@@ -315,14 +308,12 @@ const getAllStats = async (req, res) => {
     const totalGroups = await Group.countDocuments();
     const totalChannels = await Channel.countDocuments();
 
-
-    const campuses = []
+    const campuses = [];
     totalUsers.map((user) => {
       if (!campuses.includes(user.campus)) {
-        campuses.push(user.campus)
+        campuses.push(user.campus);
       }
-    })
-
+    });
 
     res.status(200).json({
       totalUsers: totalUsers.length,
@@ -349,5 +340,5 @@ module.exports = {
   deleteUser,
   suspendUser,
   unSuspendUser,
-  getAllStats
+  getAllStats,
 };

@@ -1,5 +1,5 @@
 const user = require("../models/user");
-const Group = require("./../Models/group");
+const Group = require("../models/group");
 
 const getGroups = async (req, res) => {
   try {
