@@ -1,16 +1,12 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import {
   FaThumbtack,
   FaQuestionCircle,
-  FaPhone,
-  FaVideo,
   FaPaperclip,
   FaSmile,
   FaMicrophone,
 } from "react-icons/fa";
-import FriendsImage from "../assets/friends.png";
 import { AuthContext } from "../utils/AuthContext";
-
 import { io } from "socket.io-client";
 import axios from "axios";
 
@@ -19,9 +15,7 @@ const socket = io("http://localhost:8000");
 const Chat = ({ selectedChannel }) => {
   const [inputValue, setInputValue] = useState("");
   const [messages, setMessages] = useState([]);
-
   const { user } = useContext(AuthContext);
-  // Fetch messages when the component mounts
   useEffect(() => {
     const fetchMessages = async () => {
       const response = await axios.get(
@@ -50,20 +44,8 @@ const Chat = ({ selectedChannel }) => {
       senderId: user._id,
     });
 
-    // // Optionally save the message to the database via REST API
-    // fetch("http://localhost:8000/api/chat/send", {
-    //   method: "POST",
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //   },
-    //   body: JSON.stringify({
-    //     sender: user.name,
-    //     text: inputValue,
-    //     channelId: selectedChannel.id,
-    //   }),
-    // });
-
-    setInputValue(""); // Clear the input field
+    setMessages((prev) => [...prev, { sender: user._id, text: inputValue }]);
+    setInputValue("");
   };
 
   const handleKeyDown = (e) => {
@@ -71,7 +53,7 @@ const Chat = ({ selectedChannel }) => {
   };
 
   return (
-    <div className="h-screen max-w-280 bg-gray-900 text-white flex flex-col">
+    <div className="h-full max-w-280 bg-gray-900 text-white flex flex-col">
       {/* Header */}
       <div className="p-4 bg-gray-800 flex justify-between items-center border-b border-gray-700">
         <h2 className="text-2xl font-bold">
@@ -95,12 +77,12 @@ const Chat = ({ selectedChannel }) => {
             <div
               key={index}
               className={`flex flex-col ${
-                msg.sender === "me" ? "items-end" : "items-start"
+                msg.sender === user._id ? "items-end" : "items-start"
               }`}
             >
               {/* Sender name */}
               <span className="text-sm text-gray-400 mb-1">
-                {msg.sender === "me" ? "You" : "John Doe"}
+                {msg.sender === user._id ? "You" : selectedChannel.name}
               </span>
 
               {/* Message bubble */}

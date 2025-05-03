@@ -19,7 +19,7 @@ const DirectMessagesPage = () => {
       });
   }, []);
   return (
-    <div className="flex flex-col md:flex-row min-h-screen w-full">
+    <div className="flex flex-col md:flex-row max-h-screen w-full">
       {/* Sidebar */}
       <div className="w-full md:w-auto">
         <Sidebar />

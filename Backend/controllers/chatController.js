@@ -36,13 +36,13 @@ exports.getDirectMessages = async (req, res) => {
   const { receiverId } = req.params;
 
   try {
+    console.log("Fetchicing records with: ", req.user._id, receiverId);
     const messages = await Chat.find({
-      $or: [{ receiver: receiverId }, { sender: req.user._id }],
-    })
-      .sort({
-        createdAt: 1,
-      })
-      .populate("receiver");
+      $or: [
+        { sender: req.user._id, receiver: receiverId },
+        { sender: receiverId, receiver: req.user._id },
+      ],
+    }).sort({ createdAt: 1 });
 
     res.status(200).json(messages);
   } catch (error) {
