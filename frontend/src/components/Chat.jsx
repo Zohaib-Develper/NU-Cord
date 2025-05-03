@@ -10,6 +10,7 @@ import {
 import { AuthContext } from "../utils/AuthContext";
 import { io } from "socket.io-client";
 import axios from "axios";
+import EmojiPicker from "emoji-picker-react";
 
 const socket = io("http://localhost:8000");
 
@@ -18,9 +19,11 @@ const Chat = ({ selectedChannel }) => {
   const [messages, setMessages] = useState([]);
   const [showDeleteMenu, setShowDeleteMenu] = useState(null);
   const [fetched, setFetched] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const { user } = useContext(AuthContext);
   const menuRef = useRef(null);
   const messagesEndRef = useRef(null);
+  const emojiPickerRef = useRef(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -130,6 +133,23 @@ const Chat = ({ selectedChannel }) => {
     }
   };
 
+  const handleEmojiClick = (emojiObject) => {
+    setInputValue(prev => prev + emojiObject.emoji);
+    setShowEmojiPicker(false);
+  };
+
+  // Close emoji picker when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target)) {
+        setShowEmojiPicker(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
     <div className="h-full max-w-280 bg-gray-900 text-white flex flex-col">
       <div className="p-4 bg-gray-800 flex justify-between items-center border-b border-gray-700">
@@ -225,7 +245,22 @@ const Chat = ({ selectedChannel }) => {
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}
             />
-            <FaSmile className="text-xl cursor-pointer hover:text-gray-400" />
+            <div className="relative" ref={emojiPickerRef}>
+              <FaSmile 
+                className="text-xl cursor-pointer hover:text-gray-400" 
+                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+              />
+              {showEmojiPicker && (
+                <div className="absolute bottom-10 right-0 z-50">
+                  <EmojiPicker
+                    onEmojiClick={handleEmojiClick}
+                    width={300}
+                    height={400}
+                    theme="dark"
+                  />
+                </div>
+              )}
+            </div>
             <FaMicrophone className="text-xl cursor-pointer hover:text-gray-400" />
           </div>
         </div>
