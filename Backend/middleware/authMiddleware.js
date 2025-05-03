@@ -46,8 +46,6 @@ const googleAuthCallback = async (req, res, next) => {
 };
 
 const Protect = async (req, res, next) => {
-  console.log("Hello from Protect middleware!");
-
   try {
     let token;
 
@@ -57,10 +55,8 @@ const Protect = async (req, res, next) => {
       req.headers.authorization.startsWith("Bearer")
     ) {
       token = req.headers.authorization.split(" ")[1];
-      console.log("Token found in header:", token);
     } else if (req.cookies && req.cookies.token) {
       token = req.cookies.token;
-      console.log("Token found in cookie:", token);
     }
 
     if (!token) {
@@ -72,13 +68,10 @@ const Protect = async (req, res, next) => {
 
     // 2. Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log("Decoded token:", decoded);
-    console.log("Proocess env JWT_SECRET:", process.env.JWT_SECRET);
 
     // 3. Check if user exists
 
     const currentUser = await User.findById(decoded._id);
-    console.log("ID: ", currentUser);
     if (!currentUser) {
       return res.status(401).json({
         error: "The user belonging to this token no longer exists.",

@@ -34,7 +34,6 @@ const getServers = async (req, res) => {
 const getAllServers = async (req, res) => {
   try {
     const servers = await Server.find({}).populate("channels");
-    console.log("Servers Rafay check:", servers);
     res.status(200).json({ servers });
   } catch (error) {
     console.error("Error fetching servers:", error);

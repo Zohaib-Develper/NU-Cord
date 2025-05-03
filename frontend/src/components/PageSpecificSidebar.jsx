@@ -1,5 +1,5 @@
 import React, { useContext, useState } from "react";
-import ChannelPage from "../components/ChannelPage";
+import Chat from "./Chat";
 import ProfileImage from "../assets/profile.jpeg";
 import Profile from "../components/Profile";
 import FriendsProfile from "../assets/profile2.jpeg";

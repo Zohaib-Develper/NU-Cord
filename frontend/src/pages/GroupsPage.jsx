@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Sidebar from "../components/Sidebar";
-import ChannelPage from "../components/ChannelPage";
+import Chat from "../components/Chat";
 import PageSpecificSidebar from "../components/PageSpecificSidebar";
 import { useEffect } from "react";
 import axios from "axios";
@@ -44,7 +44,7 @@ const GroupsPage = () => {
         />
       </div>
       <div className="flex-1 bg-[#151e2c] p-4 overflow-auto">
-        <ChannelPage selectedChannel={selectedGroup} />
+        <Chat selectedChannel={selectedGroup} />
       </div>
     </div>
   );

@@ -4,8 +4,6 @@ const Server = require("../models/server");
 // Sending Friend Requests to Users
 const sendFriendRequest = async (req, res) => {
   try {
-    console.log("Hello from sendFriendRequest controller!");
-
     const { receiverId } = req.params;
     const senderId = req.user._id;
 
@@ -198,7 +196,6 @@ const removeFriend = async (req, res) => {
 const getFriends = async (req, res) => {
   try {
     const user = await User.findById(req.user._id).populate("friends");
-    console.log("FRIENDS");
     res.status(200).json({ friends: user.friends });
   } catch (error) {
     console.log("Error: Getting friends: ", error);
