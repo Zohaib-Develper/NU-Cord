@@ -9,9 +9,22 @@ import {
 } from "react-icons/fa";
 import Logo from "../assets/logo.png";
 import Settings from "./Settings";
+import axios from "axios";
 
 const Sidebar = ({ setSelectedCategory }) => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await axios.get("http://localhost:8000/user/logout", { withCredentials: true });
+      localStorage.clear();
+      navigate("/", { replace: true });
+      window.location.reload();
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
 
   return (
     <div className="w-24 bg-gray-800 text-white h-screen flex flex-col items-center p-4 justify-between border-r-2 border-gray-700">
@@ -48,7 +61,12 @@ const Sidebar = ({ setSelectedCategory }) => {
           </div>
         </div>
       </div>
-      <FaSignOutAlt className="text-xl text-white hover:text-red-600 cursor-pointer" />
+      <div className="w-full flex justify-center items-center bg-gray-800 p-3">
+        <FaSignOutAlt 
+          className="text-xl text-white hover:text-red-600 cursor-pointer" 
+          onClick={handleLogout}
+        />
+      </div>
       {isSettingsOpen && <Settings onClose={() => setIsSettingsOpen(false)} />}
     </div>
   );

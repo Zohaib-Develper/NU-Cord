@@ -1,5 +1,7 @@
 const User = require("../models/user");
 const Server = require("../models/server");
+const Group = require("../models/group");
+const Channel = require("../models/channel");
 const { signupService, signinService } = require("../services/userService");
 const { registerUserToServer } = require("../services/serverService");
 const { validateToken } = require("../utils/authentication/auth");
@@ -58,7 +60,7 @@ const signin = async (req, res) => {
       .populate("requested_servers")
       .populate("groups");
 
-    res.redirect("http://localhost:5173/home");
+    res.status(200).json({ user, token });
   } catch (error) {
     console.error("❌ Error in sign in:", error);
     res
@@ -92,6 +94,7 @@ const getUserProfile = async (req, res) => {
         campus: user.campus,
         degree_name: user.degree_name,
         username: user.username,
+        email: user.email,
         servers,
         friends,
       },
@@ -227,6 +230,104 @@ const searchUserByName = async (req, res) => {
   }
 };
 
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find();
+    console.log(users);
+
+    if (!users) {
+      return res.status(404).json({ error: "No users found" });
+    }
+
+    res.status(200).json({
+      status: "success",
+      users,
+    });
+  } catch (error) {
+    console.error("Error fetching all users:", error);
+    res.status(500).json({ error: "Failed to fetch users" });
+  }
+};
+
+const deleteUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findByIdAndDelete(userId);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.status(200).json({ message: "User deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    res.status(500).json({ error: "Failed to delete user" });
+  }
+};
+
+const suspendUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    user.isSuspended = true;
+    await user.save();
+
+    res.status(200).json({ message: "User suspended successfully" });
+  } catch (error) {
+    console.error("Error suspending user:", error);
+    res.status(500).json({ error: "Failed to suspend user" });
+  }
+};
+
+const unSuspendUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    user.isSuspended = false;
+    await user.save();
+
+    res.status(200).json({ message: "User unsuspended successfully" });
+  } catch (error) {
+    console.error("Error unsuspending user:", error);
+    res.status(500).json({ error: "Failed to unsuspend user" });
+  }
+};
+
+const getAllStats = async (req, res) => {
+  try {
+    const totalUsers = await User.find();
+    const totalServers = await Server.countDocuments();
+    const totalGroups = await Group.countDocuments();
+    const totalChannels = await Channel.countDocuments();
+
+    const campuses = [];
+    totalUsers.map((user) => {
+      if (!campuses.includes(user.campus)) {
+        campuses.push(user.campus);
+      }
+    });
+
+    res.status(200).json({
+      totalUsers: totalUsers.length,
+      totalServers: totalServers,
+      totalCampuses: campuses.length,
+      totalGroups: totalGroups,
+      totalChannels: totalChannels,
+    });
+  } catch (error) {
+    console.error("Error fetching stats:", error);
+    res.status(500).json({ error: "Failed to fetch stats" });
+  }
+};
+
 module.exports = {
   signup,
   signin,
@@ -235,4 +336,9 @@ module.exports = {
   blockUser,
   unblockUser,
   searchUserByName,
+  getAllUsers,
+  deleteUser,
+  suspendUser,
+  unSuspendUser,
+  getAllStats,
 };

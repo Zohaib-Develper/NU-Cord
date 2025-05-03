@@ -56,6 +56,10 @@ const userSchema = new Schema(
     servers: [{ type: Schema.Types.ObjectId, ref: "Server" }],
     requested_servers: [{ type: Schema.Types.ObjectId, ref: "Group" }],
     groups: [{ type: Schema.Types.ObjectId, ref: "Group" }],
+    isSuspended: {
+      type: Boolean,
+      default: false
+    },
   },
   { timestamps: true }
 );

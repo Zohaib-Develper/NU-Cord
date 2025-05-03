@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FaComments, FaUserFriends, FaUser } from "react-icons/fa";
+import { FaComments, FaUserFriends, FaUser, FaCrown, FaSignOutAlt } from "react-icons/fa";
 
 const GroupsSideBar = ({ groups, setSelectedGroup }) => {
   const [expandedGroup, setExpandedGroup] = useState(null);
@@ -60,10 +60,24 @@ const GroupsSideBar = ({ groups, setSelectedGroup }) => {
                 {showMembers && (
                   <div className="ml-4 mt-2">
                     <h3 className="font-semibold">Members</h3>
-                    {group.members.map((member, i) => (
-                      <p key={i} className="ml-2 mt-2 text-gray-300 flex gap-3">
+                    {group.users && [...group.users].sort((a, b) => {
+                      const adminId = group.admin;
+                      // If a is admin, it comes first
+                      if (a._id === adminId || a.id === adminId) return -1;
+                      // If b is admin, it comes first
+                      if (b._id === adminId || b.id === adminId) return 1;
+                      // Otherwise, keep original order
+                      return 0;
+                    }).map((user, i) => (
+                      <p key={i} className="ml-2 mt-2 text-gray-300 flex gap-3 items-center">
                         <FaUser className="text-sm mt-1" />
-                        {member}
+                        {user.name}
+                        {(group.admin === user._id || group.admin === user.id) && (
+                          <span className="flex items-center gap-1 text-yellow-400 ml-2">
+                            <FaCrown className="text-xs" />
+                            Admin
+                          </span>
+                        )}
                       </p>
                     ))}
                   </div>

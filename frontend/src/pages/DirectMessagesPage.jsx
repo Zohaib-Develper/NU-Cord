@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import ChannelPage from "../components/ChannelPage";
 import PageSpecificSidebar from "../components/PageSpecificSidebar";
+import axios from "axios";
 
 const DirectMessagesPage = () => {
   const [directMessagesData, setDirectMessagesData] = useState([]);
@@ -18,21 +19,20 @@ const DirectMessagesPage = () => {
       });
   }, []);
   return (
-    <div className="flex h-screen w-full">
+    <div className="flex flex-col md:flex-row min-h-screen w-full">
       {/* Sidebar */}
-      <div>
+      <div className="w-full md:w-auto">
         <Sidebar />
       </div>
-      <div>
-        {" "}
+      <div className="w-full md:w-64 lg:w-80 border-r border-gray-700 bg-gray-900">
         <PageSpecificSidebar
-          pageName="directmessages"
+          pageName="directMessages"
           data={directMessagesData}
           setSelected={setSelectedDM}
         />
       </div>
-      <div>
-        <ChannelPage />
+      <div className="flex-1 bg-[#151e2c] p-4 overflow-auto">
+        <ChannelPage selectedChannel={selectedDM} />
       </div>
     </div>
   );

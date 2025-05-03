@@ -14,7 +14,7 @@ import {
   FaVolumeUp,
 } from "react-icons/fa";
 import { AuthContext } from "../utils/AuthContext";
-import DirectMessages from "./DirectMessages";
+import DirectMessagesSidebar from "./DirectMessagesSidebar";
 import ServersSideBar from "./ServersSideBar";
 import GroupsSideBar from "./GroupsSidebar";
 
@@ -23,8 +23,9 @@ const PageSpecificSidebar = ({ pageName, data, setSelected }) => {
   const [isVideoOff, setIsVideoOff] = useState(true);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const user = useContext(AuthContext).user;
+
   return (
-    <div className="flex flex-col w-80 h-screen bg-gray-800 text-white border-r-2 border-gray-600 p-4 overflow-y-auto">
+    <div className="flex flex-col  min-h-screen bg-gray-800 text-white border-r-2 border-gray-600 p-4 overflow-y-auto">
       {/* Search Bar */}
       <input
         type="text"
@@ -44,7 +45,10 @@ const PageSpecificSidebar = ({ pageName, data, setSelected }) => {
 
       {/* Direct Messages */}
       {pageName === "directMessages" && (
-        <DirectMessages directMessages={data} setSelectedDM={setSelected} />
+        <DirectMessagesSidebar
+          directMessages={data}
+          setSelectedDM={setSelected}
+        />
       )}
 
       {/* Profile Section */}

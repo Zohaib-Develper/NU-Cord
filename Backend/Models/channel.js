@@ -5,9 +5,8 @@ const channelSchema = new Schema(
   {
     owner_server: [{ type: Schema.Types.ObjectId, ref: "Server" }],
     name: { type: String, required: true },
-    coverImageURL: { type: String, default: "/images/batchpfp.png" },
   },
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Channel", channelSchema);
+module.exports = mongoose.models.Channel || mongoose.model("Channel", channelSchema);

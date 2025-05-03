@@ -8,7 +8,7 @@ const DirectMessagesSidebar = ({ directMessages, setSelectedDM }) => {
       {directMessages.map((dm, index) => (
         <p
           key={index}
-          className="p-2 rounded-lg hover:bg-gray-600 mb-3 cursor-pointer flex gap-3"
+          className="p-2 rounded-lg hover:bg-gray-600 mb-3 cursor-pointer flex gap-3 items-center"
           onClick={() => {
             setSelectedDM(dm);
           }}
@@ -17,8 +17,9 @@ const DirectMessagesSidebar = ({ directMessages, setSelectedDM }) => {
             src={dm.pfp}
             alt="User Profile"
             className="h-7 w-7 rounded-full"
-          />{" "}
-          {dm}
+          />
+          <span className="font-semibold">{dm.name}</span>
+          <span className="text-xs text-gray-400">@{dm.username}</span>
         </p>
       ))}
     </div>
