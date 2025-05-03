@@ -86,7 +86,8 @@ const LandingPage = () => {
         <div className="flex justify-center gap-4">
           <button
             onClick={() => navigate("/signup")}
-            className="bg-[#5e17eb] text-white text-lg font-medium py-3 px-6 rounded-xl shadow-md hover:opacity-80 transition cursor-pointer">
+            className="bg-[#5e17eb] text-white text-lg font-medium py-3 px-6 rounded-xl shadow-md hover:opacity-80 transition cursor-pointer"
+          >
             Get Started
           </button>
         </div>
@@ -100,7 +101,8 @@ const LandingPage = () => {
           {features.map((feature, index) => (
             <div
               key={index}
-              className="p-5 bg-gray-200 dark:bg-gray-300 rounded-lg text-center shadow-md transform transition duration-300 hover:scale-105">
+              className="p-5 bg-gray-200 dark:bg-gray-300 rounded-lg text-center shadow-md transform transition duration-300 hover:scale-105"
+            >
               <p className="text-lg font-semibold text-black mb-2">
                 {feature.title}
               </p>
@@ -117,7 +119,8 @@ const LandingPage = () => {
           </h3>
           <a
             href="#contact"
-            className="mt-6 inline-block bg-[#5e17eb] text-white text-lg font-medium py-3 px-6 rounded-xl shadow-md hover:opacity-80 transition">
+            className="mt-6 inline-block bg-[#5e17eb] text-white text-lg font-medium py-3 px-6 rounded-xl shadow-md hover:opacity-80 transition"
+          >
             Contact Our Team
           </a>
         </div>
