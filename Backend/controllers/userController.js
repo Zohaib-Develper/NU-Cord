@@ -1,5 +1,5 @@
 const User = require("../models/user");
-const Server = require("../models/se");
+const Server = require("../models/server");
 const Group = require("../models/group");
 const Channel = require("../models/channel");
 const { signupService, signinService } = require("../services/userService");

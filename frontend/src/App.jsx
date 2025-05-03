@@ -10,9 +10,9 @@ import SignUp from "./pages/SignUpPage";
 import Login from "./pages/LoginPage";
 import { AuthProvider } from "./utils/AuthContext";
 import PrivateRoute from "./utils/PrivateRoute";
-// import ServersPage from "./pages/ServersPage";
-// import DirectMessagesPage from "./pages/DirectMessagesPage";
-// import GroupsPage from "./pages/GroupsPage";
+import ServersPage from "./pages/ServersPage";
+import DirectMessagesPage from "./pages/DirectMessagesPage";
+import GroupsPage from "./pages/GroupsPage";
 import AdminPage from "./pages/AdminPage";
 import AdminRoute from "./utils/AdminRoute";
 function App() {
@@ -40,7 +40,7 @@ function App() {
               </PrivateRoute>
             }
           />
-          {/* <Route
+          <Route
             path="/servers"
             element={
               <PrivateRoute>
@@ -63,7 +63,7 @@ function App() {
                 <GroupsPage />
               </PrivateRoute>
             }
-          /> */}
+          />
         </Routes>
       </Router>
     </AuthProvider>
