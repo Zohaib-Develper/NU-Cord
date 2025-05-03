@@ -6,6 +6,8 @@ import {
   FaSmile,
   FaMicrophone,
   FaEllipsisV,
+  FaFile,
+  FaImage,
 } from "react-icons/fa";
 import { AuthContext } from "../utils/AuthContext";
 import { io } from "socket.io-client";
@@ -20,10 +22,12 @@ const Chat = ({ selectedChannel }) => {
   const [showDeleteMenu, setShowDeleteMenu] = useState(null);
   const [fetched, setFetched] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
   const { user } = useContext(AuthContext);
   const menuRef = useRef(null);
   const messagesEndRef = useRef(null);
   const emojiPickerRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -88,18 +92,37 @@ const Chat = ({ selectedChannel }) => {
     }
   }, [selectedChannel, user._id]);
 
-  const sendMessage = async () => {
-    if (!inputValue.trim()) return;
+  const handleFileSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+      sendMessage(file);
+    }
+  };
+
+  const sendMessage = async (file = null) => {
+    if (!inputValue.trim() && !file) return;
+
     try {
+      const formData = new FormData();
+      formData.append('text', inputValue);
+      formData.append('receiverId', selectedChannel._id);
+      if (file) {
+        formData.append('file', file);
+      }
+
       await axios.post(
         "http://localhost:8000/api/chat/send",
+        formData,
         {
-          text: inputValue,
-          receiverId: selectedChannel._id,
-        },
-        { withCredentials: true }
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
       );
       setInputValue("");
+      setSelectedFile(null);
     } catch (error) {
       console.error("Error sending message:", error);
     }
@@ -150,6 +173,14 @@ const Chat = ({ selectedChannel }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const getFileIcon = (fileName) => {
+    const extension = fileName.split('.').pop().toLowerCase();
+    if (['jpg', 'jpeg', 'png', 'gif'].includes(extension)) {
+      return <FaImage className="text-blue-500" />;
+    }
+    return <FaFile className="text-gray-400" />;
+  };
+
   return (
     <div className="h-full max-w-280 bg-gray-900 text-white flex flex-col">
       <div className="p-4 bg-gray-800 flex justify-between items-center border-b border-gray-700">
@@ -181,17 +212,79 @@ const Chat = ({ selectedChannel }) => {
                 </span>
 
                 <div className="relative group">
-                  <div
-                    className={`max-w-xs px-4 py-2 rounded-lg ${
-                      (msg.sender && msg.sender._id === user._id) ? "bg-blue-600" : "bg-gray-700"
-                    } text-white`}
-                  >
-                    {msg.deleteFromEveryone ? (
-                      <span className="italic text-gray-400">This message was deleted</span>
-                    ) : (
-                      msg.text
-                    )}
-                  </div>
+                  {(() => {
+                    const isImage = msg.fileUrl && ["jpg", "jpeg", "png", "gif"].includes(msg.fileName?.split('.').pop().toLowerCase());
+                    // Image-only message
+                    if (isImage && !msg.text) {
+                      return (
+                        <div className="mt-2">
+                          <a
+                            href={`http://localhost:8000${msg.fileUrl}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <img
+                              src={`http://localhost:8000${msg.fileUrl}`}
+                              alt={msg.fileName}
+                              className="rounded-lg border border-gray-700 shadow max-w-[200px] max-h-[200px] transition-transform hover:scale-105"
+                              style={{ display: 'block' }}
+                            />
+                          </a>
+                        </div>
+                      );
+                    }
+                    // Image with text
+                    if (isImage && msg.text) {
+                      return (
+                        <div className={`max-w-xs px-4 py-2 rounded-lg ${
+                          (msg.sender && msg.sender._id === user._id) ? "bg-blue-600" : "bg-gray-700"
+                        } text-white`}>
+                          <div className="mb-2">
+                            <a
+                              href={`http://localhost:8000${msg.fileUrl}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <img
+                                src={`http://localhost:8000${msg.fileUrl}`}
+                                alt={msg.fileName}
+                                className="rounded-lg border border-gray-700 shadow max-w-[200px] max-h-[200px] transition-transform hover:scale-105"
+                                style={{ display: 'block' }}
+                              />
+                            </a>
+                          </div>
+                          {msg.text}
+                        </div>
+                      );
+                    }
+                    // Non-image file or text-only
+                    return (
+                      <div className={`max-w-xs px-4 py-2 rounded-lg ${
+                        (msg.sender && msg.sender._id === user._id) ? "bg-blue-600" : "bg-gray-700"
+                      } text-white`}>
+                        {msg.deleteFromEveryone ? (
+                          <span className="italic text-gray-400">This message was deleted</span>
+                        ) : (
+                          <>
+                            {msg.text}
+                            {msg.fileUrl && (
+                              <div className="mt-2 flex items-center space-x-2">
+                                {getFileIcon(msg.fileName)}
+                                <a
+                                  href={`http://localhost:8000${msg.fileUrl}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-sm text-blue-300 hover:text-blue-200"
+                                >
+                                  {msg.fileName}
+                                </a>
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    );
+                  })()}
                   {(msg.sender && msg.sender._id === user._id) && (
                     <div className="absolute right-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
@@ -236,7 +329,17 @@ const Chat = ({ selectedChannel }) => {
       {selectedChannel && (
         <div className="p-4 border-t border-gray-700">
           <div className="flex items-center space-x-4">
-            <FaPaperclip className="text-xl cursor-pointer hover:text-gray-400" />
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileSelect}
+              className="hidden"
+              accept="image/*,.pdf,.doc,.docx,.txt"
+            />
+            <FaPaperclip 
+              className="text-xl cursor-pointer hover:text-gray-400" 
+              onClick={() => fileInputRef.current.click()}
+            />
             <input
               type="text"
               placeholder={`Message #${selectedChannel.name}`}

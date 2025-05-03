@@ -9,7 +9,7 @@ router.get(
   chatController.getDirectMessages
 );
 
-router.post("/send", Protect, chatController.saveMessage);
+router.post("/send", Protect, chatController.upload, chatController.saveMessage);
 
 // Add new routes for message deletion
 router.delete(

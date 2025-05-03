@@ -1,27 +1,57 @@
 const Chat = require("../Models/Chat.js");
 const { getIO } = require("../socket");
+const multer = require("multer");
+const path = require("path");
+
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/');
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ 
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  fileFilter: function (req, file, cb) {
+    const filetypes = /jpeg|jpg|png|gif|pdf|doc|docx|txt/;
+    const mimetype = filetypes.test(file.mimetype);
+    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+    
+    if (mimetype && extname) {
+      return cb(null, true);
+    }
+    cb(new Error('Only images, PDFs, and text documents are allowed!'));
+  }
+}).single('file');
+
+exports.upload = upload;
 
 exports.saveMessage = async (req, res) => {
   const { text, receiverId } = req.body;
 
   try {
+    // If there's no text and no file, return error
+    if (!text && !req.file) {
+      return res.status(400).json({ error: "Message must contain either text or a file" });
+    }
+
     const newChat = await Chat.create({
       sender: req.user._id,
-      text: text,
+      text: text || "", // Use empty string if no text
       receiver: receiverId,
+      fileUrl: req.file ? `/uploads/${req.file.filename}` : null,
+      fileName: req.file ? req.file.originalname : null,
     });
 
-    // Populate sender information before sending
     const populatedChat = await Chat.findById(newChat._id).populate("sender");
-
-    // Get the socket.io instance
     const io = getIO();
-    
-    // Emit the message to the DM room
     const room = [req.user._id, receiverId].sort().join('_');
     io.to(room).emit("receiveDirectMessage", populatedChat);
 
-    // Return the saved chat message
     res.status(200).json(populatedChat);
   } catch (error) {
     console.error("Error saving message:", error);
