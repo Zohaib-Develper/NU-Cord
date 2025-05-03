@@ -3,6 +3,7 @@ const cors = require("cors");
 const http = require("http");
 const cookieParser = require("cookie-parser");
 const path = require("path");
+const fs = require("fs");
 const connectDB = require("./config/dbConfig.js");
 const userRoutes = require("./routes/userRoutes.js");
 const groupRoutes = require("./routes/groupRoutes.js");
@@ -23,6 +24,17 @@ connectDB();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+// Robust check for file existence before serving from /uploads
+app.get('/uploads/:filename', (req, res, next) => {
+  const filePath = path.join(__dirname, 'uploads', req.params.filename);
+  fs.stat(filePath, (err, stats) => {
+    if (err || !stats.isFile()) {
+      return res.status(404).send('File not found');
+    }
+    next();
+  });
+});
 
 // Serve static files from the uploads directory
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

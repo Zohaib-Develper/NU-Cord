@@ -28,6 +28,9 @@ const Chat = ({ selectedChannel }) => {
   const messagesEndRef = useRef(null);
   const emojiPickerRef = useRef(null);
   const fileInputRef = useRef(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [mediaRecorder, setMediaRecorder] = useState(null);
+  const [audioChunks, setAudioChunks] = useState([]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -101,8 +104,11 @@ const Chat = ({ selectedChannel }) => {
   };
 
   const sendMessage = async (file = null) => {
+    if (!selectedChannel || !selectedChannel._id) {
+      alert('No recipient selected!');
+      return;
+    }
     if (!inputValue.trim() && !file) return;
-
     try {
       const formData = new FormData();
       formData.append('text', inputValue);
@@ -110,7 +116,6 @@ const Chat = ({ selectedChannel }) => {
       if (file) {
         formData.append('file', file);
       }
-
       await axios.post(
         "http://localhost:8000/api/chat/send",
         formData,
@@ -181,6 +186,68 @@ const Chat = ({ selectedChannel }) => {
     return <FaFile className="text-gray-400" />;
   };
 
+  // Voice note recording logic
+  const handleMicClick = async () => {
+    if (isRecording) {
+      if (mediaRecorder) mediaRecorder.stop();
+      setIsRecording(false);
+    } else {
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          console.log('Audio tracks:', stream.getAudioTracks());
+          let mimeType = 'audio/ogg;codecs=opus';
+          if (!window.MediaRecorder.isTypeSupported(mimeType)) {
+            mimeType = 'audio/webm;codecs=opus';
+          }
+          if (!window.MediaRecorder.isTypeSupported(mimeType)) {
+            mimeType = 'audio/webm';
+          }
+          if (!window.MediaRecorder.isTypeSupported(mimeType)) {
+            mimeType = '';
+          }
+          console.log('Using MediaRecorder mimeType:', mimeType);
+          const recorder = new window.MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+          let localChunks = [];
+          recorder.ondataavailable = (e) => {
+            console.log('Chunk size:', e.data.size, 'type:', e.data.type);
+            if (e.data.size > 0) localChunks.push(e.data);
+          };
+          recorder.onstop = () => {
+            setTimeout(() => {
+              if (localChunks.length > 0) {
+                const audioBlob = new Blob(localChunks, { type: mimeType || 'audio/webm' });
+                const audioFile = new File([audioBlob], `voice-note-${Date.now()}.${mimeType.includes('ogg') ? 'ogg' : 'webm'}`, { type: mimeType || 'audio/webm' });
+                console.log('Final audio file:', audioFile);
+                sendMessage(audioFile);
+              } else {
+                console.warn('No audio chunks collected!');
+              }
+              localChunks = [];
+            }, 0);
+          };
+          recorder.start();
+          setMediaRecorder(recorder);
+          setIsRecording(true);
+        } catch (err) {
+          alert('Microphone access denied or not available.');
+        }
+      } else {
+        alert('Audio recording not supported in this browser.');
+      }
+    }
+  };
+
+  useEffect(() => {
+    // Clean up media recorder on unmount
+    return () => {
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+      }
+    };
+    // eslint-disable-next-line
+  }, []);
+
   return (
     <div className="h-full max-w-280 bg-gray-900 text-white flex flex-col">
       <div className="p-4 bg-gray-800 flex justify-between items-center border-b border-gray-700">
@@ -214,6 +281,30 @@ const Chat = ({ selectedChannel }) => {
                 <div className="relative group">
                   {(() => {
                     const isImage = msg.fileUrl && ["jpg", "jpeg", "png", "gif"].includes(msg.fileName?.split('.').pop().toLowerCase());
+                    const isAudio = msg.fileUrl && ["mp3", "wav", "ogg", "webm"].includes(msg.fileName?.split('.').pop().toLowerCase());
+                    // Audio message
+                    if (isAudio) {
+                      const ext = msg.fileName?.split('.').pop().toLowerCase();
+                      return (
+                        <div
+                          className={`rounded-2xl shadow px-0 py-2 my-1 flex flex-col max-w-lg ${
+                            (msg.sender && msg.sender._id === user._id)
+                              ? 'ml-auto'
+                              : 'mr-auto'
+                          }`}
+                          style={{ minWidth: 260, maxWidth: 400, background: 'transparent', boxShadow: 'none' }}
+                        >
+                          <audio
+                            controls
+                            className="w-full outline-none"
+                            style={{ minWidth: 220, height: 40 }}
+                          >
+                            <source src={`http://localhost:8000${msg.fileUrl}`} type={`audio/${ext === 'mp3' ? 'mpeg' : ext}`} />
+                            Your browser does not support the audio element.
+                          </audio>
+                        </div>
+                      );
+                    }
                     // Image-only message
                     if (isImage && !msg.text) {
                       return (
@@ -237,7 +328,7 @@ const Chat = ({ selectedChannel }) => {
                     if (isImage && msg.text) {
                       return (
                         <div className={`max-w-xs px-4 py-2 rounded-lg ${
-                          (msg.sender && msg.sender._id === user._id) ? "bg-blue-600" : "bg-gray-700"
+                          (msg.sender && msg.sender._id === user._id) ? "bg-[#3a2257]" : "bg-gray-700"
                         } text-white`}>
                           <div className="mb-2">
                             <a
@@ -260,7 +351,7 @@ const Chat = ({ selectedChannel }) => {
                     // Non-image file or text-only
                     return (
                       <div className={`max-w-xs px-4 py-2 rounded-lg ${
-                        (msg.sender && msg.sender._id === user._id) ? "bg-blue-600" : "bg-gray-700"
+                        (msg.sender && msg.sender._id === user._id) ? "bg-[#3a2257]" : "bg-gray-700"
                       } text-white`}>
                         {msg.deleteFromEveryone ? (
                           <span className="italic text-gray-400">This message was deleted</span>
@@ -364,7 +455,11 @@ const Chat = ({ selectedChannel }) => {
                 </div>
               )}
             </div>
-            <FaMicrophone className="text-xl cursor-pointer hover:text-gray-400" />
+            <FaMicrophone
+              className={`text-xl cursor-pointer hover:text-gray-400 ${isRecording ? 'text-red-500 animate-pulse' : ''}`}
+              onClick={handleMicClick}
+              title={isRecording ? 'Stop Recording' : 'Record Voice Note'}
+            />
           </div>
         </div>
       )}

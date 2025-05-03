@@ -13,18 +13,24 @@ const storage = multer.diskStorage({
   }
 });
 
+const filetypes = /\.(jpeg|jpg|png|gif|pdf|doc|docx|txt|mp3|wav|ogg|webm)$/i;
+const mimetypes = [
+  'image/jpeg', 'image/jpg', 'image/png', 'image/gif',
+  'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'text/plain',
+  'audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg', 'audio/webm'
+];
+
 const upload = multer({ 
   storage: storage,
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
   fileFilter: function (req, file, cb) {
-    const filetypes = /jpeg|jpg|png|gif|pdf|doc|docx|txt/;
-    const mimetype = filetypes.test(file.mimetype);
     const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-    
+    const mimetype = mimetypes.includes(file.mimetype);
     if (mimetype && extname) {
       return cb(null, true);
     }
-    cb(new Error('Only images, PDFs, and text documents are allowed!'));
+    cb(new Error('Only images, PDFs, text documents, and audio files are allowed!'));
   }
 }).single('file');
 
