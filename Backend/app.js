@@ -1,24 +1,19 @@
 const express = require("express");
 const cors = require("cors");
 const http = require("http");
-const { Server } = require("socket.io");
 const cookieParser = require("cookie-parser");
 const connectDB = require("./config/dbConfig.js");
 const userRoutes = require("./routes/userRoutes.js");
 const groupRoutes = require("./routes/groupRoutes.js");
 const friendRoutes = require("./routes/friendsRoutes.js");
 const channelRoutes = require("./routes/channelRoutes.js");
-const chatRoutes = require("./routes/chatRoutes.js"); // Import chat routes
-const Chat = require("./models/Chat.js");
+const chatRoutes = require("./routes/chatRoutes.js");
+const socket = require("./socket");
+const Chat = require("./Models/Chat.js");
+
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: "http://localhost:5173",
-    credentials: true,
-    methods: ["GET", "POST"],
-  },
-});
+const io = socket.init(server);
 
 // DB Connection
 connectDB();
@@ -45,6 +40,10 @@ app.use("/api/servers", channelRoutes);
 app.use("/api/chat", chatRoutes);
 
 const users = new Map();
+
+// Helper to get a unique room name for a DM
+const getDMRoom = (userId1, userId2) => [userId1, userId2].sort().join('_');
+
 io.on("connection", (socket) => {
   console.log("🟢 New client connected:", socket.id);
 
@@ -53,26 +52,27 @@ io.on("connection", (socket) => {
     console.log(`User ${userId} registered with socket ${socket.id}`);
   });
 
-  socket.on("sendDirectMessage", async ({ senderId, receiverId, text }) => {
-    await Chat.create({
-      text: text,
-      receiver: receiverId,
-      sender: senderId,
-    });
-
-    const receiverSocket = users.get(receiverId);
-    if (receiverSocket) {
-      io.to(receiverSocket).emit("receiveDirectMessage", {
-        senderId,
-        text,
-      });
-    }
+  // Join a DM room
+  socket.on("joinDM", ({ userId, otherUserId }) => {
+    const room = getDMRoom(userId, otherUserId);
+    socket.join(room);
+    console.log(`Socket ${socket.id} joined DM room ${room}`);
   });
 
-  // Join group (room)
-  socket.on("joinGroup", (groupId) => {
-    socket.join(groupId);
-    console.log(`Socket ${socket.id} joined group ${groupId}`);
+  // Delete for everyone in DM
+  socket.on("deleteDirectMessageForEveryone", async ({ messageId, senderId, receiverId }) => {
+    try {
+      const message = await Chat.findById(messageId);
+      if (message && message.sender.toString() === senderId) {
+        message.deleteFromEveryone = true;
+        await message.save();
+        const updatedMessage = await Chat.findById(messageId).populate('sender');
+        const room = getDMRoom(senderId, receiverId);
+        io.to(room).emit("messageDeletedForEveryone", updatedMessage);
+      }
+    } catch (error) {
+      console.error("Error deleting message for everyone:", error);
+    }
   });
 
   // Group message
@@ -82,27 +82,6 @@ io.on("connection", (socket) => {
       senderId,
       message,
     });
-  });
-  // Listen for the 'send_message' event
-  socket.on("send_message", async (data) => {
-    try {
-      // Save the message in the database
-      const newChat = await Chat.create({
-        text: data.text,
-        recieverId: data.recieverId,
-      });
-
-      // Emit the message to all clients (broadcast it)
-      io.emit("receive_message", {
-        _id: newChat._id,
-        sender: newChat.sender,
-        text: newChat.text,
-        channelId: newChat.channelId,
-        createdAt: newChat.createdAt,
-      });
-    } catch (error) {
-      console.error("❌ Error saving chat:", error);
-    }
   });
 
   // Cleanup on disconnect
