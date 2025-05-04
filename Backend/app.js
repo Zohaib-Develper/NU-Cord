@@ -7,6 +7,7 @@ const userRoutes = require("./routes/userRoutes.js");
 const groupRoutes = require("./routes/groupRoutes.js");
 const friendRoutes = require("./routes/friendsRoutes.js");
 const channelRoutes = require("./routes/channelRoutes.js");
+const searchRoutes = require('./routes/searchRoutes');
 
 const app = express();
 
@@ -36,7 +37,7 @@ app.use("/user", userRoutes);
 app.use("/api/groups", groupRoutes);
 app.use("/api/friend", friendRoutes);
 app.use("/api/servers", channelRoutes); 
-
+app.use('/search', searchRoutes);
 //Error Handling Middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
