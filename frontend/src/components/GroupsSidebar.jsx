@@ -68,30 +68,32 @@ const GroupsSideBar = ({ groups, setSelectedGroup }) => {
                     {group.users &&
                       [...group.users]
                         .sort((a, b) => {
-                          const adminId = group.admin;
-                          // If a is admin, it comes first
-                          if (a._id === adminId || a.id === adminId) return -1;
-                          // If b is admin, it comes first
-                          if (b._id === adminId || b.id === adminId) return 1;
-                          // Otherwise, keep original order
+                          const adminId = String(group.admin?._id || group.admin?.id || group.admin);
+                          const aId = String(a._id || a.id || a);
+                          const bId = String(b._id || b.id || b);
+                          if (aId === adminId) return -1;
+                          if (bId === adminId) return 1;
                           return 0;
                         })
-                        .map((user, i) => (
-                          <p
-                            key={i}
-                            className="ml-2 mt-2 text-gray-300 flex gap-3 items-center"
-                          >
-                            <FaUser className="text-sm mt-1" />
-                            {user.name}
-                            {(group.admin === user._id ||
-                              group.admin === user.id) && (
-                              <span className="flex items-center gap-1 text-yellow-400 ml-2">
-                                <FaCrown className="text-xs" />
-                                Admin
-                              </span>
-                            )}
-                          </p>
-                        ))}
+                        .map((user, i) => {
+                          const adminId = String(group.admin?._id || group.admin?.id || group.admin);
+                          const userId = String(user._id || user.id || user);
+                          const isAdmin = adminId === userId;
+                          return (
+                            <p
+                              key={i}
+                              className="ml-2 mt-2 text-gray-300 flex gap-3 items-center"
+                            >
+                              <FaUser className="text-sm mt-1" />
+                              {user.name || userId}
+                              {isAdmin && (
+                                <span className="text-yellow-300 text-sm font-semibold ml-2">
+                                  Admin
+                                </span>
+                              )}
+                            </p>
+                          );
+                        })}
                   </div>
                 )}
               </div>

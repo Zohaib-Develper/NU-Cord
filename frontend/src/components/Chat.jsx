@@ -31,6 +31,10 @@ const Chat = ({ selectedChannel }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState(null);
   const [audioChunks, setAudioChunks] = useState([]);
+  const prevMessagesLength = useRef(0);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+  const [uploadingFile, setUploadingFile] = useState(false);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -127,9 +131,16 @@ const Chat = ({ selectedChannel }) => {
       return;
     }
     if (!inputValue.trim() && !file) return;
+    setUploadError("");
+    // Only show spinner if uploading a file
+    setUploadingFile(!!file);
+    setUploading(true);
     try {
       const formData = new FormData();
       formData.append('text', inputValue);
+      if (file) {
+        formData.append('file', file);
+      }
       if (selectedChannel.type === 'group') {
         formData.append('groupId', selectedChannel._id);
         await axios.post(
@@ -159,6 +170,16 @@ const Chat = ({ selectedChannel }) => {
       setSelectedFile(null);
     } catch (error) {
       console.error("Error sending message:", error);
+      let msg = "Failed to send message.";
+      if (error.response && error.response.data && error.response.data.error) {
+        msg = error.response.data.error;
+      } else if (error.message) {
+        msg = error.message;
+      }
+      setUploadError(msg);
+    } finally {
+      setUploading(false);
+      setUploadingFile(false);
     }
   };
 
@@ -284,6 +305,14 @@ const Chat = ({ selectedChannel }) => {
     // eslint-disable-next-line
   }, []);
 
+  useEffect(() => {
+    // Only scroll if a new message was added
+    if (messages.length > prevMessagesLength.current) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+    prevMessagesLength.current = messages.length;
+  }, [messages]);
+
   return (
     <div className="h-full max-w-280 bg-gray-900 text-white flex flex-col">
       <div className="p-4 bg-gray-800 flex justify-between items-center border-b border-gray-700">
@@ -303,6 +332,22 @@ const Chat = ({ selectedChannel }) => {
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {selectedChannel ? (
           <>
+            {/* Error message */}
+            {uploadError && (
+              <div className="mb-2 text-red-400 bg-red-900 bg-opacity-30 px-3 py-2 rounded">
+                {uploadError}
+              </div>
+            )}
+            {/* Loading indicator */}
+            {uploadingFile && uploading && (
+              <div className="mb-2 flex items-center gap-2">
+                <span className="relative flex h-6 w-6">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-6 w-6 bg-blue-500"></span>
+                </span>
+                <span className="text-blue-300 font-medium">Uploading file...</span>
+              </div>
+            )}
             {messages.map((msg) => (
               <div
                 key={msg._id}
@@ -322,6 +367,15 @@ const Chat = ({ selectedChannel }) => {
 
                 <div className="relative group">
                   {(() => {
+                    if (msg.deleteFromEveryone) {
+                      return (
+                        <div className={`max-w-xs px-4 py-2 rounded-lg ${
+                          (msg.sender && msg.sender._id === user._id) ? "bg-[#3a2257]" : "bg-gray-700"
+                        } text-white`}>
+                          <span className="italic text-gray-400">This message was deleted</span>
+                        </div>
+                      );
+                    }
                     const isImage = msg.fileUrl && ["jpg", "jpeg", "png", "gif"].includes(msg.fileName?.split('.').pop().toLowerCase());
                     const isAudio = msg.fileUrl && ["mp3", "wav", "ogg", "webm"].includes(msg.fileName?.split('.').pop().toLowerCase());
                     // Audio message
@@ -395,25 +449,19 @@ const Chat = ({ selectedChannel }) => {
                       <div className={`max-w-xs px-4 py-2 rounded-lg ${
                         (msg.sender && msg.sender._id === user._id) ? "bg-[#3a2257]" : "bg-gray-700"
                       } text-white`}>
-                        {msg.deleteFromEveryone ? (
-                          <span className="italic text-gray-400">This message was deleted</span>
-                        ) : (
-                          <>
-                            {msg.text}
-                            {msg.fileUrl && (
-                              <div className="mt-2 flex items-center space-x-2">
-                                {getFileIcon(msg.fileName)}
-                                <a
-                                  href={`http://localhost:8000${msg.fileUrl}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-sm text-blue-300 hover:text-blue-200"
-                                >
-                                  {msg.fileName}
-                                </a>
-                              </div>
-                            )}
-                          </>
+                        {msg.text}
+                        {msg.fileUrl && (
+                          <div className="mt-2 flex items-center space-x-2">
+                            {getFileIcon(msg.fileName)}
+                            <a
+                              href={`http://localhost:8000${msg.fileUrl}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-sm text-blue-300 hover:text-blue-200"
+                            >
+                              {msg.fileName}
+                            </a>
+                          </div>
                         )}
                       </div>
                     );

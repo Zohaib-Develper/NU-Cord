@@ -203,13 +203,13 @@ function deleteMessageForEveryone(req, res) {
   Chat.findById(messageId)
     .then((message) => {
       if (!message) {
-        return res.status(404).json({ error: "Message not found" });
+        res.status(404).json({ error: "Message not found" });
+        throw new Error("Already sent response");
       }
       // Only sender can delete for everyone
       if (message.sender.toString() !== req.user._id.toString()) {
-        return res
-          .status(403)
-          .json({ error: "Only sender can delete message for everyone" });
+        res.status(403).json({ error: "Only sender can delete message for everyone" });
+        throw new Error("Already sent response");
       }
       // Mark as deleted for everyone
       message.text = "This message was deleted";
@@ -217,6 +217,7 @@ function deleteMessageForEveryone(req, res) {
       return message.save();
     })
     .then(async (msg) => {
+      if (!msg) return; // Stop if previous error
       const io = getIO();
       const updatedMessage = await Chat.findById(messageId).populate('sender');
       if (msg && msg.group) {
@@ -230,6 +231,7 @@ function deleteMessageForEveryone(req, res) {
       res.status(200).json({ message: "Message deleted for everyone" });
     })
     .catch((error) => {
+      if (error.message === "Already sent response") return;
       console.error("Error in deleteMessageForEveryone:", error);
       res.status(500).json({ error: "Failed to delete message" });
     });

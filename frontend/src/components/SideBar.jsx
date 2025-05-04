@@ -27,7 +27,7 @@ const Sidebar = ({ setSelectedCategory }) => {
   };
 
   return (
-    <div className="w-24 bg-gray-800 text-white h-screen flex flex-col items-center p-4 justify-between border-r-2 border-gray-700">
+    <div className="w-24 bg-gray-800 text-white h-full flex flex-col items-center p-4 justify-between border-r-2 border-gray-700">
       <div>
         <div className="md:flex md:items-center md:gap-12 text-[#5e17eb] font-semibold">
           <Link className="flex items-end gap-1" to="/home">
