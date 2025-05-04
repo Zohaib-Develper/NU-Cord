@@ -41,7 +41,6 @@ const signup = async (req, res) => {
 const signin = async (req, res) => {
   try {
     const { username, password } = req.body;
-    console.log("🔐 Attempting sign in:", username);
 
     const token = await signinService({ username, password });
 
@@ -88,6 +87,7 @@ const getUserProfile = async (req, res) => {
     res.status(200).json({
       message: "User profile retrieved successfully",
       user: {
+        _id: user._id,
         name: user.name,
         batch: user.batch,
         pfp: user.pfp,
@@ -115,7 +115,6 @@ const blockUser = async (req, res) => {
 
     const user = await User.findById(userId);
     const blockedUser = await User.findById(userIdToBlock);
-    console.log(blockedUser);
 
     if (!user || !blockedUser)
       return res.status(404).json({ error: "User not found" });
@@ -198,7 +197,6 @@ const logout = (req, res) => {
         httpOnly: true,
         expires: new Date(0),
       });
-      console.log("🚪 Logged out successfully");
       return res.status(200).json({ message: "Logged out successfully" });
     } else {
       return res.status(200).json({ message: "User already logged out" });
