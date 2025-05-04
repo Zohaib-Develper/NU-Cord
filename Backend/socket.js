@@ -17,6 +17,12 @@ module.exports = {
         console.log(`User joined group room: ${groupId}`);
       });
 
+      // Join server channel room
+      socket.on("joinServerChannel", (channelId) => {
+        socket.join(channelId);
+        console.log(`User joined server channel room: ${channelId}`);
+      });
+
       // Leave group room
       socket.on("leaveGroup", (groupId) => {
         socket.leave(groupId);
@@ -26,6 +32,11 @@ module.exports = {
       // Handle group messages
       socket.on("sendGroupMessage", (data) => {
         io.to(data.groupId).emit("receiveGroupMessage", data);
+      });
+
+      // Handle server messages (not used for uploads, but for completeness)
+      socket.on("sendServerMessage", (data) => {
+        io.to(data.channelId).emit("receiveServerMessage", data);
       });
     });
 

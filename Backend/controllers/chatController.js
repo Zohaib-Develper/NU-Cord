@@ -217,14 +217,14 @@ function deleteMessageForEveryone(req, res) {
       return message.save();
     })
     .then(async (msg) => {
-      if (!msg) return; // Stop if previous error
+      if (!msg) return;
       const io = getIO();
       const updatedMessage = await Chat.findById(messageId).populate('sender');
-      if (msg && msg.group) {
-        // Emit to group room
+      if (msg.group) {
         io.to(msg.group.toString()).emit("messageDeletedForEveryone", updatedMessage);
-      } else if (msg && msg.receiver) {
-        // Emit to DM room
+      } else if (msg.channel) {
+        io.to(msg.channel.toString()).emit("messageDeletedForEveryone", updatedMessage);
+      } else if (msg.receiver) {
         const room = [req.user._id, msg.receiver].sort().join("_");
         io.to(room).emit("messageDeletedForEveryone", updatedMessage);
       }
@@ -237,12 +237,51 @@ function deleteMessageForEveryone(req, res) {
     });
 }
 
+const saveServerMessage = async (req, res) => {
+  const { text, channelId } = req.body;
+  try {
+    if (!text && !req.file) {
+      return res.status(400).json({ error: "Message must contain either text or a file" });
+    }
+    const newChat = await Chat.create({
+      sender: req.user._id,
+      text: text || "",
+      channel: channelId,
+      fileUrl: req.file ? `/uploads/${req.file.filename}` : null,
+      fileName: req.file ? req.file.originalname : null,
+    });
+    const populatedChat = await Chat.findById(newChat._id).populate("sender");
+    const io = getIO();
+    io.to(channelId).emit("receiveServerMessage", populatedChat);
+    res.status(200).json(populatedChat);
+  } catch (error) {
+    console.error("Error saving server message:", error);
+    res.status(500).json({ error: "Failed to save server message" });
+  }
+};
+
+const getServerMessages = async (req, res) => {
+  const { channelId } = req.params;
+  try {
+    const messages = await Chat.find({ channel: channelId })
+      .populate("sender")
+      .sort({ createdAt: 1 });
+    const filteredMessages = messages.filter((msg) => !msg.deleteFromMe);
+    res.status(200).json(filteredMessages);
+  } catch (error) {
+    console.error("Error fetching server messages:", error);
+    res.status(500).json({ error: "Failed to fetch server messages" });
+  }
+};
+
 module.exports = {
   upload,
   saveMessage,
   saveGroupMessage,
+  saveServerMessage,
   getDirectMessages,
   getGroupMessages,
+  getServerMessages,
   getChannelMessages,
   deleteMessageForMe,
   deleteMessageForEveryone,

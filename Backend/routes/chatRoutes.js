@@ -26,6 +26,20 @@ router.post(
   chatController.saveGroupMessage
 );
 
+// Server Messages
+router.get(
+  "/servermessages/:channelId",
+  Protect,
+  chatController.getServerMessages
+);
+
+router.post(
+  "/server/send",
+  Protect,
+  chatController.upload,
+  chatController.saveServerMessage
+);
+
 // Message Deletion
 router.delete(
   "/message/:messageId/forme",

@@ -61,6 +61,11 @@ const Chat = ({ selectedChannel }) => {
             `http://localhost:8000/api/chat/groupmessages/${selectedChannel._id}`,
             { withCredentials: true }
           );
+        } else if (selectedChannel.type === 'server') {
+          response = await axios.get(
+            `http://localhost:8000/api/chat/servermessages/${selectedChannel._id}`,
+            { withCredentials: true }
+          );
         } else {
           response = await axios.get(
             `http://localhost:8000/api/chat/directmessages/${selectedChannel._id}`,
@@ -77,9 +82,25 @@ const Chat = ({ selectedChannel }) => {
   }, [selectedChannel, user._id]);
 
   useEffect(() => {
+    if (selectedChannel?._id && user?._id) {
+      if (selectedChannel.type === 'group') {
+        socket.emit("joinGroup", selectedChannel._id);
+      } else if (selectedChannel.type === 'server') {
+        console.log("Joining server channel", selectedChannel._id);
+        socket.emit("joinServerChannel", selectedChannel._id);
+      } else {
+        socket.emit("joinDM", { userId: user._id, otherUserId: selectedChannel._id });
+      }
+    }
+  }, [selectedChannel, user._id]);
+
+  useEffect(() => {
     if (!fetched) return;
 
     const handleNewMessage = (msg) => {
+      if (selectedChannel?.type === 'server') {
+        console.log("Received server message", msg);
+      }
       setMessages(prev => {
         if (prev.some(m => m._id === msg._id)) return prev;
         return [...prev, msg];
@@ -89,6 +110,9 @@ const Chat = ({ selectedChannel }) => {
     if (selectedChannel?.type === 'group') {
       socket.on("receiveGroupMessage", handleNewMessage);
       return () => socket.off("receiveGroupMessage", handleNewMessage);
+    } else if (selectedChannel?.type === 'server') {
+      socket.on("receiveServerMessage", handleNewMessage);
+      return () => socket.off("receiveServerMessage", handleNewMessage);
     } else {
       socket.on("receiveDirectMessage", handleNewMessage);
       return () => socket.off("receiveDirectMessage", handleNewMessage);
@@ -106,16 +130,6 @@ const Chat = ({ selectedChannel }) => {
     socket.on("messageDeletedForEveryone", handleDeleteForEveryone);
     return () => socket.off("messageDeletedForEveryone", handleDeleteForEveryone);
   }, [selectedChannel]);
-
-  useEffect(() => {
-    if (selectedChannel?._id && user?._id) {
-      if (selectedChannel.type === 'group') {
-        socket.emit("joinGroup", selectedChannel._id);
-      } else {
-        socket.emit("joinDM", { userId: user._id, otherUserId: selectedChannel._id });
-      }
-    }
-  }, [selectedChannel, user._id]);
 
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
@@ -145,6 +159,18 @@ const Chat = ({ selectedChannel }) => {
         formData.append('groupId', selectedChannel._id);
         await axios.post(
           "http://localhost:8000/api/chat/group/send",
+          formData,
+          {
+            withCredentials: true,
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          }
+        );
+      } else if (selectedChannel.type === 'server') {
+        formData.append('channelId', selectedChannel._id);
+        await axios.post(
+          "http://localhost:8000/api/chat/server/send",
           formData,
           {
             withCredentials: true,
@@ -193,7 +219,7 @@ const Chat = ({ selectedChannel }) => {
   const handleDeleteMessage = async (messageId, deleteType) => {
     try {
       if (deleteType === "everyone") {
-        if (selectedChannel.type === 'group') {
+        if (selectedChannel.type === 'group' || selectedChannel.type === 'server') {
           await axios.delete(
             `http://localhost:8000/api/chat/message/${messageId}/foreveryone`,
             { withCredentials: true }
@@ -356,13 +382,9 @@ const Chat = ({ selectedChannel }) => {
                 }`}
               >
                 <span className="text-sm text-gray-400 mb-1">
-                  {selectedChannel.type === 'group'
-                    ? (msg.sender && msg.sender._id === user._id)
-                      ? 'You'
-                      : (msg.sender && msg.sender.name)
-                    : (msg.sender && msg.sender._id === user._id)
-                      ? 'You'
-                      : selectedChannel.name}
+                  {(selectedChannel.type === 'group' || selectedChannel.type === 'server')
+                    ? (msg.sender && msg.sender._id === user._id ? 'You' : msg.sender?.name)
+                    : (msg.sender && msg.sender._id === user._id ? 'You' : selectedChannel.name)}
                 </span>
 
                 <div className="relative group">

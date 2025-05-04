@@ -11,7 +11,7 @@ const ServersSideBar = ({ servers, setSelectedChannel }) => {
   };
 
   const handleChannelClick = (channel) => {
-    setSelectedChannel(channel);
+    setSelectedChannel({ ...channel, type: 'server' });
   };
 
   const toggleCategory = (category) => {
