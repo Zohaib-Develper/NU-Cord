@@ -19,7 +19,7 @@ const GroupsSideBar = ({ groups, setSelectedGroup }) => {
       setExpandedGroup(group);
       setShowMembers(false);
       if (setSelectedGroup) {
-        setSelectedGroup(group); // Inform parent page about selected group
+        setSelectedGroup({ ...group, type: 'group' });
       }
     }
   };
@@ -47,7 +47,7 @@ const GroupsSideBar = ({ groups, setSelectedGroup }) => {
                 <button
                   className="w-full text-left p-2 rounded-lg hover:bg-gray-600 flex gap-3"
                   onClick={() => {
-                    if (setSelectedGroup) setSelectedGroup(group, "chat");
+                    if (setSelectedGroup) setSelectedGroup({ ...group, type: 'group' }, "chat");
                   }}
                 >
                   <FaComments className="mt-1" />

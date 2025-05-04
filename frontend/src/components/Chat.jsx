@@ -51,10 +51,18 @@ const Chat = ({ selectedChannel }) => {
 
     const fetchMessages = async () => {
       try {
-        const response = await axios.get(
-          `http://localhost:8000/api/chat/directmessages/${selectedChannel._id}`,
-          { withCredentials: true }
-        );
+        let response;
+        if (selectedChannel.type === 'group') {
+          response = await axios.get(
+            `http://localhost:8000/api/chat/groupmessages/${selectedChannel._id}`,
+            { withCredentials: true }
+          );
+        } else {
+          response = await axios.get(
+            `http://localhost:8000/api/chat/directmessages/${selectedChannel._id}`,
+            { withCredentials: true }
+          );
+        }
         setMessages(response.data);
         setFetched(true);
       } catch (error) {
@@ -74,12 +82,18 @@ const Chat = ({ selectedChannel }) => {
       });
     };
     
-    socket.on("receiveDirectMessage", handleNewMessage);
-    return () => socket.off("receiveDirectMessage", handleNewMessage);
-  }, [fetched]);
+    if (selectedChannel?.type === 'group') {
+      socket.on("receiveGroupMessage", handleNewMessage);
+      return () => socket.off("receiveGroupMessage", handleNewMessage);
+    } else {
+      socket.on("receiveDirectMessage", handleNewMessage);
+      return () => socket.off("receiveDirectMessage", handleNewMessage);
+    }
+  }, [fetched, selectedChannel]);
 
   useEffect(() => {
     const handleDeleteForEveryone = (updatedMessage) => {
+      console.log("Received delete for everyone", updatedMessage);
       setMessages(prevMsgs => prevMsgs.map(msg =>
         msg._id === updatedMessage._id ? updatedMessage : msg
       ));
@@ -87,11 +101,15 @@ const Chat = ({ selectedChannel }) => {
     
     socket.on("messageDeletedForEveryone", handleDeleteForEveryone);
     return () => socket.off("messageDeletedForEveryone", handleDeleteForEveryone);
-  }, []);
+  }, [selectedChannel]);
 
   useEffect(() => {
     if (selectedChannel?._id && user?._id) {
-      socket.emit("joinDM", { userId: user._id, otherUserId: selectedChannel._id });
+      if (selectedChannel.type === 'group') {
+        socket.emit("joinGroup", selectedChannel._id);
+      } else {
+        socket.emit("joinDM", { userId: user._id, otherUserId: selectedChannel._id });
+      }
     }
   }, [selectedChannel, user._id]);
 
@@ -112,20 +130,31 @@ const Chat = ({ selectedChannel }) => {
     try {
       const formData = new FormData();
       formData.append('text', inputValue);
-      formData.append('receiverId', selectedChannel._id);
-      if (file) {
-        formData.append('file', file);
+      if (selectedChannel.type === 'group') {
+        formData.append('groupId', selectedChannel._id);
+        await axios.post(
+          "http://localhost:8000/api/chat/group/send",
+          formData,
+          {
+            withCredentials: true,
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          }
+        );
+      } else {
+        formData.append('receiverId', selectedChannel._id);
+        await axios.post(
+          "http://localhost:8000/api/chat/send",
+          formData,
+          {
+            withCredentials: true,
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          }
+        );
       }
-      await axios.post(
-        "http://localhost:8000/api/chat/send",
-        formData,
-        {
-          withCredentials: true,
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        }
-      );
       setInputValue("");
       setSelectedFile(null);
     } catch (error) {
@@ -143,11 +172,18 @@ const Chat = ({ selectedChannel }) => {
   const handleDeleteMessage = async (messageId, deleteType) => {
     try {
       if (deleteType === "everyone") {
-        socket.emit("deleteDirectMessageForEveryone", {
-          messageId,
-          senderId: user._id,
-          receiverId: selectedChannel._id,
-        });
+        if (selectedChannel.type === 'group') {
+          await axios.delete(
+            `http://localhost:8000/api/chat/message/${messageId}/foreveryone`,
+            { withCredentials: true }
+          );
+        } else {
+          socket.emit("deleteDirectMessageForEveryone", {
+            messageId,
+            senderId: user._id,
+            receiverId: selectedChannel._id,
+          });
+        }
       } else {
         await axios.delete(
           `http://localhost:8000/api/chat/message/${messageId}/forme`,
@@ -275,7 +311,13 @@ const Chat = ({ selectedChannel }) => {
                 }`}
               >
                 <span className="text-sm text-gray-400 mb-1">
-                  {(msg.sender && msg.sender._id === user._id) ? "You" : selectedChannel.name}
+                  {selectedChannel.type === 'group'
+                    ? (msg.sender && msg.sender._id === user._id)
+                      ? 'You'
+                      : (msg.sender && msg.sender.name)
+                    : (msg.sender && msg.sender._id === user._id)
+                      ? 'You'
+                      : selectedChannel.name}
                 </span>
 
                 <div className="relative group">

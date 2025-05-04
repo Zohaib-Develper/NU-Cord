@@ -9,6 +9,26 @@ module.exports = {
         methods: ["GET", "POST"],
       },
     });
+
+    io.on("connection", (socket) => {
+      // Join group room
+      socket.on("joinGroup", (groupId) => {
+        socket.join(groupId);
+        console.log(`User joined group room: ${groupId}`);
+      });
+
+      // Leave group room
+      socket.on("leaveGroup", (groupId) => {
+        socket.leave(groupId);
+        console.log(`User left group room: ${groupId}`);
+      });
+
+      // Handle group messages
+      socket.on("sendGroupMessage", (data) => {
+        io.to(data.groupId).emit("receiveGroupMessage", data);
+      });
+    });
+
     return io;
   },
   getIO: () => {

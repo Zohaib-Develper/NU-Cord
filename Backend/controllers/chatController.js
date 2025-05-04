@@ -108,18 +108,53 @@ function getDirectMessages(req, res) {
     });
 }
 
-function getGroupMessages(req, res) {
+const saveGroupMessage = async (req, res) => {
+  const { text, groupId } = req.body;
+
+  try {
+    // If there's no text and no file, return error
+    if (!text && !req.file) {
+      return res
+        .status(400)
+        .json({ error: "Message must contain either text or a file" });
+    }
+
+    const newChat = await Chat.create({
+      sender: req.user._id,
+      text: text || "", // Use empty string if no text
+      group: groupId,
+      fileUrl: req.file ? `/uploads/${req.file.filename}` : null,
+      fileName: req.file ? req.file.originalname : null,
+    });
+
+    const populatedChat = await Chat.findById(newChat._id).populate("sender");
+
+    const io = getIO();
+    io.to(groupId).emit("receiveGroupMessage", populatedChat);
+
+    res.status(200).json(populatedChat);
+  } catch (error) {
+    console.error("Error saving group message:", error);
+    res.status(500).json({ error: "Failed to save group message" });
+  }
+};
+
+const getGroupMessages = async (req, res) => {
   const { groupId } = req.params;
 
-  Chat.find({ group: groupId })
-    .sort({ createdAt: 1 })
-    .populate("sender")
-    .then((messages) => res.status(200).json(messages))
-    .catch((error) => {
-      console.error("Error fetching messages:", error);
-      res.status(500).json({ error: "Failed to fetch messages" });
-    });
-}
+  try {
+    const messages = await Chat.find({ group: groupId })
+      .populate("sender")
+      .sort({ createdAt: 1 });
+
+    // Only filter out messages deleted for me
+    const filteredMessages = messages.filter((msg) => !msg.deleteFromMe);
+    res.status(200).json(filteredMessages);
+  } catch (error) {
+    console.error("Error fetching group messages:", error);
+    res.status(500).json({ error: "Failed to fetch group messages" });
+  }
+};
 
 function getChannelMessages(req, res) {
   const { channelId } = req.params;
@@ -176,16 +211,26 @@ function deleteMessageForEveryone(req, res) {
           .status(403)
           .json({ error: "Only sender can delete message for everyone" });
       }
-      // Replace the message text and set a flag
+      // Mark as deleted for everyone
       message.text = "This message was deleted";
       message.deleteFromEveryone = true;
       return message.save();
     })
-    .then(() =>
-      res.status(200).json({ message: "Message deleted for everyone" })
-    )
+    .then(async (msg) => {
+      const io = getIO();
+      const updatedMessage = await Chat.findById(messageId).populate('sender');
+      if (msg && msg.group) {
+        // Emit to group room
+        io.to(msg.group.toString()).emit("messageDeletedForEveryone", updatedMessage);
+      } else if (msg && msg.receiver) {
+        // Emit to DM room
+        const room = [req.user._id, msg.receiver].sort().join("_");
+        io.to(room).emit("messageDeletedForEveryone", updatedMessage);
+      }
+      res.status(200).json({ message: "Message deleted for everyone" });
+    })
     .catch((error) => {
-      console.error("Error deleting message:", error);
+      console.error("Error in deleteMessageForEveryone:", error);
       res.status(500).json({ error: "Failed to delete message" });
     });
 }
@@ -193,6 +238,7 @@ function deleteMessageForEveryone(req, res) {
 module.exports = {
   upload,
   saveMessage,
+  saveGroupMessage,
   getDirectMessages,
   getGroupMessages,
   getChannelMessages,

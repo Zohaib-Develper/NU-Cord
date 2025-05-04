@@ -3,6 +3,7 @@ const router = express.Router();
 const chatController = require("../controllers/chatController.js");
 const { Protect } = require("../middleware/authMiddleware.js");
 
+// Direct Messages
 router.get(
   "/directmessages/:receiverId",
   Protect,
@@ -11,7 +12,21 @@ router.get(
 
 router.post("/send", Protect, chatController.upload, chatController.saveMessage);
 
-// Add new routes for message deletion
+// Group Messages
+router.get(
+  "/groupmessages/:groupId",
+  Protect,
+  chatController.getGroupMessages
+);
+
+router.post(
+  "/group/send",
+  Protect,
+  chatController.upload,
+  chatController.saveGroupMessage
+);
+
+// Message Deletion
 router.delete(
   "/message/:messageId/forme",
   Protect,
