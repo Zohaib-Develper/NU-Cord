@@ -1,5 +1,6 @@
 const user = require("../models/user");
 const Group = require("../models/group");
+const mongoose = require("mongoose");
 
 const getGroups = async (req, res) => {
   try {
@@ -260,7 +261,17 @@ const deleteGroup = async (req, res) => {
 
 const getAllGroups = async (req, res) => {
   try {
-    const groups = await Group.find({})
+    let userId = req.user._id;
+    // Convert to ObjectId only if it's a string
+    if (typeof userId === "string") {
+      userId = mongoose.Types.ObjectId(userId);
+    }
+    const groups = await Group.find({
+      $or: [
+        { admin: userId },
+        { users: userId }
+      ]
+    })
       .populate("admin", "name")
       .populate("users", "name");
     res.status(200).json({
