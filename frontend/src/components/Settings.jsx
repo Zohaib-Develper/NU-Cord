@@ -10,36 +10,31 @@ const Settings = ({ onClose }) => {
   return (
     <div
       className="fixed inset-0 bg-transparent bg-opacity-50 backdrop-blur-lg flex justify-center items-center"
-      onClick={onClose}
-    >
+      onClick={onClose}>
       <div
         className="bg-gray-900 text-white p-6 rounded-lg w-full max-w-xl sm:max-w-2xl lg:max-w-4xl max-h-[80vh] shadow-lg relative flex flex-col overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
+        onClick={(e) => e.stopPropagation()}>
         <h2 className="text-2xl font-bold mb-4 border-b border-gray-700 pb-2">
           Settings
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow">
-          {/* Username (Editable) */}
           <div>
             <label className="text-gray-400">Username</label>
             <input
               type="text"
               value={user.username}
               readOnly
-              className="w-full bg-gray-800 text-white p-2 rounded mt-1"
+              className="w-full bg-gray-800 text-gray-400  p-2 rounded mt-1 cursor-not-allowed"
             />
           </div>
-
-          {/* Name (Editable) */}
           <div>
             <label className="text-gray-400">Name</label>
             <input
               type="text"
               value={user.name}
               readOnly
-              className="w-full bg-gray-800 text-white p-2 rounded mt-1"
+              className="w-full bg-gray-800 text-gray-400 p-2 rounded mt-1 cursor-not-allowed"
             />
           </div>
 
