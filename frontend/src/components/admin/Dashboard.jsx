@@ -6,9 +6,6 @@ import {
   Building,
   Layers,
   MessageSquare,
-  TrendingUp,
-  AlertTriangle,
-  Clock,
 } from "lucide-react";
 
 const Dashboard = () => {
@@ -20,17 +17,11 @@ const Dashboard = () => {
     totalChannels: 0,
   });
   const [loading, setLoading] = useState(true);
-  const [recentActivity] = useState([
-    { type: "user", action: "User suspended", time: "2 minutes ago" },
-    { type: "server", action: "New server created", time: "1 hour ago" },
-    { type: "group", action: "Group deleted", time: "3 hours ago" },
-    { type: "user", action: "User registered", time: "5 hours ago" },
-  ]);
 
   useEffect(() => {
     async function fetchStats() {
       try {
-        const res = await axios.get("/api/user/stats", {
+        const res = await axios.get("http://localhost:8000/user/stats", {
           withCredentials: true,
         });
         setStats(res.data);
@@ -40,8 +31,9 @@ const Dashboard = () => {
         setLoading(false);
       }
     }
-
     fetchStats();
+    const interval = setInterval(fetchStats, 10000);
+    return () => clearInterval(interval);
   }, []);
 
   if (loading) {
@@ -54,8 +46,7 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-8 flex items-center justify-center">
-      {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <StatCard
           title="Total Users"
           value={stats.totalUsers}
@@ -66,6 +57,12 @@ const Dashboard = () => {
           title="Total Servers"
           value={stats.totalServers}
           icon={<Server size={20} />}
+          color="#ede9fe"
+        />
+        <StatCard
+          title="Total Campuses"
+          value={stats.totalCampuses}
+          icon={<Building size={20} />}
           color="#ede9fe"
         />
         <StatCard
@@ -102,42 +99,6 @@ const StatCard = ({ title, value, icon, color }) => {
         </div>
       </div>
       <div className="h-1 bg-gradient-to-r from-[#7c3aed] to-[#a78bfa]"></div>
-    </div>
-  );
-};
-
-const StatusItem = ({ label, status }) => {
-  const statusConfig = {
-    operational: {
-      color: "text-green-400",
-      bgColor: "bg-green-400",
-      icon: <TrendingUp size={16} className="text-green-400" />,
-    },
-    degraded: {
-      color: "text-yellow-400",
-      bgColor: "bg-yellow-400",
-      icon: <AlertTriangle size={16} className="text-yellow-400" />,
-    },
-    down: {
-      color: "text-red-400",
-      bgColor: "bg-red-400",
-      icon: <AlertTriangle size={16} className="text-red-400" />,
-    },
-  };
-
-  return (
-    <div className="flex items-center justify-between p-3 bg-[#4c1d95]/50 rounded-lg">
-      <div className="flex items-center">
-        {statusConfig[status].icon}
-        <span className="ml-2 font-medium">{label}</span>
-      </div>
-      <div className="flex items-center space-x-2">
-        <span
-          className={`h-2 w-2 rounded-full ${statusConfig[status].bgColor}`}></span>
-        <span className={`text-sm ${statusConfig[status].color} capitalize`}>
-          {status}
-        </span>
-      </div>
     </div>
   );
 };

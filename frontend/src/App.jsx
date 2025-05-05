@@ -26,9 +26,9 @@ function App() {
           <Route
             path="/admin"
             element={
-              // <AdminRoute>
-              <AdminPage />
-              // </AdminRoute>
+              <AdminRoute>
+                <AdminPage />
+              </AdminRoute>
             }
           />
           Protected Route for Homepage

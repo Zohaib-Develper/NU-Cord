@@ -4,6 +4,7 @@ const {
   googleAuth,
   googleAuthCallback,
   Protect,
+  RestrictTo,
 } = require("../middleware/authMiddleware");
 const {
   signup,
@@ -18,6 +19,7 @@ const {
   suspendUser,
   unSuspendUser,
   getAllStats,
+  verifyAdminAccess,
 } = require("../controllers/userController");
 const { testGoogleAuth } = require("../test/googleAuth");
 
@@ -45,5 +47,8 @@ router.get("/profile", getUserProfile);
 router.use("/friends", friendsRoutes);
 router.post("/block/:userIdToBlock", blockUser);
 router.post("/unblock/:blockedUserId", unblockUser);
+router.get("/verify-admin", Protect, RestrictTo("ADMIN"), (req, res) => {
+  res.status(200).json({ isAdmin: true, message: "Admin access verified" });
+});
 
 module.exports = router;

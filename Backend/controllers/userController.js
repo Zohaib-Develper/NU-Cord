@@ -327,6 +327,24 @@ const getAllStats = async (req, res) => {
   }
 };
 
+const verifyAdminAccess = async (req, res) => {
+  try {
+    // The Protect middleware has already verified the token and attached the user
+    // We just need to check if the user has the ADMIN role
+    const isAdmin = req.user.role === "ADMIN";
+    
+    res.status(200).json({
+      isAdmin,
+      message: isAdmin ? "Admin access verified" : "User is not an admin"
+    });
+  } catch (error) {
+    console.error("Error verifying admin access:", error);
+    res.status(500).json({
+      error: "Failed to verify admin access"
+    });
+  }
+};
+
 module.exports = {
   signup,
   signin,
@@ -340,4 +358,5 @@ module.exports = {
   suspendUser,
   unSuspendUser,
   getAllStats,
+  verifyAdminAccess,
 };
