@@ -99,6 +99,7 @@ const getUserProfile = async (req, res) => {
         friends,
         role: user.role,
         about: user.about,
+        socials: user.socials,
       },
     });
   } catch (error) {
@@ -337,7 +338,9 @@ const updateProfile = async (req, res) => {
     if (socials !== undefined) update.socials = socials;
     if (req.file) update.pfp = `/uploads/${req.file.filename}`;
 
-    const user = await User.findByIdAndUpdate(req.user._id, update, { new: true });
+    const user = await User.findByIdAndUpdate(req.user._id, update, {
+      new: true,
+    });
     res.status(200).json({ message: "Profile updated", user });
   } catch (error) {
     res.status(500).json({ error: "Failed to update profile" });
