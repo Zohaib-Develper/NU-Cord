@@ -261,17 +261,7 @@ const deleteGroup = async (req, res) => {
 
 const getAllGroups = async (req, res) => {
   try {
-    let userId = req.user._id;
-    // Convert to ObjectId only if it's a string
-    if (typeof userId === "string") {
-      userId = mongoose.Types.ObjectId(userId);
-    }
-    const groups = await Group.find({
-      $or: [
-        { admin: userId },
-        { users: userId }
-      ]
-    })
+    const groups = await Group.find({})
       .populate("admin", "name")
       .populate("users", "name");
     res.status(200).json({

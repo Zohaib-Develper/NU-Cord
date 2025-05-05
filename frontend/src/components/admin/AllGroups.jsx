@@ -12,7 +12,7 @@ function AllGroups() {
     async function fetchGroups() {
       try {
         setLoading(true);
-        const res = await axios.get("http://localhost:8000/api/group/all", {
+        const res = await axios.get("http://localhost:8000/api/groups/all", {
           withCredentials: true,
         });
         setGroups(res.data.groups);
@@ -30,7 +30,7 @@ function AllGroups() {
     e.stopPropagation();
     if (confirm("Are you sure you want to delete this group? This action cannot be undone.")) {
       try {
-        await axios.delete(`http://localhost:8000/api/group/${groupId}`, {
+        await axios.delete(`http://localhost:8000/api/groups/${groupId}`, {
           withCredentials: true,
         });
         setGroups(groups.filter((group) => group._id !== groupId));

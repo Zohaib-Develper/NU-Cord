@@ -14,7 +14,7 @@ function AllServers() {
     async function fetchServers() {
       try {
         setLoading(true);
-        const res = await axios.get("http://localhost:8000/api/server/", {
+        const res = await axios.get("http://localhost:8000/api/servers/", {
           withCredentials: true,
         });
         setServers(res.data.servers);
@@ -46,7 +46,7 @@ function AllServers() {
   async function fetchUsersInServer(serverId) {
     try {
       const res = await axios.get(
-        `http://localhost:8000/api/server/${serverId}/users`,
+        `http://localhost:8000/api/servers/${serverId}/users`,
         { withCredentials: true }
       );
       setUsersInServer(res.data.users);
@@ -58,7 +58,7 @@ function AllServers() {
   async function fetchChannelsInServer(serverId) {
     try {
       const res = await axios.get(
-        `http://localhost:8000/api/server/${serverId}/channels`,
+        `http://localhost:8000/api/servers/${serverId}/channels`,
         { withCredentials: true }
       );
       setChannelsInServer(res.data.channels);
@@ -70,7 +70,7 @@ function AllServers() {
   async function handleDeleteServer(serverId) {
     if (confirm("Are you sure you want to delete this server? This action cannot be undone.")) {
       try {
-        await axios.delete(`http://localhost:8000/api/server/${serverId}`, {
+        await axios.delete(`http://localhost:8000/api/servers/${serverId}`, {
           withCredentials: true,
         });
         setServers((prev) => prev.filter((s) => s._id !== serverId));
@@ -85,7 +85,7 @@ function AllServers() {
     if (confirm("Are you sure you want to remove this user from the server?")) {
       try {
         await axios.delete(
-          `http://localhost:8000/api/server/${selectedServer._id}/removeUser/${userId}`,
+          `http://localhost:8000/api/servers/${selectedServer._id}/removeUser/${userId}`,
           { withCredentials: true }
         );
         setUsersInServer((prev) => prev.filter((u) => u._id !== userId));
@@ -99,7 +99,7 @@ function AllServers() {
     if (confirm("Are you sure you want to remove this channel from the server?")) {
       try {
         await axios.delete(
-          `http://localhost:8000/api/server/${selectedServer._id}/channel/${channelId}`,
+          `http://localhost:8000/api/servers/${selectedServer._id}/channel/${channelId}`,
           { withCredentials: true }
         );
         setChannelsInServer((prev) => prev.filter((c) => c._id !== channelId));
