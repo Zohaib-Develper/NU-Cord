@@ -97,6 +97,7 @@ const getUserProfile = async (req, res) => {
         email: user.email,
         servers,
         friends,
+        role: user.role,
       },
     });
   } catch (error) {

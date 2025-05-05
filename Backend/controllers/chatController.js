@@ -2,6 +2,7 @@ const Chat = require("../Models/Chat.js");
 const { getIO } = require("../socket");
 const multer = require("multer");
 const path = require("path");
+const Channel = require("../models/channel");
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -243,6 +244,18 @@ const saveServerMessage = async (req, res) => {
     if (!text && !req.file) {
       return res.status(400).json({ error: "Message must contain either text or a file" });
     }
+
+    // Check if the channel is an announcement channel
+    const channel = await Channel.findById(channelId);
+    if (!channel) {
+      return res.status(404).json({ error: "Channel not found" });
+    }
+
+    const isAnnouncementChannel = channel.name.toLowerCase().includes('announcement');
+    if (isAnnouncementChannel && req.user.role !== 'ADMIN') {
+      return res.status(403).json({ error: "Only admins can send messages in announcement channels" });
+    }
+
     const newChat = await Chat.create({
       sender: req.user._id,
       text: text || "",

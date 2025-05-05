@@ -8,6 +8,7 @@ import {
   FaEllipsisV,
   FaFile,
   FaImage,
+  FaLock,
 } from "react-icons/fa";
 import { AuthContext } from "../utils/AuthContext";
 import { io } from "socket.io-client";
@@ -35,6 +36,10 @@ const Chat = ({ selectedChannel }) => {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const [uploadingFile, setUploadingFile] = useState(false);
+
+  const isAnnouncementChannel = selectedChannel?.name?.toLowerCase().includes('announcement');
+  const isAdmin = user?.role === 'ADMIN';
+  const canSendMessages = !isAnnouncementChannel || isAdmin;
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -530,49 +535,60 @@ const Chat = ({ selectedChannel }) => {
       </div>
 
       {selectedChannel && (
-        <div className="p-4 border-t border-gray-700">
-          <div className="flex items-center space-x-4">
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileSelect}
-              className="hidden"
-              accept="image/*,.pdf,.doc,.docx,.txt"
-            />
-            <FaPaperclip 
-              className="text-xl cursor-pointer hover:text-gray-400" 
-              onClick={() => fileInputRef.current.click()}
-            />
-            <input
-              type="text"
-              placeholder={`Message #${selectedChannel.name}`}
-              className="flex-1 bg-gray-700 text-white rounded-lg px-4 py-2 focus:outline-none"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={handleKeyDown}
-            />
-            <div className="relative" ref={emojiPickerRef}>
-              <FaSmile 
-                className="text-xl cursor-pointer hover:text-gray-400" 
-                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-              />
-              {showEmojiPicker && (
-                <div className="absolute bottom-10 right-0 z-50">
-                  <EmojiPicker
-                    onEmojiClick={handleEmojiClick}
-                    width={300}
-                    height={400}
-                    theme="dark"
-                  />
-                </div>
-              )}
+        <div className="border-t border-gray-700">
+          {isAnnouncementChannel && !isAdmin ? (
+            <div className="flex flex-col items-center justify-center py-6">
+              <div className="flex items-center gap-3 px-6 py-3 rounded-lg bg-gradient-to-r from-yellow-600 to-yellow-800 shadow-lg border border-yellow-400">
+                <FaLock className="text-2xl text-yellow-200" />
+                <span className="text-lg font-semibold text-yellow-90">This is a read-only channel. Only admins can send messages in here.</span>
+              </div>
             </div>
-            <FaMicrophone
-              className={`text-xl cursor-pointer hover:text-gray-400 ${isRecording ? 'text-red-500 animate-pulse' : ''}`}
-              onClick={handleMicClick}
-              title={isRecording ? 'Stop Recording' : 'Record Voice Note'}
-            />
-          </div>
+          ) : (
+            <div className="flex items-center space-x-4">
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileSelect}
+                className="hidden"
+                accept="image/*,.pdf,.doc,.docx,.txt"
+                disabled={!canSendMessages}
+              />
+              <FaPaperclip 
+                className={`text-xl cursor-pointer hover:text-gray-400 ${!canSendMessages ? 'opacity-50 cursor-not-allowed' : ''}`}
+                onClick={() => canSendMessages && fileInputRef.current.click()}
+              />
+              <input
+                type="text"
+                placeholder={`Message #${selectedChannel.name}`}
+                className="flex-1 bg-gray-700 text-white rounded-lg px-4 py-2 focus:outline-none"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={handleKeyDown}
+                disabled={!canSendMessages}
+              />
+              <div className="relative" ref={emojiPickerRef}>
+                <FaSmile 
+                  className={`text-xl cursor-pointer hover:text-gray-400 ${!canSendMessages ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  onClick={() => canSendMessages && setShowEmojiPicker(!showEmojiPicker)}
+                />
+                {showEmojiPicker && (
+                  <div className="absolute bottom-10 right-0 z-50">
+                    <EmojiPicker
+                      onEmojiClick={handleEmojiClick}
+                      width={300}
+                      height={400}
+                      theme="dark"
+                    />
+                  </div>
+                )}
+              </div>
+              <FaMicrophone
+                className={`text-xl cursor-pointer hover:text-gray-400 ${isRecording ? 'text-red-500 animate-pulse' : ''} ${!canSendMessages ? 'opacity-50 cursor-not-allowed' : ''}`}
+                onClick={() => canSendMessages && handleMicClick()}
+                title={isRecording ? 'Stop Recording' : 'Record Voice Note'}
+              />
+            </div>
+          )}
         </div>
       )}
     </div>
