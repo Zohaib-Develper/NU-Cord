@@ -7,15 +7,12 @@ import {
   FaVolumeUp,
 } from "react-icons/fa";
 import SearchResult from "../components/SearchResult";
+import axios from "axios";
 const ServersSideBar = ({ servers, setSelectedChannel }) => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [expandedCategories, setExpandedCategories] = useState({});
+  const [serverss, setServers] = useState([]);
 
-  const dummyServers = [
-    { _id: "1", name: "CS-22-LHR" },
-    { _id: "2", name: "Gaming Zone" },
-    { _id: "3", name: "FYP Group 7" },
-  ];
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedServer, setSelectedServer] = useState(null);
   const [searchResults, setSearchResults] = useState({
@@ -31,15 +28,45 @@ const ServersSideBar = ({ servers, setSelectedChannel }) => {
       }
 
       const lowerSearch = searchTerm.toLowerCase();
-      const filteredServers = dummyServers.filter((server) =>
+      const filteredServers = serverss.filter((server) =>
         server.name.toLowerCase().includes(lowerSearch)
       );
 
       setSearchResults({ serversList: filteredServers });
     }
   };
+  const handleJoinServer = async (serverId) => {
+    try {
+      const response = await axios.post(
+        `http://localhost:8000/api/servers/${serverId}/join-request`,
+        {},
 
+        {
+          withCredentials: true,
+        }
+      );
+      setSelectedServer(null);
+    } catch (error) {
+      alert(error.response?.data?.error);
+      console.error("Error fetching friend requests:", error);
+    }
+  };
   useEffect(() => {
+    const fetchServers = async () => {
+      axios;
+      try {
+        const response = await axios.get("http://localhost:8000/api/servers", {
+          withCredentials: true,
+        });
+        if (response.data) {
+          console.log("Response.data: ", response.data);
+          setServers(response.data.servers);
+        }
+      } catch (error) {
+        console.error("Error fetching friend requests:", error);
+      }
+    };
+    fetchServers();
     const handleClickOutside = (event) => {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
         setSearchTerm("");
@@ -71,7 +98,8 @@ const ServersSideBar = ({ servers, setSelectedChannel }) => {
       <p
         key={channel._id || i}
         className="ml-2 text-gray-300 cursor-pointer hover:text-white flex items-center gap-2"
-        onClick={() => handleChannelClick(channel)}>
+        onClick={() => handleChannelClick(channel)}
+      >
         {type === "text" ? (
           <FaHashtag className="text-xs" />
         ) : (
@@ -88,7 +116,8 @@ const ServersSideBar = ({ servers, setSelectedChannel }) => {
       <div className="mb-2">
         <div
           className="flex items-center gap-1 text-gray-400 cursor-pointer hover:text-gray-300"
-          onClick={() => toggleCategory(title)}>
+          onClick={() => toggleCategory(title)}
+        >
           {isExpanded ? (
             <FaChevronDown className="text-xs" />
           ) : (
@@ -128,7 +157,8 @@ const ServersSideBar = ({ servers, setSelectedChannel }) => {
                       setSelectedServer(server);
                       setSearchTerm("");
                       setSearchResults({ serversList: [] });
-                    }}>
+                    }}
+                  >
                     {server.name}
                   </li>
                 ))}
@@ -143,7 +173,8 @@ const ServersSideBar = ({ servers, setSelectedChannel }) => {
           <div key={server._id || index} className="mb-3">
             <button
               className="w-full text-left p-2 rounded-lg hover:bg-gray-600"
-              onClick={() => handleServerClick(server)}>
+              onClick={() => handleServerClick(server)}
+            >
               {server.name}
             </button>
             {selectedItem?._id === server._id && server.channels && (
@@ -175,7 +206,12 @@ const ServersSideBar = ({ servers, setSelectedChannel }) => {
       )}
       {selectedServer && (
         <div className="mt-4">
-          <SearchResult type={"server"} data={selectedServer} onClose={() => setSelectedServer(null)}/>
+          <SearchResult
+            type={"server"}
+            data={selectedServer}
+            onClose={() => setSelectedServer(null)}
+            onClick={handleJoinServer}
+          />
         </div>
       )}
     </div>

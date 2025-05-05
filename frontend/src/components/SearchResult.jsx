@@ -43,11 +43,11 @@ const SearchResult = ({ type, data, onClose, onClick }) => {
               {data.name}
             </h2>
             <button
-              onClick={onClose}
+              onClick={() => onClick(data._id)}
               className="w-full py-2 rounded bg-green-600 hover:bg-green-700 flex items-center justify-center gap-2"
             >
               <FaSignInAlt />
-              Join Server
+              Request to join server
             </button>
           </>
         )}

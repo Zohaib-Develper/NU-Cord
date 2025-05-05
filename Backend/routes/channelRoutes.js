@@ -12,6 +12,7 @@ const {
   getAllUsersInServer,
   removeUserFromServer,
   deleteServer,
+  requestToJoinServer,
 } = require("../controllers/serverController");
 
 // /api/server/
@@ -19,6 +20,7 @@ router.route("/").get(getAllServers);
 router.route("/:serverId/users").get(getAllUsersInServer);
 router.delete("/:serverId/removeUser/:userId", removeUserFromServer);
 router.route("/:serverId").delete(deleteServer);
+router.post("/:serverId/join-request", Protect, requestToJoinServer);
 
 router
   .route("/:serverId/channels")
