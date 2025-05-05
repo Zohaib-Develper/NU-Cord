@@ -1,5 +1,6 @@
-import React, { useContext, useState} from "react";
+import React, { useContext, useState } from "react";
 import ChannelPage from "../components/ChannelPage";
+import Chat from "./Chat";
 import ProfileImage from "../assets/profile.jpeg";
 import Profile from "../components/Profile";
 import FriendsProfile from "../assets/profile2.jpeg";
@@ -17,6 +18,14 @@ import { AuthContext } from "../utils/AuthContext";
 import DirectMessagesSidebar from "./DirectMessagesSidebar";
 import ServersSideBar from "./ServersSideBar";
 import GroupsSideBar from "./GroupsSidebar";
+
+const getProfilePicUrl = (pfp) => {
+  if (!pfp) return ProfileImage;
+  if (pfp.startsWith("/uploads/")) {
+    return `http://localhost:8000${pfp}`;
+  }
+  return pfp;
+};
 
 const PageSpecificSidebar = ({ pageName, data, setSelected }) => {
   const [isMicMuted, setIsMicMuted] = useState(true);
@@ -47,9 +56,10 @@ const PageSpecificSidebar = ({ pageName, data, setSelected }) => {
       <div className="w-full bg-gray-900 text-white mt-auto flex items-center justify-between h-14 p-4">
         <div
           className="flex items-center gap-4 cursor-pointer"
-          onClick={() => setIsProfileOpen(true)}>
+          onClick={() => setIsProfileOpen(true)}
+        >
           <img
-            src={user.pfp}
+            src={getProfilePicUrl(user?.pfp)}
             alt="Profile"
             className="w-10 h-10 rounded-full"
           />
@@ -63,7 +73,8 @@ const PageSpecificSidebar = ({ pageName, data, setSelected }) => {
             className={`text-xl ${
               isMicMuted ? "text-red-600" : "text-white-500"
             } hover:text-white`}
-            onClick={() => setIsMicMuted(!isMicMuted)}>
+            onClick={() => setIsMicMuted(!isMicMuted)}
+          >
             {isMicMuted ? (
               <FaMicrophoneSlash className="text-xl cursor-pointer" />
             ) : (
@@ -74,7 +85,8 @@ const PageSpecificSidebar = ({ pageName, data, setSelected }) => {
             className={`text-xl ${
               isVideoOff ? "text-red-600" : "text-white-500"
             } hover:text-white`}
-            onClick={() => setIsVideoOff(!isVideoOff)}>
+            onClick={() => setIsVideoOff(!isVideoOff)}
+          >
             {isVideoOff ? (
               <FaVideoSlash className="text-xl cursor-pointer" />
             ) : (

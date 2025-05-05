@@ -1,4 +1,8 @@
 ### Node ###
+
+#Uploads
+uploads/ 
+
 # Logs
 logs
 *.log

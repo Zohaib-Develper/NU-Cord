@@ -17,18 +17,20 @@ const {
   deleteUser,
   suspendUser,
   unSuspendUser,
-  getAllStats
+  getAllStats,
+  updateProfile,
 } = require("../controllers/userController");
 const { testGoogleAuth } = require("../test/googleAuth");
-console.log("Hello from userRoutes.js");
+const multer = require("multer");
+const upload = multer({ dest: "uploads/" });
 
 const router = Router();
 
-router.get("/all", getAllUsers)
-router.delete('/:userId', deleteUser)
-router.post('/suspend/:userId', suspendUser)
-router.post('/unSuspend/:userId', unSuspendUser)
-router.get('/stats', getAllStats)
+router.get("/all", getAllUsers);
+router.delete("/:userId", deleteUser);
+router.post("/suspend/:userId", suspendUser);
+router.post("/unSuspend/:userId", unSuspendUser);
+router.get("/stats", getAllStats);
 
 //OAuth Routes
 router.get("/auth/google", googleAuth);
@@ -43,9 +45,9 @@ router.get("/search", searchUserByName);
 //Protected Routes(Below are all the routes that would require user to be signed in before accesing)
 router.use(Protect);
 router.get("/profile", getUserProfile);
+router.put("/profile", upload.single("pfp"), updateProfile);
 router.use("/friends", friendsRoutes);
 router.post("/block/:userIdToBlock", blockUser);
 router.post("/unblock/:blockedUserId", unblockUser);
-
 
 module.exports = router;

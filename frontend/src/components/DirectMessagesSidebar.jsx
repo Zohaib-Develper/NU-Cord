@@ -2,6 +2,15 @@ import React from "react";
 import { useState, useEffect, useRef } from "react";
 import SearchResult from "./SearchResult";
 import axios from "axios";
+
+const getProfilePicUrl = (pfp) => {
+  if (!pfp) return '';
+  if (pfp.startsWith('/uploads/')) {
+    return `http://localhost:8000${pfp}`;
+  }
+  return pfp;
+};
+
 const DirectMessagesSidebar = ({ directMessages, setSelectedDM }) => {
   const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -108,7 +117,7 @@ const DirectMessagesSidebar = ({ directMessages, setSelectedDM }) => {
           }}
         >
           <img
-            src={dm.pfp}
+            src={getProfilePicUrl(dm.pfp)}
             alt="User Profile"
             className="h-7 w-7 rounded-full"
           />

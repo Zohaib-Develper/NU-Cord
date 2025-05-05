@@ -83,7 +83,7 @@ const ServersSideBar = ({ servers, setSelectedChannel }) => {
   };
 
   const handleChannelClick = (channel) => {
-    setSelectedChannel(channel);
+    setSelectedChannel({ ...channel, type: 'server' });
   };
 
   const toggleCategory = (category) => {
@@ -130,6 +130,14 @@ const ServersSideBar = ({ servers, setSelectedChannel }) => {
         )}
       </div>
     );
+  };
+
+  const getProfilePicUrl = (pfp) => {
+    if (!pfp) return '';
+    if (pfp.startsWith('/uploads/')) {
+      return `http://localhost:8000${pfp}`;
+    }
+    return pfp;
   };
 
   return (

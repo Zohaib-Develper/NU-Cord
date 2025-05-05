@@ -41,7 +41,6 @@ const signup = async (req, res) => {
 const signin = async (req, res) => {
   try {
     const { username, password } = req.body;
-    console.log("🔐 Attempting sign in:", username);
 
     const token = await signinService({ username, password });
 
@@ -88,6 +87,7 @@ const getUserProfile = async (req, res) => {
     res.status(200).json({
       message: "User profile retrieved successfully",
       user: {
+        _id: user._id,
         name: user.name,
         batch: user.batch,
         pfp: user.pfp,
@@ -97,6 +97,8 @@ const getUserProfile = async (req, res) => {
         email: user.email,
         servers,
         friends,
+        role: user.role,
+        about: user.about,
       },
     });
   } catch (error) {
@@ -115,7 +117,6 @@ const blockUser = async (req, res) => {
 
     const user = await User.findById(userId);
     const blockedUser = await User.findById(userIdToBlock);
-    console.log(blockedUser);
 
     if (!user || !blockedUser)
       return res.status(404).json({ error: "User not found" });
@@ -198,7 +199,6 @@ const logout = (req, res) => {
         httpOnly: true,
         expires: new Date(0),
       });
-      console.log("🚪 Logged out successfully");
       return res.status(200).json({ message: "Logged out successfully" });
     } else {
       return res.status(200).json({ message: "User already logged out" });
@@ -328,6 +328,22 @@ const getAllStats = async (req, res) => {
   }
 };
 
+// Add this function to allow updating about and profile picture
+const updateProfile = async (req, res) => {
+  try {
+    const { about, socials } = req.body;
+    let update = {};
+    if (about !== undefined) update.about = about;
+    if (socials !== undefined) update.socials = socials;
+    if (req.file) update.pfp = `/uploads/${req.file.filename}`;
+
+    const user = await User.findByIdAndUpdate(req.user._id, update, { new: true });
+    res.status(200).json({ message: "Profile updated", user });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to update profile" });
+  }
+};
+
 module.exports = {
   signup,
   signin,
@@ -341,4 +357,5 @@ module.exports = {
   suspendUser,
   unSuspendUser,
   getAllStats,
+  updateProfile,
 };
