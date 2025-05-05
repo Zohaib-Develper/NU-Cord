@@ -25,17 +25,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Robust check for file existence before serving from /uploads
-app.get('/uploads/:filename', (req, res, next) => {
-  const filePath = path.join(__dirname, 'uploads', req.params.filename);
-  fs.stat(filePath, (err, stats) => {
-    if (err || !stats.isFile()) {
-      return res.status(404).send('File not found');
-    }
-    next();
-  });
-});
-
 // Serve static files from the uploads directory
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 

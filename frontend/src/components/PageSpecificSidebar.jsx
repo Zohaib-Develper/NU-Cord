@@ -18,6 +18,14 @@ import DirectMessagesSidebar from "./DirectMessagesSidebar";
 import ServersSideBar from "./ServersSideBar";
 import GroupsSideBar from "./GroupsSidebar";
 
+const getProfilePicUrl = (pfp) => {
+  if (!pfp) return ProfileImage;
+  if (pfp.startsWith('/uploads/')) {
+    return `http://localhost:8000${pfp}`;
+  }
+  return pfp;
+};
+
 const PageSpecificSidebar = ({ pageName, data, setSelected }) => {
   const [isMicMuted, setIsMicMuted] = useState(true);
   const [isVideoOff, setIsVideoOff] = useState(true);
@@ -58,7 +66,7 @@ const PageSpecificSidebar = ({ pageName, data, setSelected }) => {
           onClick={() => setIsProfileOpen(true)}
         >
           <img
-            src={user.pfp}
+            src={getProfilePicUrl(user?.pfp)}
             alt="Profile"
             className="w-10 h-10 rounded-full"
           />

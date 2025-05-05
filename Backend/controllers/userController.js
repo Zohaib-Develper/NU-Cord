@@ -331,9 +331,10 @@ const getAllStats = async (req, res) => {
 // Add this function to allow updating about and profile picture
 const updateProfile = async (req, res) => {
   try {
-    const { about } = req.body;
+    const { about, socials } = req.body;
     let update = {};
     if (about !== undefined) update.about = about;
+    if (socials !== undefined) update.socials = socials;
     if (req.file) update.pfp = `/uploads/${req.file.filename}`;
 
     const user = await User.findByIdAndUpdate(req.user._id, update, { new: true });

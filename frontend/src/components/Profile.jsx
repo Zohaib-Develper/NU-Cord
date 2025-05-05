@@ -24,6 +24,12 @@ const Profile = ({ onClose }) => {
   const [newProfilePic, setNewProfilePic] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
 
+  // Add state for socials editing
+  const [editSocials, setEditSocials] = useState(false);
+  const [socials, setSocials] = useState(user?.socials || { github: '', linkedin: '', instagram: '' });
+  const [newSocials, setNewSocials] = useState(socials);
+  const [isSavingSocials, setIsSavingSocials] = useState(false);
+
   useEffect(() => {
     const fetchGroups = async () => {
       try {
@@ -164,6 +170,33 @@ const Profile = ({ onClose }) => {
     }
   };
 
+  const handleSaveSocials = async () => {
+    setIsSavingSocials(true);
+    try {
+      const res = await axios.put(
+        "http://localhost:8000/user/profile",
+        { socials: newSocials },
+        { withCredentials: true }
+      );
+      login(res.data.user);
+      setUser(res.data.user);
+      setSocials(res.data.user.socials);
+      setEditSocials(false);
+    } catch (err) {
+      alert("Failed to update socials");
+    } finally {
+      setIsSavingSocials(false);
+    }
+  };
+
+  const getProfilePicUrl = (pfp) => {
+    if (!pfp) return DefaultProfile;
+    if (pfp.startsWith('/uploads/')) {
+      return `http://localhost:8000${pfp}`;
+    }
+    return pfp;
+  };
+
   return (
     <div
       className="fixed inset-0 bg-transparent bg-opacity-50 backdrop-blur-lg flex justify-center items-center"
@@ -177,7 +210,7 @@ const Profile = ({ onClose }) => {
         <div className="flex flex-col items-center gap-2 w-full">
           <div className="relative mb-2">
             <img
-              src={newProfilePic ? URL.createObjectURL(newProfilePic) : user?.pfp || DefaultProfile}
+              src={getProfilePicUrl(newProfilePic ? URL.createObjectURL(newProfilePic) : user?.pfp)}
               alt="Profile"
               className="w-32 h-32 rounded-full object-cover border-4 border-gray-700 shadow-lg"
             />
@@ -251,6 +284,14 @@ const Profile = ({ onClose }) => {
           >
             Servers
           </button>
+          <button
+            className={`hover:text-white cursor-pointer ${
+              activeTab === "socials" ? "border-b-2 border-white" : "text-gray-400"
+            }`}
+            onClick={() => setActiveTab("socials")}
+          >
+            Socials
+          </button>
         </div>
 
         {/* Content Sections */}
@@ -323,7 +364,7 @@ const Profile = ({ onClose }) => {
                       key={friend._id || idx}
                       className="flex items-center gap-4 p-2 rounded-lg hover:bg-gray-700 transition"
                     >
-                      <img src={friend.pfp || DefaultProfile} alt="Friend" className="w-8 h-8 rounded-full" />
+                      <img src={getProfilePicUrl(friend.pfp)} alt="Friend" className="w-8 h-8 rounded-full" />
                       <span className="text-gray-300 font-medium">{friend.name}</span>
                     </li>
                   ))
@@ -397,6 +438,86 @@ const Profile = ({ onClose }) => {
                   <li className="text-gray-400">No servers joined yet</li>
                 )}
               </ul>
+            </div>
+          )}
+
+          {activeTab === "socials" && (
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Socials</h3>
+              {editSocials ? (
+                <>
+                  <div className="mb-3">
+                    <label className="block text-gray-300 mb-1">GitHub</label>
+                    <input
+                      type="url"
+                      className="w-full p-2 rounded bg-gray-900 border border-gray-700 text-gray-200 focus:outline-none focus:border-blue-500"
+                      value={newSocials.github}
+                      onChange={e => setNewSocials({ ...newSocials, github: e.target.value })}
+                      placeholder="https://github.com/yourusername"
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label className="block text-gray-300 mb-1">LinkedIn</label>
+                    <input
+                      type="url"
+                      className="w-full p-2 rounded bg-gray-900 border border-gray-700 text-gray-200 focus:outline-none focus:border-blue-500"
+                      value={newSocials.linkedin}
+                      onChange={e => setNewSocials({ ...newSocials, linkedin: e.target.value })}
+                      placeholder="https://linkedin.com/in/yourusername"
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label className="block text-gray-300 mb-1">Instagram</label>
+                    <input
+                      type="url"
+                      className="w-full p-2 rounded bg-gray-900 border border-gray-700 text-gray-200 focus:outline-none focus:border-blue-500"
+                      value={newSocials.instagram}
+                      onChange={e => setNewSocials({ ...newSocials, instagram: e.target.value })}
+                      placeholder="https://instagram.com/yourusername"
+                    />
+                  </div>
+                  <div className="flex gap-3 mt-4">
+                    <button
+                      className={`bg-green-600 px-4 py-2 rounded font-semibold text-white hover:bg-green-700 transition flex items-center justify-center ${isSavingSocials ? "opacity-60 cursor-not-allowed" : ""}`}
+                      onClick={handleSaveSocials}
+                      disabled={isSavingSocials}
+                    >
+                      {isSavingSocials ? (
+                        <svg className="animate-spin h-5 w-5 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>
+                      ) : null}
+                      Save
+                    </button>
+                    <button
+                      className="bg-gray-600 px-4 py-2 rounded font-semibold text-white hover:bg-gray-700 transition"
+                      onClick={() => { setEditSocials(false); setNewSocials(socials); }}
+                      disabled={isSavingSocials}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="mb-3 flex items-center gap-2">
+                    <span className="font-semibold text-gray-300">GitHub:</span>
+                    <a href={socials.github} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline break-all">{socials.github}</a>
+                  </div>
+                  <div className="mb-3 flex items-center gap-2">
+                    <span className="font-semibold text-gray-300">LinkedIn:</span>
+                    <a href={socials.linkedin} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline break-all">{socials.linkedin}</a>
+                  </div>
+                  <div className="mb-3 flex items-center gap-2">
+                    <span className="font-semibold text-gray-300">Instagram:</span>
+                    <a href={socials.instagram} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline break-all">{socials.instagram}</a>
+                  </div>
+                  <button
+                    className="bg-blue-600 px-4 py-1 rounded mt-2 hover:bg-blue-700 transition font-semibold"
+                    onClick={() => setEditSocials(true)}
+                  >
+                    Edit Socials
+                  </button>
+                </>
+              )}
             </div>
           )}
         </div>

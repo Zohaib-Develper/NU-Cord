@@ -28,6 +28,14 @@ const GroupsSideBar = ({ groups, setSelectedGroup }) => {
     setShowMembers((prev) => !prev);
   };
 
+  const getProfilePicUrl = (pfp) => {
+    if (!pfp) return '';
+    if (pfp.startsWith('/uploads/')) {
+      return `http://localhost:8000${pfp}`;
+    }
+    return pfp;
+  };
+
   return (
     <div>
       <h2 className="text-xl font-bold mb-3">Joined Groups</h2>
@@ -84,7 +92,7 @@ const GroupsSideBar = ({ groups, setSelectedGroup }) => {
                               key={i}
                               className="ml-2 mt-2 text-gray-300 flex gap-3 items-center"
                             >
-                              <FaUser className="text-sm mt-1" />
+                              <img src={getProfilePicUrl(user.pfp)} alt="User" className="w-6 h-6 rounded-full mr-2" />
                               {user.name || userId}
                               {isAdmin && (
                                 <span className="text-yellow-300 text-sm font-semibold ml-2">

@@ -54,6 +54,14 @@ const ServersSideBar = ({ servers, setSelectedChannel }) => {
     );
   };
 
+  const getProfilePicUrl = (pfp) => {
+    if (!pfp) return '';
+    if (pfp.startsWith('/uploads/')) {
+      return `http://localhost:8000${pfp}`;
+    }
+    return pfp;
+  };
+
   return (
     <div>
       <h2 className="text-xl font-bold mb-3">Joined Servers</h2>
