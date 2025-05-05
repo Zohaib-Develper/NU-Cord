@@ -57,7 +57,7 @@ const SearchResult = ({ type, data, onClose, onClick }) => {
             <h2 className="text-xl font-bold mb-2">{data.name}</h2>
             <p className="text-gray-300 mb-4">Members: {data.users.length}</p>
             <button
-              onClick={onClose}
+              onClick={() => onClick(data._id)}
               className="w-full py-2 rounded bg-green-600 hover:bg-green-700 flex items-center justify-center gap-2"
             >
               <FaUsers />

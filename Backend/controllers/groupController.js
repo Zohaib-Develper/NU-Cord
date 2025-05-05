@@ -59,9 +59,9 @@ const createGroup = async (req, res) => {
  */
 const joinGroup = async (req, res) => {
   try {
-    const { inviteCode } = req.params;
+    const { groupId } = req.params;
 
-    const group = await Group.findOne({ inviteURL: inviteCode });
+    const group = await Group.findOne({ _id: groupId });
     if (!group) {
       return res.status(404).json({ error: "Group not found" });
     }

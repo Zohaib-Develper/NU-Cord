@@ -6,37 +6,13 @@ import {
   FaCrown,
   FaSignOutAlt,
 } from "react-icons/fa";
+import axios from "axios";
 import SearchResult from "../components/SearchResult";
 const GroupsSideBar = ({ groups, setSelectedGroup }) => {
   const [expandedGroup, setExpandedGroup] = useState(null);
   const [showMembers, setShowMembers] = useState(false);
-  console.log("GROUPS: ", groups);
-  const dummyGroups = [
-    {
-      _id: "1",
-      name: "CS-22-LHR",
-      users: [
-        { _id: "1", name: "Chand Ali" },
-        { _id: "2", name: "Zohaib Musharaf" },
-      ],
-      admin: "1",
-    },
-    {
-      _id: "2",
-      name: "Gaming Zone",
-      users: [{ _id: "3", name: "Abdul Rafay" }],
-      admin: "3",
-    },
-    {
-      _id: "3",
-      name: "FYP Group 8",
-      users: [
-        { _id: "1", name: "Chand Ali" },
-        { _id: "3", name: "Abdul Rafay" },
-      ],
-      admin: "1",
-    },
-  ];
+  const [groupss, setGroups] = useState([]);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedGroups, setSelectedGroups] = useState(null);
   const [searchResults, setSearchResults] = useState({
@@ -51,14 +27,43 @@ const GroupsSideBar = ({ groups, setSelectedGroup }) => {
       }
 
       const lowerSearch = searchTerm.toLowerCase();
-      const filteredGroups = dummyGroups.filter((group) =>
+      const filteredGroups = groups.filter((group) =>
         group.name.toLowerCase().includes(lowerSearch)
       );
 
       setSearchResults({ groupsList: filteredGroups });
     }
   };
+  const handleJoinGroup = async (groupId) => {
+    try {
+      const response = await axios.get(
+        `http://localhost:8000/api/groups/join/${groupId}`,
+
+        {
+          withCredentials: true,
+        }
+      );
+      setSelectedGroups(null);
+    } catch (error) {
+      alert(error.response?.data?.error);
+      console.error("Error fetching friend requests:", error);
+    }
+  };
   useEffect(() => {
+    const fetchGroups = async () => {
+      try {
+        const response = await axios.get("http://localhost:8000/api/groups", {
+          withCredentials: true,
+        });
+        if (response.data) {
+          console.log("Response.data: ", response.data);
+          setGroups(response.data.groups);
+        }
+      } catch (error) {
+        console.error("Error fetching friend requests:", error);
+      }
+    };
+    fetchGroups();
     const handleClickOutside = (event) => {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
         setSearchTerm("");
@@ -109,10 +114,12 @@ const GroupsSideBar = ({ groups, setSelectedGroup }) => {
                     key={group._id}
                     className="px-4 py-2 text-white hover:bg-gray-600 cursor-pointer"
                     onClick={() => {
+                      console.log("SELEC: ", group);
                       setSelectedGroups(group);
                       setSearchTerm("");
                       setSearchResults({ groupsList: [] });
-                    }}>
+                    }}
+                  >
                     {group.name}
                   </li>
                 ))}
@@ -126,7 +133,8 @@ const GroupsSideBar = ({ groups, setSelectedGroup }) => {
           <div key={index} className="mb-3">
             <button
               className="w-full text-left p-2 rounded-lg hover:bg-gray-600"
-              onClick={() => handleGroupClick(group)}>
+              onClick={() => handleGroupClick(group)}
+            >
               {group.name}
             </button>
 
@@ -137,13 +145,15 @@ const GroupsSideBar = ({ groups, setSelectedGroup }) => {
                   className="w-full text-left p-2 rounded-lg hover:bg-gray-600 flex gap-3"
                   onClick={() => {
                     if (setSelectedGroup) setSelectedGroup(group, "chat");
-                  }}>
+                  }}
+                >
                   <FaComments className="mt-1" />
                   Chat
                 </button>
                 <button
                   className="w-full text-left p-2 rounded-lg hover:bg-gray-600 mt-1 flex gap-3"
-                  onClick={handleShowMembers}>
+                  onClick={handleShowMembers}
+                >
                   <FaUserFriends className="mt-1" />
                   Members
                 </button>
@@ -166,7 +176,8 @@ const GroupsSideBar = ({ groups, setSelectedGroup }) => {
                         .map((user, i) => (
                           <p
                             key={i}
-                            className="ml-2 mt-2 text-gray-300 flex gap-3 items-center">
+                            className="ml-2 mt-2 text-gray-300 flex gap-3 items-center"
+                          >
                             <FaUser className="text-sm mt-1" />
                             {user.name}
                             {(group.admin === user._id ||
@@ -189,7 +200,12 @@ const GroupsSideBar = ({ groups, setSelectedGroup }) => {
       )}
       {selectedGroups && (
         <div className="mt-4">
-          <SearchResult type={"group"} data={selectedGroups} onClose={() => setSelectedGroups(null)}/>
+          <SearchResult
+            type={"group"}
+            data={selectedGroups}
+            onClose={() => setSelectedGroups(null)}
+            onClick={handleJoinGroup}
+          />
         </div>
       )}
     </div>
