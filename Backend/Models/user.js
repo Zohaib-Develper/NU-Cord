@@ -60,6 +60,7 @@ const userSchema = new Schema(
       type: Boolean,
       default: false
     },
+    about: { type: String, default: "" },
   },
   { timestamps: true }
 );

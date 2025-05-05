@@ -98,6 +98,7 @@ const getUserProfile = async (req, res) => {
         servers,
         friends,
         role: user.role,
+        about: user.about,
       },
     });
   } catch (error) {
@@ -327,6 +328,21 @@ const getAllStats = async (req, res) => {
   }
 };
 
+// Add this function to allow updating about and profile picture
+const updateProfile = async (req, res) => {
+  try {
+    const { about } = req.body;
+    let update = {};
+    if (about !== undefined) update.about = about;
+    if (req.file) update.pfp = `/uploads/${req.file.filename}`;
+
+    const user = await User.findByIdAndUpdate(req.user._id, update, { new: true });
+    res.status(200).json({ message: "Profile updated", user });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to update profile" });
+  }
+};
+
 module.exports = {
   signup,
   signin,
@@ -340,4 +356,5 @@ module.exports = {
   suspendUser,
   unSuspendUser,
   getAllStats,
+  updateProfile,
 };

@@ -529,7 +529,7 @@ const Chat = ({ selectedChannel }) => {
           </>
         ) : (
           <div className="flex flex-col items-center justify-center h-full text-gray-400">
-            <p>Select a channel to start chatting</p>
+            <p>Select a server/channel to start chatting</p>
           </div>
         )}
       </div>
