@@ -231,7 +231,7 @@ const Profile = ({ onClose }) => {
           <p className="text-gray-400">{user?.username}</p>
           {activeTab === "info" && !editMode && (
             <button
-              className="bg-blue-600 px-4 py-1 rounded mt-3 hover:bg-blue-700 transition font-semibold"
+              className="bg-[#6219EC] px-4 py-1 rounded mt-3 hover:bg-[#6B2DB3] transition font-semibold"
               onClick={() => {
                 setEditMode(true);
                 setNewAbout(user?.about || "");
@@ -511,7 +511,7 @@ const Profile = ({ onClose }) => {
                     <a href={socials.instagram} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline break-all">{socials.instagram}</a>
                   </div>
                   <button
-                    className="bg-blue-600 px-4 py-1 rounded mt-2 hover:bg-blue-700 transition font-semibold"
+                    className="bg-[#6219EC] px-4 py-1 rounded mt-2 hover:bg-[#6B2DB3] transition font-semibold"
                     onClick={() => setEditSocials(true)}
                   >
                     Edit Socials
