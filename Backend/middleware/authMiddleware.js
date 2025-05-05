@@ -78,7 +78,6 @@ const Protect = async (req, res, next) => {
     // 3. Check if user exists
 
     const currentUser = await User.findById(decoded._id);
-    console.log("ID: ", currentUser);
     if (!currentUser) {
       return res.status(401).json({
         error: "The user belonging to this token no longer exists.",

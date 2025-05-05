@@ -1,27 +1,9 @@
 import React from "react";
 import { useState, useEffect, useRef } from "react";
 import SearchResult from "./SearchResult";
+import axios from "axios";
 const DirectMessagesSidebar = ({ directMessages, setSelectedDM }) => {
-  const dummyUsers = [
-    {
-      _id: "1",
-      name: "Chand Ali",
-      username: "l226945",
-      pfp: "https://via.placeholder.com/150",
-    },
-    {
-      _id: "2",
-      name: "Zohaib Musharaf",
-      username: "l227946",
-      pfp: "https://via.placeholder.com/150",
-    },
-    {
-      _id: "3",
-      name: "Abdul Rafay",
-      username: "l226581",
-      pfp: "https://via.placeholder.com/150",
-    },
-  ];
+  const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedUser, setSelectedUser] = useState(null);
   const [searchResults, setSearchResults] = useState({
@@ -36,14 +18,42 @@ const DirectMessagesSidebar = ({ directMessages, setSelectedDM }) => {
       }
 
       const lowerSearch = searchTerm.toLowerCase();
-      const filteredUsers = dummyUsers.filter((user) =>
+      const filteredUsers = users.filter((user) =>
         user.name.toLowerCase().includes(lowerSearch)
       );
 
       setSearchResults({ usersList: filteredUsers });
     }
   };
+  const handleAddFriend = async (friendId) => {
+    try {
+      const response = await axios.post(
+        `http://localhost:8000/api/friend/send/${friendId}`,
+        {},
+        {
+          withCredentials: true,
+        }
+      );
+    } catch (error) {
+      alert(error.response.data?.error);
+      console.error("Error fetching friend requests:", error);
+    }
+  };
   useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await axios.get("http://localhost:8000/user/all", {
+          withCredentials: true,
+        });
+        if (response.data) {
+          console.log("Response.data: ", response.data);
+          setUsers(response.data.users);
+        }
+      } catch (error) {
+        console.error("Error fetching friend requests:", error);
+      }
+    };
+    fetchUsers();
     const handleClickOutside = (event) => {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
         setSearchTerm("");
@@ -79,7 +89,8 @@ const DirectMessagesSidebar = ({ directMessages, setSelectedDM }) => {
                       setSelectedUser(user);
                       setSearchTerm("");
                       setSearchResults({ usersList: [] });
-                    }}>
+                    }}
+                  >
                     {user.name}
                   </li>
                 ))}
@@ -94,7 +105,8 @@ const DirectMessagesSidebar = ({ directMessages, setSelectedDM }) => {
           className="p-2 rounded-lg hover:bg-gray-600 mb-3 cursor-pointer flex gap-3 items-center"
           onClick={() => {
             setSelectedDM(dm);
-          }}>
+          }}
+        >
           <img
             src={dm.pfp}
             alt="User Profile"
@@ -106,7 +118,12 @@ const DirectMessagesSidebar = ({ directMessages, setSelectedDM }) => {
       ))}
       {selectedUser && (
         <div className="mt-4">
-          <SearchResult type={"user"} data={selectedUser} onClose={() => setSelectedUser(null)}/>
+          <SearchResult
+            type={"user"}
+            data={selectedUser}
+            onClose={() => setSelectedUser(null)}
+            onClick={handleAddFriend}
+          />
         </div>
       )}
     </div>

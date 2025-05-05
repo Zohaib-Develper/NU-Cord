@@ -14,7 +14,6 @@ const sendFriendRequest = async (req, res) => {
 
     const sender = await User.findById(senderId);
     const receiver = await User.findById(receiverId);
-
     if (!receiver) return res.status(404).json({ error: "User not found" });
 
     // Block check: sender or receiver must not have blocked each other
@@ -32,6 +31,7 @@ const sendFriendRequest = async (req, res) => {
       sender.friendRequestsSent.includes(receiverId) ||
       receiver.friendRequestsSent.includes(senderId)
     ) {
+      console.log("AERJEK:");
       return res.status(400).json({
         error:
           "A friend request already exists. Kindly only accept/reject the already present request.",

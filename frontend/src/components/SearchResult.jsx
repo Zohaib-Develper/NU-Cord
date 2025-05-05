@@ -1,7 +1,7 @@
 import React from "react";
 import { FaUserPlus, FaSignInAlt, FaUsers } from "react-icons/fa";
 
-const SearchResult = ({ type, data, onClose }) => {
+const SearchResult = ({ type, data, onClose, onClick }) => {
   if (!data) return null;
 
   return (
@@ -9,7 +9,8 @@ const SearchResult = ({ type, data, onClose }) => {
       <div className="bg-gray-900 text-white rounded-xl p-6 w-[90%] max-w-md shadow-lg relative">
         <button
           onClick={onClose}
-          className="absolute top-2 right-4 text-gray-400 hover:text-white text-xl">
+          className="absolute top-2 right-4 text-gray-400 hover:text-white text-xl"
+        >
           ×
         </button>
 
@@ -27,8 +28,9 @@ const SearchResult = ({ type, data, onClose }) => {
               </div>
             </div>
             <button
-              onClick={onClose}
-              className="w-full py-2 mt-2 rounded bg-blue-600 hover:bg-blue-700 flex items-center justify-center gap-2">
+              onClick={() => onClick(data._id)}
+              className="w-full py-2 mt-2 rounded bg-blue-600 hover:bg-blue-700 flex items-center justify-center gap-2"
+            >
               <FaUserPlus />
               Add Friend
             </button>
@@ -42,7 +44,8 @@ const SearchResult = ({ type, data, onClose }) => {
             </h2>
             <button
               onClick={onClose}
-              className="w-full py-2 rounded bg-green-600 hover:bg-green-700 flex items-center justify-center gap-2">
+              className="w-full py-2 rounded bg-green-600 hover:bg-green-700 flex items-center justify-center gap-2"
+            >
               <FaSignInAlt />
               Join Server
             </button>
@@ -55,7 +58,8 @@ const SearchResult = ({ type, data, onClose }) => {
             <p className="text-gray-300 mb-4">Members: {data.users.length}</p>
             <button
               onClick={onClose}
-              className="w-full py-2 rounded bg-green-600 hover:bg-green-700 flex items-center justify-center gap-2">
+              className="w-full py-2 rounded bg-green-600 hover:bg-green-700 flex items-center justify-center gap-2"
+            >
               <FaUsers />
               Request to Join
             </button>
