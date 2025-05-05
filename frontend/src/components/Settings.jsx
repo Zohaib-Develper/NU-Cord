@@ -9,7 +9,7 @@ const Settings = ({ onClose }) => {
 
   return (
     <div
-      className="fixed inset-0 bg-transparent bg-opacity-50 backdrop-blur-lg flex justify-center items-center"
+      className="fixed inset-0 bg-transparent bg-opacity-50 backdrop-blur-lg z-50 flex justify-center items-center"
       onClick={onClose}
     >
       <div
@@ -21,7 +21,6 @@ const Settings = ({ onClose }) => {
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow">
-          {/* Username (Editable) */}
           <div>
             <label className="text-gray-400">Username</label>
             <input

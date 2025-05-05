@@ -1,70 +1,113 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { FaSearch } from "react-icons/fa";
-import axios from "axios";
 import FriendsImage from "../assets/friends.png";
-import UserProfileModal from "../components/UserProfileModal";
-import ServerProfileModal from "../components/ServerProfileModal";
 
+const dummyUsers = [
+  { _id: "1", name: "Chand Ali", username: "l226945" },
+  { _id: "2", name: "Zohaib Musharaf", username: "l227946" },
+  { _id: "3", name: "Abdul Rafay", username: "l226581" },
+];
+
+const dummyServers = [
+  { _id: "1", name: "CS-22-LHR" },
+  { _id: "2", name: "Gaming Zone" },
+  { _id: "3", name: "FYP Group 7" },
+];
+const dummyGroups = [
+  {
+    _id: "1",
+    name: "CS-22-LHR",
+    users: [
+      { _id: "1", name: "Chand Ali" },
+      { _id: "2", name: "Zohaib Musharaf" },
+    ],
+    admin: "1",
+  },
+  {
+    _id: "2",
+    name: "Gaming Zone",
+    users: [{ _id: "3", name: "Abdul Rafay" }],
+    admin: "3",
+  },
+  {
+    _id: "3",
+    name: "FYP Group 8",
+    users: [
+      { _id: "1", name: "Chand Ali" },
+      { _id: "3", name: "Abdul Rafay" },
+    ],
+    admin: "1",
+  },
+];
 const Landing = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedServer, setSelectedServer] = useState(null);
+  const [selectedGroup, setSelectedGroup] = useState(null);
   const [searchResults, setSearchResults] = useState({
-    users: [],
-    servers: [],
+    usersList: [],
+    serversList: [],
+    groupsList: [],
   });
   const searchRef = useRef(null);
-  const handleSearch = async (e) => {
-    setSearchTerm(e.target.value);
 
-    if (e.target.value.trim() === "") {
-      setSearchResults({ users: [], servers: [] });
-      return;
-    }
+  const handleSearchKeyDown = (e) => {
+    if (e.key === "Enter") {
+      if (searchTerm.trim() === "") {
+        setSearchResults({ usersList: [], serversList: [], groupsList: [] });
+        return;
+      }
 
-    try {
-      const response = await axios.get(
-        `http://localhost:8000/search?query=${e.target.value}`,
-        { withCredentials: true }
+      const lowerSearch = searchTerm.toLowerCase();
+      const filteredUsers = dummyUsers.filter(
+        (user) =>
+          user.name.toLowerCase().includes(lowerSearch) ||
+          user.username.toLowerCase().includes(lowerSearch)
       );
-      setSearchResults(response.data);
-    } catch (error) {
-      console.error("Error fetching search results", error);
+      const filteredServers = dummyServers.filter((server) =>
+        server.name.toLowerCase().includes(lowerSearch)
+      );
+      const filteredGroups = dummyGroups.filter((group) =>
+        group.name.toLowerCase().includes(lowerSearch)
+      );
+
+      setSearchResults({ usersList: filteredUsers, serversList: filteredServers, groupsList: filteredGroups });
     }
   };
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
         setSearchTerm("");
-        setSearchResults({ users: [], servers: [] });
+        setSearchResults({ usersList: [], serversList: [] });
       }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
   return (
     <div className="w-full bg-gray-800 text-white flex-1 p-4 md:p-8">
       <div className="mb-6 w-full relative max-w-6xl mx-auto" ref={searchRef}>
         <FaSearch className="absolute top-1/2 left-4 transform -translate-y-1/2 text-gray-500 text-lg" />
         <input
           type="text"
-          placeholder="Search for friends, messages, or groups..."
+          placeholder="Search for friends or servers..."
           className="w-full pl-12 pr-4 py-2 rounded-lg shadow-md text-white bg-gray-700 text-base md:text-lg focus:outline-none"
           value={searchTerm}
-          onChange={handleSearch}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          onKeyDown={handleSearchKeyDown}
         />
 
-        {searchTerm && (
+        {searchResults.usersList.length > 0 || searchResults.serversList.length > 0 ? (
           <div className="absolute top-full left-0 w-full bg-gray-700 rounded-lg mt-2 shadow-lg z-10">
             <div className="max-h-60 overflow-y-auto">
-              {searchResults.users.length > 0 && (
+              {searchResults.usersList.length > 0 && (
                 <div>
                   <h3 className="text-gray-300 px-3 py-1">Users</h3>
                   <ul>
-                    {searchResults.users.map((user) => (
+                    {searchResults.usersList.map((user) => (
                       <li
                         key={user._id}
                         className="px-4 py-2 text-white hover:bg-gray-600 cursor-pointer"
@@ -78,11 +121,11 @@ const Landing = () => {
                   </ul>
                 </div>
               )}
-              {searchResults.servers.length > 0 && (
+              {searchResults.serversList.length > 0 && (
                 <div>
                   <h3 className="text-gray-300 px-3 py-1">Servers</h3>
                   <ul>
-                    {searchResults.servers.map((server) => (
+                    {searchResults.serversList.map((server) => (
                       <li
                         key={server._id}
                         className="px-4 py-2 text-white hover:bg-gray-600 cursor-pointer"
@@ -93,9 +136,24 @@ const Landing = () => {
                   </ul>
                 </div>
               )}
+              {searchResults.groupsList.length > 0 && (
+                <div>
+                  <h3 className="text-gray-300 px-3 py-1">Groups</h3>
+                  <ul>
+                    {searchResults.groupsList.map((group) => (
+                      <li
+                        key={group._id}
+                        className="px-4 py-2 text-white hover:bg-gray-600 cursor-pointer"
+                        onClick={() => setSelectedGroup(group)}>
+                        {group.name}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           </div>
-        )}
+        ) : null}
       </div>
 
       <div className="flex flex-col items-center justify-center">
@@ -129,18 +187,6 @@ const Landing = () => {
           </h2>
         </div>
       </div>
-      {selectedUser && (
-        <UserProfileModal
-          user={selectedUser}
-          onClose={() => setSelectedUser(null)}
-        />
-      )}
-      {selectedServer && (
-        <ServerProfileModal
-          server={selectedServer}
-          onClose={() => setSelectedServer(null)}
-        />
-      )}
     </div>
   );
 };

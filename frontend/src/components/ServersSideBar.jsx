@@ -1,10 +1,55 @@
 import React from "react";
-import { useState } from "react";
-import { FaChevronDown, FaChevronRight, FaHashtag, FaVolumeUp } from "react-icons/fa";
-
+import { useState, useEffect, useRef } from "react";
+import {
+  FaChevronDown,
+  FaChevronRight,
+  FaHashtag,
+  FaVolumeUp,
+} from "react-icons/fa";
+import SearchResult from "../components/SearchResult";
 const ServersSideBar = ({ servers, setSelectedChannel }) => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [expandedCategories, setExpandedCategories] = useState({});
+
+  const dummyServers = [
+    { _id: "1", name: "CS-22-LHR" },
+    { _id: "2", name: "Gaming Zone" },
+    { _id: "3", name: "FYP Group 7" },
+  ];
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedServer, setSelectedServer] = useState(null);
+  const [searchResults, setSearchResults] = useState({
+    serversList: [],
+  });
+  const searchRef = useRef(null);
+
+  const handleSearchKeyDown = (e) => {
+    if (e.key === "Enter") {
+      if (searchTerm.trim() === "") {
+        setSearchResults({ usersList: [], serversList: [] });
+        return;
+      }
+
+      const lowerSearch = searchTerm.toLowerCase();
+      const filteredServers = dummyServers.filter((server) =>
+        server.name.toLowerCase().includes(lowerSearch)
+      );
+
+      setSearchResults({ serversList: filteredServers });
+    }
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setSearchTerm("");
+        setSearchResults({ serversList: [] });
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleServerClick = (server) => {
     setSelectedItem(selectedItem?._id === server._id ? null : server);
@@ -15,9 +60,9 @@ const ServersSideBar = ({ servers, setSelectedChannel }) => {
   };
 
   const toggleCategory = (category) => {
-    setExpandedCategories(prev => ({
+    setExpandedCategories((prev) => ({
       ...prev,
-      [category]: !prev[category]
+      [category]: !prev[category],
     }));
   };
 
@@ -26,9 +71,12 @@ const ServersSideBar = ({ servers, setSelectedChannel }) => {
       <p
         key={channel._id || i}
         className="ml-2 text-gray-300 cursor-pointer hover:text-white flex items-center gap-2"
-        onClick={() => handleChannelClick(channel)}
-      >
-        {type === 'text' ? <FaHashtag className="text-xs" /> : <FaVolumeUp className="text-xs" />}
+        onClick={() => handleChannelClick(channel)}>
+        {type === "text" ? (
+          <FaHashtag className="text-xs" />
+        ) : (
+          <FaVolumeUp className="text-xs" />
+        )}
         {channel.name}
       </p>
     ));
@@ -38,17 +86,18 @@ const ServersSideBar = ({ servers, setSelectedChannel }) => {
     const isExpanded = expandedCategories[title];
     return (
       <div className="mb-2">
-        <div 
+        <div
           className="flex items-center gap-1 text-gray-400 cursor-pointer hover:text-gray-300"
-          onClick={() => toggleCategory(title)}
-        >
-          {isExpanded ? <FaChevronDown className="text-xs" /> : <FaChevronRight className="text-xs" />}
+          onClick={() => toggleCategory(title)}>
+          {isExpanded ? (
+            <FaChevronDown className="text-xs" />
+          ) : (
+            <FaChevronRight className="text-xs" />
+          )}
           <span className="text-sm font-semibold">{title}</span>
         </div>
         {isExpanded && (
-          <div className="ml-4 mt-1">
-            {renderChannelList(channels, type)}
-          </div>
+          <div className="ml-4 mt-1">{renderChannelList(channels, type)}</div>
         )}
       </div>
     );
@@ -57,26 +106,65 @@ const ServersSideBar = ({ servers, setSelectedChannel }) => {
   return (
     <div>
       <h2 className="text-xl font-bold mb-3">Joined Servers</h2>
+      <div className="relative mb-3" ref={searchRef}>
+        <input
+          type="text"
+          placeholder="Search servers..."
+          className="w-full p-2 rounded bg-gray-700 text-white focus:outline-none"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          onKeyDown={handleSearchKeyDown}
+        />
+        {searchResults.serversList.length > 0 && (
+          <div className="absolute top-full left-0 w-full bg-gray-700 rounded-lg mt-2 shadow-lg z-10">
+            <div className="max-h-60 overflow-y-auto">
+              <h3 className="text-gray-300 px-3 py-1">Servers</h3>
+              <ul>
+                {searchResults.serversList.map((server) => (
+                  <li
+                    key={server._id}
+                    className="px-4 py-2 text-white hover:bg-gray-600 cursor-pointer"
+                    onClick={() => {
+                      setSelectedServer(server);
+                      setSearchTerm("");
+                      setSearchResults({ serversList: [] });
+                    }}>
+                    {server.name}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
+      </div>
+
       {servers && servers.length > 0 ? (
         servers.map((server, index) => (
           <div key={server._id || index} className="mb-3">
             <button
               className="w-full text-left p-2 rounded-lg hover:bg-gray-600"
-              onClick={() => handleServerClick(server)}
-            >
+              onClick={() => handleServerClick(server)}>
               {server.name}
             </button>
             {selectedItem?._id === server._id && server.channels && (
               <div className="ml-4 mt-2">
                 {renderCategory(
                   "Text Channels",
-                  server.channels.filter(channel => !channel.name.toLowerCase().includes('voice') && !channel.name.toLowerCase().includes('study')),
-                  'text'
+                  server.channels.filter(
+                    (channel) =>
+                      !channel.name.toLowerCase().includes("voice") &&
+                      !channel.name.toLowerCase().includes("study")
+                  ),
+                  "text"
                 )}
                 {renderCategory(
                   "Voice Channels",
-                  server.channels.filter(channel => channel.name.toLowerCase().includes('voice') || channel.name.toLowerCase().includes('study')),
-                  'voice'
+                  server.channels.filter(
+                    (channel) =>
+                      channel.name.toLowerCase().includes("voice") ||
+                      channel.name.toLowerCase().includes("study")
+                  ),
+                  "voice"
                 )}
               </div>
             )}
@@ -84,6 +172,11 @@ const ServersSideBar = ({ servers, setSelectedChannel }) => {
         ))
       ) : (
         <p className="text-gray-400">No servers joined yet.</p>
+      )}
+      {selectedServer && (
+        <div className="mt-4">
+          <SearchResult type={"server"} data={selectedServer} onClose={() => setSelectedServer(null)}/>
+        </div>
       )}
     </div>
   );
