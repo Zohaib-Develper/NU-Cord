@@ -10,9 +10,9 @@ const groupRoutes = require("./routes/groupRoutes.js");
 const friendRoutes = require("./routes/friendsRoutes.js");
 const channelRoutes = require("./routes/channelRoutes.js");
 const chatRoutes = require("./routes/chatRoutes.js");
+const serverRoutes = require("./routes/serverRoutes");
 const socket = require("./socket");
 const Chat = require("./Models/Chat.js");
-const serverRoutes = require("./routes/serverRoutes.js");
 
 const app = express();
 const server = http.createServer(app);
@@ -27,7 +27,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // Serve static files from the uploads directory
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // CORS Middleware
 app.use(
@@ -49,7 +49,7 @@ app.use("/api/chat", chatRoutes);
 const users = new Map();
 
 // Helper to get a unique room name for a DM
-const getDMRoom = (userId1, userId2) => [userId1, userId2].sort().join('_');
+const getDMRoom = (userId1, userId2) => [userId1, userId2].sort().join("_");
 
 io.on("connection", (socket) => {
   console.log("🟢 New client connected:", socket.id);
@@ -67,20 +67,25 @@ io.on("connection", (socket) => {
   });
 
   // Delete for everyone in DM
-  socket.on("deleteDirectMessageForEveryone", async ({ messageId, senderId, receiverId }) => {
-    try {
-      const message = await Chat.findById(messageId);
-      if (message && message.sender.toString() === senderId) {
-        message.deleteFromEveryone = true;
-        await message.save();
-        const updatedMessage = await Chat.findById(messageId).populate('sender');
-        const room = getDMRoom(senderId, receiverId);
-        io.to(room).emit("messageDeletedForEveryone", updatedMessage);
+  socket.on(
+    "deleteDirectMessageForEveryone",
+    async ({ messageId, senderId, receiverId }) => {
+      try {
+        const message = await Chat.findById(messageId);
+        if (message && message.sender.toString() === senderId) {
+          message.deleteFromEveryone = true;
+          await message.save();
+          const updatedMessage = await Chat.findById(messageId).populate(
+            "sender"
+          );
+          const room = getDMRoom(senderId, receiverId);
+          io.to(room).emit("messageDeletedForEveryone", updatedMessage);
+        }
+      } catch (error) {
+        console.error("Error deleting message for everyone:", error);
       }
-    } catch (error) {
-      console.error("Error deleting message for everyone:", error);
     }
-  });
+  );
 
   // Group message
   socket.on("groupMessage", ({ groupId, senderId, message }) => {
@@ -92,31 +97,31 @@ io.on("connection", (socket) => {
   });
 
   // Handle call signaling events
-  socket.on('callUser', ({ from, to, offer, type }) => {
+  socket.on("callUser", ({ from, to, offer, type }) => {
     const targetSocketId = users.get(to);
     if (targetSocketId) {
-      io.to(targetSocketId).emit('incomingCall', { from, offer, type });
+      io.to(targetSocketId).emit("incomingCall", { from, offer, type });
     }
   });
 
-  socket.on('answerCall', ({ from, to, answer }) => {
+  socket.on("answerCall", ({ from, to, answer }) => {
     const targetSocketId = users.get(to);
     if (targetSocketId) {
-      io.to(targetSocketId).emit('callAnswered', { answer });
+      io.to(targetSocketId).emit("callAnswered", { answer });
     }
   });
 
-  socket.on('iceCandidate', ({ to, candidate }) => {
+  socket.on("iceCandidate", ({ to, candidate }) => {
     const targetSocketId = users.get(to);
     if (targetSocketId) {
-      io.to(targetSocketId).emit('iceCandidate', { candidate });
+      io.to(targetSocketId).emit("iceCandidate", { candidate });
     }
   });
 
-  socket.on('endCall', ({ to }) => {
+  socket.on("endCall", ({ to }) => {
     const targetSocketId = users.get(to);
     if (targetSocketId) {
-      io.to(targetSocketId).emit('callEnded');
+      io.to(targetSocketId).emit("callEnded");
     }
   });
 
