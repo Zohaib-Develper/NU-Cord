@@ -58,8 +58,9 @@ const userSchema = new Schema(
     groups: [{ type: Schema.Types.ObjectId, ref: "Group" }],
     isSuspended: {
       type: Boolean,
-      default: false
+      default: false,
     },
+    about: { type: String, default: "Hey there fellow FASTIANS!" },
   },
   { timestamps: true }
 );
@@ -70,9 +71,9 @@ userSchema.statics.getUserFriends = async function (userId) {
     const user = await this.findById(userId).populate("friends", "name pfp");
     return user
       ? user.friends.map(({ name, pfp }) => ({
-        name,
-        pfp: pfp || "/images/userpfp.png",
-      }))
+          name,
+          pfp: pfp || "/images/userpfp.png",
+        }))
       : [];
   } catch (error) {
     console.error("Error fetching user friends:", error);

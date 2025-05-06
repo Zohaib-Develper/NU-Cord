@@ -9,7 +9,6 @@ const registerUserToServerController = async (req, res) => {
 
 const getServers = async (req, res) => {
   try {
-    console.log("Hello from Servers controller");
     // console.log("User ID:", req.user._id);
     const user = await User.findById(req.user._id);
     if (!user) {

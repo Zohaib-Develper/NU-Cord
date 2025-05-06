@@ -8,7 +8,6 @@ const {
   getFriends,
 } = require("../controllers/friendsController");
 const { Protect } = require("../middleware/authMiddleware");
-console.log("Hello from friendsRoutes.js");
 
 const router = Router();
 // '/api/friend/--'
