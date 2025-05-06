@@ -12,7 +12,7 @@ const DirectMessagesPage = () => {
       .get("http://localhost:8000/user/friends", { withCredentials: true })
       .then((res) => {
         console.log(res.data.friends);
-        setDirectMessagesData(res.data.friends);
+        setDirectMessagesData(res.data.friends.map(friend => ({ ...friend, type: 'direct' })));
       })
       .catch((err) => {
         console.log("Error from backend: ", err);
@@ -28,7 +28,7 @@ const DirectMessagesPage = () => {
         <PageSpecificSidebar
           pageName="directMessages"
           data={directMessagesData}
-          setSelected={setSelectedDM}
+          setSelected={dm => setSelectedDM({ ...dm, type: 'direct' })}
         />
       </div>
       <div className="flex-1 bg-[#151e2c] p-4 overflow-auto flex flex-col h-full min-h-0">

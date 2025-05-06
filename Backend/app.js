@@ -91,6 +91,35 @@ io.on("connection", (socket) => {
     });
   });
 
+  // Handle call signaling events
+  socket.on('callUser', ({ from, to, offer, type }) => {
+    const targetSocketId = users.get(to);
+    if (targetSocketId) {
+      io.to(targetSocketId).emit('incomingCall', { from, offer, type });
+    }
+  });
+
+  socket.on('answerCall', ({ from, to, answer }) => {
+    const targetSocketId = users.get(to);
+    if (targetSocketId) {
+      io.to(targetSocketId).emit('callAnswered', { answer });
+    }
+  });
+
+  socket.on('iceCandidate', ({ to, candidate }) => {
+    const targetSocketId = users.get(to);
+    if (targetSocketId) {
+      io.to(targetSocketId).emit('iceCandidate', { candidate });
+    }
+  });
+
+  socket.on('endCall', ({ to }) => {
+    const targetSocketId = users.get(to);
+    if (targetSocketId) {
+      io.to(targetSocketId).emit('callEnded');
+    }
+  });
+
   // Cleanup on disconnect
   socket.on("disconnect", () => {
     for (let [userId, sockId] of users.entries()) {

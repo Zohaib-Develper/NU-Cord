@@ -212,7 +212,6 @@ const logout = (req, res) => {
 
 const searchUserByName = async (req, res) => {
   try {
-    console.log("Hello from searchUserByName");
 
     const { name } = req.query;
     const users = await User.find({
