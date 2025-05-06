@@ -15,6 +15,7 @@ import DirectMessagesPage from "./pages/DirectMessagesPage";
 import GroupsPage from "./pages/GroupsPage";
 import AdminPage from "./pages/AdminPage";
 import AdminRoute from "./utils/AdminRoute";
+import ForgotPassword from './components/ForgotPassword';
 function App() {
   return (
     <AuthProvider>
@@ -23,6 +24,7 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword onBackToLogin={() => navigate('/login')} />} />
           <Route
             path="/admin"
             element={

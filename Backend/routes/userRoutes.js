@@ -18,6 +18,9 @@ const {
   suspendUser,
   unSuspendUser,
   getAllStats,
+  forgotPassword,
+  verifyOTP,
+  resetPassword,
 } = require("../controllers/userController");
 const { testGoogleAuth } = require("../test/googleAuth");
 
@@ -38,6 +41,11 @@ router.post("/auth/google/test", testGoogleAuth);
 router.post("/signin", signin);
 router.get("/logout", logout);
 router.get("/search", searchUserByName);
+
+//forget password routes
+router.post("/forgot-password", forgotPassword);
+router.post("/verify-otp", verifyOTP);
+router.post("/reset-password", resetPassword);
 
 //Protected Routes(Below are all the routes that would require user to be signed in before accesing)
 router.use(Protect);

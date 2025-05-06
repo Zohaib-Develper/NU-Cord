@@ -5,6 +5,9 @@ const Channel = require("../models/channel");
 const { signupService, signinService } = require("../services/userService");
 const { registerUserToServer } = require("../services/serverService");
 const { validateToken } = require("../utils/authentication/auth");
+const encryptPassword = require("../utils/helpers/encryptPassword");
+const crypto = require("crypto");
+const nodemailer = require("nodemailer");
 
 const signup = async (req, res) => {
   try {
@@ -327,6 +330,133 @@ const getAllStats = async (req, res) => {
   }
 };
 
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.ORG_EMAIL,
+    pass: process.env.ORG_EMAIL_PASSWORD,
+  },
+});
+
+const generateOTP = () => {
+  return crypto.randomInt(100000, 999999).toString();
+};
+
+const otpStore = new Map();
+
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Email not found" });
+    }
+
+    const otp = generateOTP();
+    const otpExpiry = Date.now() + 15 * 60 * 1000;
+
+    otpStore.set(email, { otp, expiry: otpExpiry });
+
+    const mailOptions = {
+      from: `"NU-Cord" <${process.env.ORG_EMAIL}>`,
+      to: email,
+      subject: "Password Reset OTP",
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #6C3CE9;">Password Reset Request</h2>
+          <p>You have requested to reset your password for NU-Cord. Please use the following OTP to verify your identity:</p>
+          <div style="background: #f5f5f5; padding: 20px; text-align: center; margin: 20px 0;">
+            <h1 style="margin: 0; color: #6C3CE9; font-size: 28px;">${otp}</h1>
+          </div>
+          <p>This OTP is valid for 15 minutes. If you didn't request this, please ignore this email.</p>
+          <p style="margin-top: 30px; color: #777;">NU-Cord Team</p>
+        </div>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).json({
+      success: true,
+      message: "OTP sent to your email",
+    });
+  } catch (error) {
+    console.error("Error in forgotPassword:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to send OTP",
+    });
+  }
+};
+
+const verifyOTP = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    const storedOtp = otpStore.get(email);
+    if (!storedOtp || storedOtp.expiry < Date.now()) {
+      return res.status(400).json({
+        success: false,
+        message: "OTP expired or invalid",
+      });
+    }
+
+    if (storedOtp.otp !== otp) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid OTP",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "OTP verified successfully",
+    });
+  } catch (error) {
+    console.error("Error in verifyOTP:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to verify OTP",
+    });
+  }
+};
+const resetPassword = async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+    const storedOtp = otpStore.get(email);
+    if (!storedOtp || storedOtp.expiry < Date.now() || storedOtp.otp !== otp) {
+      return res.status(400).json({
+        success: false,
+        message: "OTP expired or invalid",
+      });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+    user.password = await encryptPassword(newPassword);
+    await user.save();
+    otpStore.delete(email);
+
+    res.status(200).json({
+      success: true,
+      message: "Password reset successfully",
+    });
+  } catch (error) {
+    console.error("Error in resetPassword:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to reset password",
+    });
+  }
+};
 module.exports = {
   signup,
   signin,
@@ -340,4 +470,7 @@ module.exports = {
   suspendUser,
   unSuspendUser,
   getAllStats,
+  forgotPassword,
+  verifyOTP,
+  resetPassword,
 };

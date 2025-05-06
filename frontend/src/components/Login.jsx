@@ -11,7 +11,7 @@ import Google from "../assets/google.svg";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../utils/AuthContext";
-
+import { Link } from "react-router-dom";
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [username, setUsername] = useState("");
@@ -88,8 +88,7 @@ const Login = () => {
           {/* Google Login Button */}
           <button
             onClick={handleGoogleLogin}
-            className="w-full mb-4 flex items-center justify-center gap-2 border border-gray-300 rounded-lg py-3 px-4 text-gray-700 hover:bg-purple-600 hover:text-white transition-colors cursor-pointer"
-          >
+            className="w-full mb-4 flex items-center justify-center gap-2 border border-gray-300 rounded-lg py-3 px-4 text-gray-700 hover:bg-purple-600 hover:text-white transition-colors cursor-pointer">
             <img src={Google} alt="Google" className="w-5 h-5" />
             <span>Login with NU mail</span>
           </button>
@@ -150,8 +149,7 @@ const Login = () => {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
-                  >
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer">
                     <FontAwesomeIcon
                       icon={showPassword ? faEyeSlash : faEye}
                       className="h-5 w-5 text-purple-600"
@@ -177,20 +175,18 @@ const Login = () => {
                     Remember me
                   </label>
                 </div>
-                <a
-                  href="#"
-                  className="text-sm text-[#6C3CE9] hover:text-[#5731ba]"
-                >
+                <Link
+                  to="/forgot-password"
+                  className="text-sm text-[#6C3CE9] hover:text-[#5731ba]">
                   Forgot Password?
-                </a>
+                </Link>
               </div>
 
               {/* Login Button */}
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#6C3CE9] text-white rounded-lg py-3 px-4 hover:bg-[#5731ba] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
+                className="w-full bg-[#6C3CE9] text-white rounded-lg py-3 px-4 hover:bg-[#5731ba] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                 {loading ? "Logging in..." : "Login"}
               </button>
             </div>
@@ -199,9 +195,9 @@ const Login = () => {
           {/* Register Link */}
           <p className="mt-6 text-center text-gray-600">
             Don't have an account?{" "}
-            <a href="#" className="text-[#6C3CE9] hover:text-[#5731ba]">
+            <Link className="text-[#6C3CE9] hover:text-[#5731ba]" to="/signup">
               Register
-            </a>
+            </Link>
           </p>
         </div>
       </div>
