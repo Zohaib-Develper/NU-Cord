@@ -4,7 +4,6 @@ const mongoose = require("mongoose");
 
 const getGroups = async (req, res) => {
   try {
-    console.log("Hello from groups controller", req.user);
     const userWithGroups = await user.findById(req.user._id).populate({
       path: "groups",
       populate: { path: "users", model: "User", select: "name pfp" },
@@ -23,18 +22,30 @@ const getGroups = async (req, res) => {
 
 const createGroup = async (req, res) => {
   try {
-    const { name, joining_restriction, coverImageURL } = req.body;
+    const { name, joining_restriction, coverImageURL, description } = req.body;
 
-    const inviteCode = Math.random().toString(36).substring(2, 10); // e.g., "k92g7qf3"
-    // const inviteURL = `${req.protocol}://${req.get('host')}/join/${inviteCode}`;
+    // Generate a unique 8-character alphanumeric code
+    let joining_code;
+    let isUnique = false;
+    while (!isUnique) {
+      joining_code = Math.random().toString(36).substring(2, 10);
+      const exists = await Group.findOne({ joining_code });
+      if (!exists) isUnique = true;
+    }
+
+    let coverImage = coverImageURL;
+    if (req.file) {
+      coverImage = `/uploads/${req.file.filename}`;
+    }
 
     const group = await Group.create({
       admin: req.user._id,
       name,
       users: [req.user._id],
       joining_restriction,
-      coverImageURL,
-      inviteURL: inviteCode,
+      coverImageURL: coverImage,
+      joining_code,
+      description,
     });
 
     res.status(201).json({
@@ -47,33 +58,24 @@ const createGroup = async (req, res) => {
     res.status(500).json({ error: "Failed to create group" });
   }
 };
-/**
-  {
-    admin: { type: Schema.Types.ObjectId, ref: "User" },
-    name: { type: String, required: true },
-    users: [{ type: Schema.Types.ObjectId, ref: "User" }],
-    joining_restriction: { type: String, enum: ["allowed", "adminApproval"] },
-    joining_requests: [{ type: Schema.Types.ObjectId, ref: "User" }],
-    coverImageURL: { type: String, default: "/images/batchpfp.png" },
-    inviteURL: { type: String, unique: true },
-  },
- */
+
 const joinGroup = async (req, res) => {
   try {
-    const { inviteCode } = req.params;
-
-    const group = await Group.findOne({ inviteURL: inviteCode });
+    const { code } = req.body;
+    const group = await Group.findOne({ joining_code: code });
+    // console.log("Group: ", group);
     if (!group) {
       return res.status(404).json({ error: "Group not found" });
     }
-
     if (group.users.includes(req.user._id)) {
       return res
         .status(400)
         .json({ message: "You are already a member of this group." });
     }
-
     if (group.joining_restriction === "adminApproval") {
+      if (group.joining_requests.includes(req.user._id)) {
+        return res.status(400).json({ message: "You have sent approval request to join the group. Contact the group admin to add you." });
+      }
       group.joining_requests.push(req.user._id);
       await group.save();
       return res
@@ -82,7 +84,6 @@ const joinGroup = async (req, res) => {
     }
     group.users.push(req.user._id);
     await group.save();
-
     res.status(201).json({
       status: "success",
       message: "Joined group successfully",
@@ -230,24 +231,7 @@ const deleteGroup = async (req, res) => {
     await Group.findByIdAndDelete(groupId);
 
     // Remove group reference from users if applicable
-    await User.updateMany({ groups: groupId }, { $pull: { groups: groupId } });
-
-    res.status(200).json({
-      status: "success",
-      message: "Group deleted successfully",
-    });
-
-    if (group.admin.toString() !== req.user._id.toString()) {
-      return res.status(403).json({
-        error: "Access denied. Only the group admin can delete this group.",
-      });
-    }
-
-    // Delete group
-    await Group.findByIdAndDelete(groupId);
-
-    // Remove group reference from users if applicable
-    await User.updateMany({ groups: groupId }, { $pull: { groups: groupId } });
+    await user.updateMany({ groups: groupId }, { $pull: { groups: groupId } });
 
     res.status(200).json({
       status: "success",
@@ -267,13 +251,11 @@ const getAllGroups = async (req, res) => {
       userId = mongoose.Types.ObjectId(userId);
     }
     const groups = await Group.find({
-      $or: [
-        { admin: userId },
-        { users: userId }
-      ]
+      $or: [{ admin: userId }, { users: userId }],
     })
       .populate("admin", "name")
-      .populate("users", "name pfp");
+      .populate("users", "name pfp")
+      .populate("joining_requests", "name username");
     res.status(200).json({
       status: "success",
       groups,
@@ -281,6 +263,91 @@ const getAllGroups = async (req, res) => {
   } catch (error) {
     console.error("Error fetching groups:", error);
     res.status(500).json({ error: "Failed to fetch groups" });
+  }
+};
+
+const kickMember = async (req, res) => {
+  try {
+    const { groupId, userId } = req.params;
+    const group = await Group.findById(groupId);
+    if (!group) {
+      return res.status(404).json({ error: "Group not found" });
+    }
+    if (group.admin.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ error: "Only admin can kick members" });
+    }
+    if (userId === group.admin.toString()) {
+      return res.status(400).json({ error: "Admin cannot kick themselves" });
+    }
+    if (!group.users.includes(userId)) {
+      return res.status(400).json({ error: "User is not a member of this group" });
+    }
+    group.users = group.users.filter((id) => id.toString() !== userId);
+    await group.save();
+    res.status(200).json({ status: "success", message: "Member kicked successfully", group });
+  } catch (error) {
+    console.error("Error kicking member:", error);
+    res.status(500).json({ error: "Failed to kick member" });
+  }
+};
+
+const updateGroupName = async (req, res) => {
+  try {
+    const { groupId } = req.params;
+    const { name } = req.body;
+    const group = await Group.findById(groupId);
+    if (!group) return res.status(404).json({ error: "Group not found" });
+    if (group.admin.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ error: "Only admin can change group name" });
+    }
+    group.name = name;
+    await group.save();
+    res.status(200).json({ status: "success", group });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to update group name" });
+  }
+};
+
+const updateGroupCover = async (req, res) => {
+  try {
+    const { groupId } = req.params;
+    const group = await Group.findById(groupId);
+    if (!group) return res.status(404).json({ error: "Group not found" });
+    if (group.admin.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ error: "Only admin can change group cover image" });
+    }
+    if (req.file) {
+      group.coverImageURL = `/uploads/${req.file.filename}`;
+      await group.save();
+      return res.status(200).json({ status: "success", group });
+    } else {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Failed to update group cover image" });
+  }
+};
+
+const generateNewJoiningCode = async (req, res) => {
+  try {
+    const { groupId } = req.params;
+    const group = await Group.findById(groupId);
+    if (!group) return res.status(404).json({ error: "Group not found" });
+    if (group.admin.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ error: "Only admin can generate new code" });
+    }
+    let joining_code;
+    let isUnique = false;
+    while (!isUnique) {
+      joining_code = Math.random().toString(36).substring(2, 10);
+      const exists = await Group.findOne({ joining_code });
+      if (!exists) isUnique = true;
+    }
+    group.joining_code = joining_code;
+    await group.save();
+    res.status(200).json({ status: "success", group });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to generate new joining code" });
   }
 };
 
@@ -292,4 +359,8 @@ module.exports = {
   leaveGroup,
   deleteGroup,
   getAllGroups,
+  kickMember,
+  updateGroupName,
+  updateGroupCover,
+  generateNewJoiningCode,
 };
