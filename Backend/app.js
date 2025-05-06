@@ -12,6 +12,7 @@ const channelRoutes = require("./routes/channelRoutes.js");
 const chatRoutes = require("./routes/chatRoutes.js");
 const socket = require("./socket");
 const Chat = require("./Models/Chat.js");
+const serverRoutes = require("./routes/serverRoutes.js");
 
 const app = express();
 const server = http.createServer(app);
@@ -41,7 +42,8 @@ app.use(
 app.use("/user", userRoutes);
 app.use("/api/groups", groupRoutes);
 app.use("/api/friend", friendRoutes);
-app.use("/api/servers", channelRoutes);
+app.use("/api/servers", serverRoutes);
+app.use("/api/channels", channelRoutes);
 app.use("/api/chat", chatRoutes);
 
 const users = new Map();

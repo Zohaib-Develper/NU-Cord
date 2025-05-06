@@ -14,6 +14,7 @@ import { AuthContext } from "../utils/AuthContext";
 import { io } from "socket.io-client";
 import axios from "axios";
 import EmojiPicker from "emoji-picker-react";
+import VoiceChannelCard from "./VoiceChannelCard";
 
 const socket = io("http://localhost:8000");
 
@@ -40,6 +41,11 @@ const Chat = ({ selectedChannel }) => {
   const isAnnouncementChannel = selectedChannel?.name?.toLowerCase().includes('announcement');
   const isAdmin = user?.role === 'ADMIN';
   const canSendMessages = !isAnnouncementChannel || isAdmin;
+
+  // Detect if selectedChannel is a voice channel
+  const isVoiceChannel = selectedChannel && (selectedChannel.name?.toLowerCase().includes('voice') || selectedChannel.name?.toLowerCase().includes('study'));
+  // Placeholder: users in channel (should be fetched from backend in real app)
+  const usersInChannel = [user];
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -343,6 +349,10 @@ const Chat = ({ selectedChannel }) => {
     }
     prevMessagesLength.current = messages.length;
   }, [messages]);
+
+  if (isVoiceChannel) {
+    return <VoiceChannelCard channel={selectedChannel} currentUser={user} usersInChannel={usersInChannel} />;
+  }
 
   return (
     <div className="h-full max-w-280 bg-gray-900 text-white flex flex-col">

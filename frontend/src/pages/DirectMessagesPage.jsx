@@ -19,7 +19,7 @@ const DirectMessagesPage = () => {
       });
   }, []);
   return (
-    <div className="flex flex-col md:flex-row max-h-screen w-full">
+    <div className="flex flex-col md:flex-row min-h-screen w-full h-screen">
       {/* Sidebar */}
       <div className="w-full md:w-auto">
         <Sidebar />
@@ -31,8 +31,14 @@ const DirectMessagesPage = () => {
           setSelected={setSelectedDM}
         />
       </div>
-      <div className="flex-1 bg-[#151e2c] p-4 overflow-auto">
-        <Chat selectedChannel={selectedDM} />
+      <div className="flex-1 bg-[#151e2c] p-4 overflow-auto flex flex-col h-full min-h-0">
+        {selectedDM && Object.keys(selectedDM).length > 0 ? (
+          <Chat selectedChannel={selectedDM} />
+        ) : (
+          <div className="flex flex-1 items-center justify-center text-gray-400 text-lg">
+            Select a direct message to start chatting
+          </div>
+        )}
       </div>
     </div>
   );

@@ -44,7 +44,13 @@ const GroupsPage = () => {
         />
       </div>
       <div className="flex-1 bg-[#151e2c] p-4 overflow-auto flex flex-col h-full min-h-0">
-        <Chat selectedChannel={selectedGroup} />
+        {selectedGroup && Object.keys(selectedGroup).length > 0 ? (
+          <Chat selectedChannel={selectedGroup} />
+        ) : (
+          <div className="flex flex-1 items-center justify-center text-gray-400 text-lg">
+            Select a group to start chatting
+          </div>
+        )}
       </div>
     </div>
   );
