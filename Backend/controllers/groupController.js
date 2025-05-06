@@ -7,7 +7,7 @@ const getGroups = async (req, res) => {
     console.log("Hello from groups controller", req.user);
     const userWithGroups = await user.findById(req.user._id).populate({
       path: "groups",
-      populate: { path: "users", model: "User" },
+      populate: { path: "users", model: "User", select: "name pfp" },
     });
 
     if (!userWithGroups) {
@@ -273,7 +273,7 @@ const getAllGroups = async (req, res) => {
       ]
     })
       .populate("admin", "name")
-      .populate("users", "name");
+      .populate("users", "name pfp");
     res.status(200).json({
       status: "success",
       groups,
