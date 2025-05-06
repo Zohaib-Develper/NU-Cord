@@ -33,7 +33,7 @@ const PageSpecificSidebar = ({ pageName, data, setSelected, refreshGroups }) => 
   const user = useContext(AuthContext).user;
 
   return (
-    <div className="flex flex-col  min-h-screen bg-gray-800 text-white border-r-2 border-gray-600 p-4 overflow-y-auto">
+    <div className="flex flex-col min-h-screen bg-gray-800 text-white border-r-2 border-gray-600 p-4 h-full">
       {/* Search Bar */}
       <input
         type="text"
