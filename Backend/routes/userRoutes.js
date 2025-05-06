@@ -20,8 +20,11 @@ const {
   unSuspendUser,
   getAllStats,
   verifyAdminAccess,
+  updateProfile,
 } = require("../controllers/userController");
 const { testGoogleAuth } = require("../test/googleAuth");
+const multer = require("multer");
+const upload = multer({ dest: "uploads/" });
 
 const router = Router();
 
@@ -44,6 +47,7 @@ router.get("/search", searchUserByName);
 //Protected Routes(Below are all the routes that would require user to be signed in before accesing)
 router.use(Protect);
 router.get("/profile", getUserProfile);
+router.put("/profile", upload.single("pfp"), updateProfile);
 router.use("/friends", friendsRoutes);
 router.post("/block/:userIdToBlock", blockUser);
 router.post("/unblock/:blockedUserId", unblockUser);

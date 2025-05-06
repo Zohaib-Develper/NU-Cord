@@ -18,7 +18,15 @@ import DirectMessagesSidebar from "./DirectMessagesSidebar";
 import ServersSideBar from "./ServersSideBar";
 import GroupsSideBar from "./GroupsSidebar";
 
-const PageSpecificSidebar = ({ pageName, data, setSelected }) => {
+const getProfilePicUrl = (pfp) => {
+  if (!pfp) return ProfileImage;
+  if (pfp.startsWith('/uploads/')) {
+    return `http://localhost:8000${pfp}`;
+  }
+  return pfp;
+};
+
+const PageSpecificSidebar = ({ pageName, data, setSelected, refreshGroups }) => {
   const [isMicMuted, setIsMicMuted] = useState(true);
   const [isVideoOff, setIsVideoOff] = useState(true);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -40,7 +48,7 @@ const PageSpecificSidebar = ({ pageName, data, setSelected }) => {
 
       {/* Group Section */}
       {pageName === "groups" && (
-        <GroupsSideBar groups={data} setSelectedGroup={setSelected} />
+        <GroupsSideBar groups={data} setSelectedGroup={setSelected} refreshGroups={refreshGroups} />
       )}
 
       {/* Direct Messages */}
@@ -50,51 +58,6 @@ const PageSpecificSidebar = ({ pageName, data, setSelected }) => {
           setSelectedDM={setSelected}
         />
       )}
-
-      {/* Profile Section */}
-      <div className="w-full bg-gray-900 text-white mt-auto flex items-center justify-between h-14 p-4">
-        <div
-          className="flex items-center gap-4 cursor-pointer"
-          onClick={() => setIsProfileOpen(true)}
-        >
-          <img
-            src={user.pfp}
-            alt="Profile"
-            className="w-10 h-10 rounded-full"
-          />
-          <div>
-            <p className="text-sm font-semibold">{user.name}</p>
-            <p className="text-xs text-gray-400">{user.name}</p>
-          </div>
-        </div>
-        <div className="flex gap-2">
-          <button
-            className={`text-xl ${
-              isMicMuted ? "text-red-600" : "text-white-500"
-            } hover:text-white`}
-            onClick={() => setIsMicMuted(!isMicMuted)}
-          >
-            {isMicMuted ? (
-              <FaMicrophoneSlash className="text-xl cursor-pointer" />
-            ) : (
-              <FaMicrophone className="text-xl cursor-pointer" />
-            )}
-          </button>
-          <button
-            className={`text-xl ${
-              isVideoOff ? "text-red-600" : "text-white-500"
-            } hover:text-white`}
-            onClick={() => setIsVideoOff(!isVideoOff)}
-          >
-            {isVideoOff ? (
-              <FaVideoSlash className="text-xl cursor-pointer" />
-            ) : (
-              <FaVideo className="text-xl cursor-pointer" />
-            )}
-          </button>
-        </div>
-      </div>
-      {isProfileOpen && <Profile onClose={() => setIsProfileOpen(false)} />}
     </div>
   );
 };

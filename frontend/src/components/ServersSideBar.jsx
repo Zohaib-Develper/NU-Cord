@@ -1,10 +1,12 @@
 import React from "react";
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { FaChevronDown, FaChevronRight, FaHashtag, FaVolumeUp } from "react-icons/fa";
+import { AuthContext } from "../utils/AuthContext";
 
 const ServersSideBar = ({ servers, setSelectedChannel }) => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [expandedCategories, setExpandedCategories] = useState({});
+  const { user } = useContext(AuthContext);
 
   const handleServerClick = (server) => {
     setSelectedItem(selectedItem?._id === server._id ? null : server);
@@ -21,14 +23,31 @@ const ServersSideBar = ({ servers, setSelectedChannel }) => {
     }));
   };
 
+  const renderVoiceChannel = (channel) => (
+    <div
+      key={channel._id}
+      className="relative bg-[#f6e7b4] rounded-xl flex flex-col items-center justify-center mb-4 cursor-pointer shadow-lg border-2 border-gray-300 hover:border-yellow-400 transition-all duration-200"
+      style={{ minHeight: 100, minWidth: 220, maxWidth: 320 }}
+      onClick={() => handleChannelClick(channel)}
+    >
+      <div className="flex flex-col items-center justify-center w-full h-full py-4">
+        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-yellow-200 mb-2">
+          <FaVolumeUp className="text-2xl text-yellow-600" />
+        </div>
+        <span className="font-semibold text-gray-800 text-lg mb-2">{channel.name}</span>
+      </div>
+    </div>
+  );
+
   const renderChannelList = (channels, type) => {
+    const icon = type === 'voice' ? <FaVolumeUp className="text-xs" /> : <FaHashtag className="text-xs" />;
     return channels.map((channel, i) => (
       <p
         key={channel._id || i}
         className="ml-2 text-gray-300 cursor-pointer hover:text-white flex items-center gap-2"
         onClick={() => handleChannelClick(channel)}
       >
-        {type === 'text' ? <FaHashtag className="text-xs" /> : <FaVolumeUp className="text-xs" />}
+        {icon}
         {channel.name}
       </p>
     ));
@@ -52,6 +71,14 @@ const ServersSideBar = ({ servers, setSelectedChannel }) => {
         )}
       </div>
     );
+  };
+
+  const getProfilePicUrl = (pfp) => {
+    if (!pfp) return '';
+    if (pfp.startsWith('/uploads/')) {
+      return `http://localhost:8000${pfp}`;
+    }
+    return pfp;
   };
 
   return (

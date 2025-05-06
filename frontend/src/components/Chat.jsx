@@ -5,15 +5,22 @@ import {
   FaPaperclip,
   FaSmile,
   FaMicrophone,
+  FaMicrophoneSlash,
   FaEllipsisV,
   FaFile,
   FaImage,
   FaLock,
+  FaVideo,
+  FaVideoSlash,
+  FaPhone,
+  FaUserCircle,
 } from "react-icons/fa";
 import { AuthContext } from "../utils/AuthContext";
 import { io } from "socket.io-client";
 import axios from "axios";
 import EmojiPicker from "emoji-picker-react";
+import VoiceChannelCard from "./VoiceChannelCard";
+import Tooltip from "@mui/material/Tooltip";
 
 const socket = io("http://localhost:8000");
 
@@ -37,9 +44,33 @@ const Chat = ({ selectedChannel }) => {
   const [uploadError, setUploadError] = useState("");
   const [uploadingFile, setUploadingFile] = useState(false);
 
+  // Add new state variables for calling
+  const [localStream, setLocalStream] = useState(null);
+  const [remoteStream, setRemoteStream] = useState(null);
+  const [isCallActive, setIsCallActive] = useState(false);
+  const [isIncomingCall, setIsIncomingCall] = useState(false);
+  const [callType, setCallType] = useState(null); // 'video' or 'voice'
+  const [caller, setCaller] = useState(null);
+  const [callOffer, setCallOffer] = useState(null);
+  const peerConnection = useRef(null);
+  const localVideoRef = useRef(null);
+  const remoteVideoRef = useRef(null);
+  const remoteAudioRef = useRef(null);
+
+  // Mute/camera state
+  const [isMuted, setIsMuted] = useState(false);
+  const [isCameraOff, setIsCameraOff] = useState(false);
+
+  const [socketConnected, setSocketConnected] = useState(socket.connected);
+
   const isAnnouncementChannel = selectedChannel?.name?.toLowerCase().includes('announcement');
   const isAdmin = user?.role === 'ADMIN';
   const canSendMessages = !isAnnouncementChannel || isAdmin;
+
+  // Detect if selectedChannel is a voice channel
+  const isVoiceChannel = selectedChannel && (selectedChannel.name?.toLowerCase().includes('voice') || selectedChannel.name?.toLowerCase().includes('study'));
+  // Placeholder: users in channel (should be fetched from backend in real app)
+  const usersInChannel = [user];
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -344,6 +375,407 @@ const Chat = ({ selectedChannel }) => {
     prevMessagesLength.current = messages.length;
   }, [messages]);
 
+  // Initialize peer connection
+  const initializePeerConnection = () => {
+    const configuration = {
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+      ]
+    };
+    const pc = new RTCPeerConnection(configuration);
+    
+    pc.onicecandidate = (event) => {
+      if (event.candidate) {
+        socket.emit('iceCandidate', {
+          to: selectedChannel._id,
+          candidate: event.candidate
+        });
+      }
+    };
+
+    pc.ontrack = (event) => {
+      setRemoteStream(event.streams[0]);
+    };
+
+    return pc;
+  };
+
+  // Handle incoming call
+  useEffect(() => {
+    const handleIncomingCall = async ({ from, offer, type }) => {
+      setCaller(from);
+      setCallOffer(offer);
+      setCallType(type);
+      setIsIncomingCall(true);
+    };
+    const handleCallAnswered = async ({ answer }) => {
+      try {
+        await peerConnection.current.setRemoteDescription(new RTCSessionDescription(answer));
+      } catch (error) {
+        console.error('Error setting remote description:', error);
+      }
+    };
+    const handleIceCandidate = async ({ candidate }) => {
+      try {
+        await peerConnection.current.addIceCandidate(new RTCIceCandidate(candidate));
+      } catch (error) {
+        console.error('Error adding ICE candidate:', error);
+      }
+    };
+    const handleCallEnded = () => {
+      endCall(false); // Don't emit again!
+    };
+    socket.on('incomingCall', handleIncomingCall);
+    socket.on('callAnswered', handleCallAnswered);
+    socket.on('iceCandidate', handleIceCandidate);
+    socket.on('callEnded', handleCallEnded);
+    return () => {
+      socket.off('incomingCall', handleIncomingCall);
+      socket.off('callAnswered', handleCallAnswered);
+      socket.off('iceCandidate', handleIceCandidate);
+      socket.off('callEnded', handleCallEnded);
+    };
+  }, [selectedChannel]);
+
+  // End call, with emit control
+  const endCall = (emit = true) => {
+    if (localStream) {
+      localStream.getTracks().forEach(track => track.stop());
+    }
+    if (peerConnection.current) {
+      peerConnection.current.close();
+    }
+    setLocalStream(null);
+    setRemoteStream(null);
+    setIsCallActive(false);
+    setIsIncomingCall(false);
+    setCallType(null);
+    setCaller(null);
+    setCallOffer(null);
+    // Only emit if this user is ending the call
+    if (emit && selectedChannel) {
+      socket.emit('endCall', { to: selectedChannel._id });
+    }
+  };
+
+  // Start call
+  const startCall = async (type) => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: type === 'video',
+        audio: true
+      });
+      setLocalStream(stream);
+      setCallType(type);
+      setIsCallActive(true);
+
+      peerConnection.current = initializePeerConnection();
+      stream.getTracks().forEach(track => {
+        peerConnection.current.addTrack(track, stream);
+      });
+
+      const offer = await peerConnection.current.createOffer();
+      await peerConnection.current.setLocalDescription(offer);
+
+      socket.emit('callUser', {
+        from: user._id,
+        to: selectedChannel._id,
+        offer,
+        type
+      });
+    } catch (error) {
+      console.error('Error starting call:', error);
+    }
+  };
+
+  // Answer call
+  const answerCall = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: callType === 'video',
+        audio: true
+      });
+      setLocalStream(stream);
+      setIsCallActive(true);
+      setIsIncomingCall(false);
+
+      peerConnection.current = initializePeerConnection();
+      stream.getTracks().forEach(track => {
+        peerConnection.current.addTrack(track, stream);
+      });
+
+      await peerConnection.current.setRemoteDescription(new RTCSessionDescription(callOffer));
+      const answer = await peerConnection.current.createAnswer();
+      await peerConnection.current.setLocalDescription(answer);
+
+      socket.emit('answerCall', {
+        from: user._id,
+        to: caller,
+        answer
+      });
+    } catch (error) {
+      console.error('Error answering call:', error);
+    }
+  };
+
+  // Attach local stream to local video element
+  useEffect(() => {
+    if (localVideoRef.current && localStream) {
+      localVideoRef.current.srcObject = localStream;
+    }
+  }, [localStream]);
+
+  // Attach remote stream to remote video element
+  useEffect(() => {
+    if (remoteVideoRef.current && remoteStream) {
+      remoteVideoRef.current.srcObject = remoteStream;
+    }
+  }, [remoteStream]);
+
+  // Attach remote stream to audio element for voice calls
+  useEffect(() => {
+    if (remoteAudioRef.current && remoteStream) {
+      remoteAudioRef.current.srcObject = remoteStream;
+    }
+  }, [remoteStream]);
+
+  useEffect(() => {
+    const handleConnect = () => {
+      setSocketConnected(true);
+      if (user && user._id) {
+        socket.emit("registerUser", user._id);
+      }
+    };
+    const handleDisconnect = () => setSocketConnected(false);
+    socket.on("connect", handleConnect);
+    socket.on("disconnect", handleDisconnect);
+    // Initial registration if already connected
+    if (socket.connected && user && user._id) {
+      socket.emit("registerUser", user._id);
+      setSocketConnected(true);
+    }
+    return () => {
+      socket.off("connect", handleConnect);
+      socket.off("disconnect", handleDisconnect);
+    };
+  }, [user]);
+
+  // Toggle mute
+  const handleToggleMute = () => {
+    if (localStream) {
+      localStream.getAudioTracks().forEach(track => {
+        track.enabled = !track.enabled;
+        setIsMuted(!track.enabled);
+      });
+    }
+  };
+
+  // Toggle camera
+  const handleToggleCamera = () => {
+    if (localStream) {
+      localStream.getVideoTracks().forEach(track => {
+        track.enabled = !track.enabled;
+        setIsCameraOff(!track.enabled);
+      });
+    }
+  };
+
+  // Reset mute/camera state on call start/end
+  useEffect(() => {
+    setIsMuted(false);
+    setIsCameraOff(false);
+  }, [isCallActive, isIncomingCall]);
+
+  if (isVoiceChannel) {
+    return <VoiceChannelCard channel={selectedChannel} currentUser={user} usersInChannel={usersInChannel} />;
+  }
+
+  // Add call controls to the header (glassmorphic, modern style)
+  const renderCallControls = () => {
+    if (!selectedChannel || selectedChannel.type !== 'direct') return null;
+
+    return (
+      <div className="flex space-x-5 items-center ml-8">
+        <Tooltip title={socketConnected ? "Voice Call" : "Connecting..."} placement="bottom">
+          <button
+            onClick={() => startCall('voice')}
+            className="transition-all duration-200 rounded-full p-2.5 bg-white/20 backdrop-blur-md shadow-lg border-2 border-green-400 hover:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-300 hover:scale-110 active:scale-95 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label="Start Voice Call"
+            style={{ width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            disabled={!socketConnected}
+          >
+            <FaPhone className="text-green-500 text-xl drop-shadow" />
+          </button>
+        </Tooltip>
+        <Tooltip title={socketConnected ? "Video Call" : "Connecting..."} placement="bottom">
+          <button
+            onClick={() => startCall('video')}
+            className="transition-all duration-200 rounded-full p-2.5 bg-white/20 backdrop-blur-md shadow-lg border-2 border-blue-400 hover:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-300 hover:scale-110 active:scale-95 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label="Start Video Call"
+            style={{ width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            disabled={!socketConnected}
+          >
+            <FaVideo className="text-blue-500 text-xl drop-shadow" />
+          </button>
+        </Tooltip>
+      </div>
+    );
+  };
+
+  // Add call UI (modern, beautiful, advanced)
+  const renderCallUI = () => {
+    if (!isCallActive && !isIncomingCall) return null;
+
+    // Incoming call modal
+    if (isIncomingCall) {
+      return (
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+          <div className="bg-gray-900 rounded-2xl shadow-2xl p-8 flex flex-col items-center max-w-xs w-full border border-gray-700">
+            <div className="mb-4">
+              <div className="flex items-center justify-center mb-2">
+                <div className={`rounded-full bg-gradient-to-tr ${callType === 'video' ? 'from-blue-500 to-blue-700' : 'from-green-500 to-green-700'} p-4 shadow-lg`}>
+                  {callType === 'video' ? <FaVideo className="text-3xl text-white" /> : <FaPhone className="text-3xl text-white" />}
+                </div>
+              </div>
+              <h3 className="text-lg font-semibold text-white text-center">Incoming {callType === 'video' ? 'Video' : 'Voice'} Call</h3>
+              <p className="text-gray-300 text-center mt-1">from <span className="font-bold">{selectedChannel?.name || 'Unknown'}</span></p>
+            </div>
+            <div className="flex space-x-6 mt-6">
+              <button
+                onClick={answerCall}
+                className="rounded-full bg-green-500 hover:bg-green-600 text-white p-4 shadow-lg text-2xl focus:outline-none focus:ring-2 focus:ring-green-400"
+                aria-label="Answer Call"
+              >
+                <FaPhone />
+              </button>
+              <button
+                onClick={endCall}
+                className="rounded-full bg-red-500 hover:bg-red-600 text-white p-4 shadow-lg text-2xl focus:outline-none focus:ring-2 focus:ring-red-400"
+                aria-label="Decline Call"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-7 h-7">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Ongoing call modal
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-[#232b4a] to-[#6c63ff] font-sans" style={{ fontFamily: 'Inter, Nunito, system-ui, sans-serif' }}>
+        {/* Main call area */}
+        <div className="relative w-full h-full flex items-center justify-center">
+          {/* Remote video/avatar */}
+          <div className="flex flex-col items-center justify-center w-full">
+            {callType === 'video' ? (
+              <div className="flex flex-col items-center justify-center w-full">
+                <div className="backdrop-blur-md bg-white/10 rounded-3xl shadow-2xl p-2 border-2 border-[#7f7fff]" style={{maxWidth: 700, marginTop: 32}}>
+                  <video
+                    ref={remoteVideoRef}
+                    autoPlay
+                    playsInline
+                    className="mx-auto rounded-2xl shadow-lg border-2 border-[#7f7fff] bg-black transition-all duration-300"
+                    style={{
+                      width: 'min(90vw, 640px)',
+                      height: 'min(50vw, 360px)',
+                      aspectRatio: '16/9',
+                      objectFit: 'contain',
+                      background: '#181f3a',
+                    }}
+                  />
+                </div>
+                <span className="mt-4 text-[#e0e6ff] text-lg font-semibold drop-shadow-lg tracking-wide" style={{letterSpacing: '0.02em'}}>{selectedChannel?.name || 'Remote User'}</span>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center w-full">
+                <div className="rounded-full bg-gradient-to-tr from-[#7f7fff] to-[#43e97b] p-12 shadow-2xl mb-4">
+                  <FaUserCircle className="text-8xl text-white" />
+                </div>
+                <h3 className="text-2xl font-semibold text-white mb-2 drop-shadow-lg tracking-wide">Voice Call with {selectedChannel?.name || 'Remote User'}</h3>
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                  <span className="text-green-300 text-base">In Call</span>
+                </div>
+                <audio ref={remoteAudioRef} autoPlay />
+              </div>
+            )}
+          </div>
+
+          {/* Local video/avatar (floating) */}
+          <div
+            className="absolute right-6 bottom-28 md:right-12 md:bottom-20 flex flex-col items-center"
+            style={{ zIndex: 20 }}
+          >
+            {callType === 'video' ? (
+              <div className="rounded-2xl shadow-lg border-2 border-[#43e97b] bg-[#232b4a]/80 transition-all duration-300 ring-2 ring-[#43e97b]">
+                <video
+                  ref={localVideoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className="rounded-2xl object-contain"
+                  style={{
+                    width: '110px',
+                    height: '62px',
+                    aspectRatio: '16/9',
+                    display: isCameraOff ? 'none' : 'block',
+                    background: '#232b4a',
+                  }}
+                />
+                {isCameraOff && (
+                  <div className="w-[110px] h-[62px] flex items-center justify-center text-gray-500 bg-[#232b4a] rounded-2xl">
+                    <FaVideoSlash className="text-2xl" />
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="rounded-full bg-gradient-to-tr from-[#43e97b] to-[#7f7fff] p-2 shadow-lg">
+                <FaUserCircle className="text-3xl text-white" />
+              </div>
+            )}
+            <span className="text-[#e0e6ff] text-xs mt-1 font-medium">You</span>
+          </div>
+
+          {/* Controls Bar */}
+          <div className="absolute left-1/2 -translate-x-1/2 bottom-8 flex items-center gap-8 bg-white/10 backdrop-blur-lg rounded-full px-8 py-4 shadow-2xl border border-[#7f7fff]" style={{ zIndex: 30 }}>
+            {/* Mute/Unmute */}
+            <button
+              onClick={handleToggleMute}
+              className={`focus:outline-none rounded-full p-4 text-2xl transition-colors duration-150 ${isMuted ? 'bg-[#ff4f5a] text-white' : 'bg-[#232b4a] text-[#43e97b] hover:bg-[#2d375a]'}`}
+              title={isMuted ? 'Unmute' : 'Mute'}
+            >
+              {isMuted ? <FaMicrophoneSlash /> : <FaMicrophone />}
+            </button>
+            {/* Camera On/Off (only for video call) */}
+            {callType === 'video' && (
+              <button
+                onClick={handleToggleCamera}
+                className={`focus:outline-none rounded-full p-4 text-2xl transition-colors duration-150 ${isCameraOff ? 'bg-[#ffb84f] text-white' : 'bg-[#232b4a] text-[#7f7fff] hover:bg-[#2d375a]'}`}
+                title={isCameraOff ? 'Turn Camera On' : 'Turn Camera Off'}
+              >
+                {isCameraOff ? <FaVideoSlash /> : <FaVideo />}
+              </button>
+            )}
+            {/* End Call */}
+            <button
+              onClick={() => endCall()}
+              className="focus:outline-none rounded-full w-20 h-20 flex items-center justify-center bg-gradient-to-tr from-[#ff4f5a] to-[#ff6f91] text-white shadow-xl border-4 border-[#ff4f5a] hover:from-[#ff6f91] hover:to-[#ff4f5a] text-3xl transition-all duration-150"
+              aria-label="End Call"
+              title="End Call"
+              style={{ marginLeft: 16, marginRight: 8 }}
+            >
+              <FaPhone />
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="h-full max-w-280 bg-gray-900 text-white flex flex-col">
       <div className="p-4 bg-gray-800 flex justify-between items-center border-b border-gray-700">
@@ -353,8 +785,7 @@ const Chat = ({ selectedChannel }) => {
         <div className="flex space-x-5">
           {selectedChannel && (
             <>
-              <FaThumbtack className="text-xl cursor-pointer hover:text-gray-400" />
-              <FaQuestionCircle className="text-xl cursor-pointer hover:text-gray-400" />
+              {renderCallControls()}
             </>
           )}
         </div>
@@ -529,7 +960,7 @@ const Chat = ({ selectedChannel }) => {
           </>
         ) : (
           <div className="flex flex-col items-center justify-center h-full text-gray-400">
-            <p>Select a channel to start chatting</p>
+            <p>Select a server/channel to start chatting</p>
           </div>
         )}
       </div>
@@ -591,6 +1022,8 @@ const Chat = ({ selectedChannel }) => {
           )}
         </div>
       )}
+      
+      {renderCallUI()}
     </div>
   );
 };

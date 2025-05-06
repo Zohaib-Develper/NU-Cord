@@ -98,6 +98,8 @@ const getUserProfile = async (req, res) => {
         servers,
         friends,
         role: user.role,
+        about: user.about,
+        socials: user.socials,
       },
     });
   } catch (error) {
@@ -210,7 +212,6 @@ const logout = (req, res) => {
 
 const searchUserByName = async (req, res) => {
   try {
-    console.log("Hello from searchUserByName");
 
     const { name } = req.query;
     const users = await User.find({
@@ -345,6 +346,24 @@ const verifyAdminAccess = async (req, res) => {
   }
 };
 
+// Add this function to allow updating about and profile picture
+const updateProfile = async (req, res) => {
+  try {
+    const { about, socials } = req.body;
+    let update = {};
+    if (about !== undefined) update.about = about;
+    if (socials !== undefined) update.socials = socials;
+    if (req.file) update.pfp = `/uploads/${req.file.filename}`;
+
+    const user = await User.findByIdAndUpdate(req.user._id, update, {
+      new: true,
+    });
+    res.status(200).json({ message: "Profile updated", user });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to update profile" });
+  }
+};
+
 module.exports = {
   signup,
   signin,
@@ -359,4 +378,5 @@ module.exports = {
   unSuspendUser,
   getAllStats,
   verifyAdminAccess,
+  updateProfile,
 };

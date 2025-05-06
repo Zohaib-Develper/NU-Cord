@@ -12,6 +12,7 @@ const channelRoutes = require("./routes/channelRoutes.js");
 const chatRoutes = require("./routes/chatRoutes.js");
 const socket = require("./socket");
 const Chat = require("./Models/Chat.js");
+const serverRoutes = require("./routes/serverRoutes.js");
 
 const app = express();
 const server = http.createServer(app);
@@ -25,17 +26,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Robust check for file existence before serving from /uploads
-app.get('/uploads/:filename', (req, res, next) => {
-  const filePath = path.join(__dirname, 'uploads', req.params.filename);
-  fs.stat(filePath, (err, stats) => {
-    if (err || !stats.isFile()) {
-      return res.status(404).send('File not found');
-    }
-    next();
-  });
-});
-
 // Serve static files from the uploads directory
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -44,7 +34,7 @@ app.use(
   cors({
     origin: "http://localhost:5173",
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   })
 );
 
@@ -52,7 +42,8 @@ app.use(
 app.use("/user", userRoutes);
 app.use("/api/groups", groupRoutes);
 app.use("/api/friend", friendRoutes);
-app.use("/api/servers", channelRoutes);
+app.use("/api/servers", serverRoutes);
+app.use("/api/channels", channelRoutes);
 app.use("/api/chat", chatRoutes);
 
 const users = new Map();
@@ -98,6 +89,35 @@ io.on("connection", (socket) => {
       senderId,
       message,
     });
+  });
+
+  // Handle call signaling events
+  socket.on('callUser', ({ from, to, offer, type }) => {
+    const targetSocketId = users.get(to);
+    if (targetSocketId) {
+      io.to(targetSocketId).emit('incomingCall', { from, offer, type });
+    }
+  });
+
+  socket.on('answerCall', ({ from, to, answer }) => {
+    const targetSocketId = users.get(to);
+    if (targetSocketId) {
+      io.to(targetSocketId).emit('callAnswered', { answer });
+    }
+  });
+
+  socket.on('iceCandidate', ({ to, candidate }) => {
+    const targetSocketId = users.get(to);
+    if (targetSocketId) {
+      io.to(targetSocketId).emit('iceCandidate', { candidate });
+    }
+  });
+
+  socket.on('endCall', ({ to }) => {
+    const targetSocketId = users.get(to);
+    if (targetSocketId) {
+      io.to(targetSocketId).emit('callEnded');
+    }
   });
 
   // Cleanup on disconnect
