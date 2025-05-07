@@ -1,25 +1,52 @@
+import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { X, Trash2, Server, Users, MessageSquare, User, Search, Plus, UserPlus } from "lucide-react";
 
 function AllServers() {
   const [servers, setServers] = useState([]);
   const [usersInServer, setUsersInServer] = useState([]);
   const [channelsInServer, setChannelsInServer] = useState([]);
   const [selectedServer, setSelectedServer] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [newChannelName, setNewChannelName] = useState("");
+  const [newMemberEmail, setNewMemberEmail] = useState("");
+  const [allUsers, setAllUsers] = useState([]);
 
   useEffect(() => {
     async function fetchServers() {
       try {
-        const res = await axios.get("http://localhost:8000/api/server/", {
+        setLoading(true);
+        const res = await axios.get("http://localhost:8000/api/servers/", {
           withCredentials: true,
         });
         setServers(res.data.servers);
       } catch (error) {
         console.error("Error fetching servers:", error);
+      } finally {
+        setLoading(false);
       }
     }
     fetchServers();
   }, []);
+
+  useEffect(() => {
+    async function fetchAllUsers() {
+      try {
+        const res = await axios.get("http://localhost:8000/user/all", {
+          withCredentials: true,
+        });
+        setAllUsers(res.data.users);
+      } catch (error) {
+        console.error("Error fetching all users:", error);
+      }
+    }
+    fetchAllUsers();
+  }, []);
+
+  const filteredServers = servers.filter((server) =>
+    server.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   function handleServerClick(server) {
     setSelectedServer(server);
@@ -31,12 +58,14 @@ function AllServers() {
     setSelectedServer(null);
     setUsersInServer([]);
     setChannelsInServer([]);
+    setNewChannelName("");
+    setNewMemberEmail("");
   }
 
   async function fetchUsersInServer(serverId) {
     try {
       const res = await axios.get(
-        `http://localhost:8000/api/server/${serverId}/users`,
+        `http://localhost:8000/api/servers/${serverId}/users`,
         { withCredentials: true }
       );
       setUsersInServer(res.data.users);
@@ -48,7 +77,7 @@ function AllServers() {
   async function fetchChannelsInServer(serverId) {
     try {
       const res = await axios.get(
-        `http://localhost:8000/api/server/${serverId}/channels`,
+        `http://localhost:8000/api/servers/${serverId}/channels`,
         { withCredentials: true }
       );
       setChannelsInServer(res.data.channels);
@@ -58,9 +87,9 @@ function AllServers() {
   }
 
   async function handleDeleteServer(serverId) {
-    if (confirm("Are you sure you want to delete this server?")) {
+    if (confirm("Are you sure you want to delete this server? This action cannot be undone.")) {
       try {
-        await axios.delete(`http://localhost:8000/api/server/${serverId}`, {
+        await axios.delete(`http://localhost:8000/api/servers/${serverId}`, {
           withCredentials: true,
         });
         setServers((prev) => prev.filter((s) => s._id !== serverId));
@@ -72,10 +101,10 @@ function AllServers() {
   }
 
   async function handleRemoveUser(userId) {
-    if (confirm("Remove this user from the server?")) {
+    if (confirm("Are you sure you want to remove this user from the server?")) {
       try {
         await axios.delete(
-          `http://localhost:8000/api/server/${selectedServer._id}/removeUser/${userId}`,
+          `http://localhost:8000/api/servers/${selectedServer._id}/removeUser/${userId}`,
           { withCredentials: true }
         );
         setUsersInServer((prev) => prev.filter((u) => u._id !== userId));
@@ -85,11 +114,53 @@ function AllServers() {
     }
   }
 
+  async function handleAddUser() {
+    if (!newMemberEmail) return;
+    
+    try {
+      const userToAdd = allUsers.find(user => user.email === newMemberEmail);
+      if (!userToAdd) {
+        alert("User not found");
+        return;
+      }
+
+      await axios.post(
+        `http://localhost:8000/api/servers/${selectedServer._id}/addUser`,
+        { userId: userToAdd._id },
+        { withCredentials: true }
+      );
+      
+      setUsersInServer(prev => [...prev, userToAdd]);
+      setNewMemberEmail("");
+    } catch (error) {
+      console.error("Error adding user:", error);
+      alert("Failed to add user to server");
+    }
+  }
+
+  async function handleAddChannel() {
+    if (!newChannelName) return;
+    
+    try {
+      const response = await axios.post(
+        `http://localhost:8000/api/servers/${selectedServer._id}/channel`,
+        { name: newChannelName },
+        { withCredentials: true }
+      );
+      
+      setChannelsInServer(prev => [...prev, response.data.channel]);
+      setNewChannelName("");
+    } catch (error) {
+      console.error("Error adding channel:", error);
+      alert("Failed to add channel");
+    }
+  }
+
   async function handleRemoveChannel(channelId) {
-    if (confirm("Remove this channel from the server?")) {
+    if (confirm("Are you sure you want to remove this channel from the server?")) {
       try {
         await axios.delete(
-          `http://localhost:8000/api/server/${selectedServer._id}/channel/${channelId}`,
+          `http://localhost:8000/api/servers/${selectedServer._id}/channel/${channelId}`,
           { withCredentials: true }
         );
         setChannelsInServer((prev) => prev.filter((c) => c._id !== channelId));
@@ -99,111 +170,222 @@ function AllServers() {
     }
   }
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
   return (
-    <div className="p-4">
-      {servers.length > 0 ? (
-        <ul className="space-y-5">
-          {servers.map((server) => (
-            <li
-              key={server._id}
-              className="bg-gray-800 p-4 rounded-xl shadow hover:shadow-2xl hover:scale-[1.02] active:scale-95 transition-transform transform duration-200 cursor-pointer"
-              onClick={() => handleServerClick(server)}
-            >
-              <h3 className="text-lg font-semibold text-white">
-                {server.name}
-              </h3>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="text-gray-400">No servers found</p>
-      )}
+    <div className="space-y-6">
+      {/* Search */}
+      <div className="relative">
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <Search size={18} className="text-gray-400" />
+        </div>
+        <input
+          type="text"
+          className="block w-full pl-10 pr-3 py-2 border border-gray-700 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+          placeholder="Search servers..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
 
-      {/* Modal */}
-      {selectedServer && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 transition-all duration-300">
-          <div className="bg-gray-900 text-white rounded-2xl p-6 w-[90%] max-w-3xl shadow-2xl relative overflow-y-auto max-h-[90vh] animate-fade-in">
-            <h3 className="text-2xl font-bold text-indigo-400 mb-4">
-              {selectedServer.name}
-            </h3>
-            <p className="text-sm text-gray-400 mb-6">
-              Created At:{" "}
-              {new Date(selectedServer.createdAt).toLocaleDateString()}
-            </p>
+      {/* Server Count */}
+      <div className="bg-gray-800 rounded-lg p-4 flex items-center">
+        <div className="p-3 rounded-full bg-gradient-to-br from-blue-600 to-blue-400 mr-4">
+          <Server size={20} />
+        </div>
+        <div>
+          <p className="text-sm text-gray-400">Total Servers</p>
+          <p className="text-xl font-bold">{servers.length}</p>
+        </div>
+      </div>
 
-            {/* Users List */}
-            <div className="mb-6">
-              <h4 className="text-lg font-semibold text-indigo-300 mb-3">
-                Users :
-              </h4>
-              {usersInServer.length > 0 ? (
-                <ul className="space-y-2 max-h-40 overflow-y-auto pr-2">
-                  {usersInServer.map((user) => (
-                    <li
-                      key={user._id}
-                      className="flex justify-between items-center bg-gray-800 p-3 rounded-lg hover:bg-gray-700 transition-all duration-200"
-                    >
-                      <div className="flex flex-col">
-                        <span className="text-sm font-semibold">
-                          {user.username}
-                        </span>
-                        <span className="text-xs text-gray-400">
-                          {user.email}
-                        </span>
-                      </div>
-                      <button
-                        onClick={() => handleRemoveUser(user._id)}
-                        className="bg-red-500 hover:bg-red-600 active:bg-red-700 text-white text-xs px-3 py-1 rounded-md transition-all duration-200"
-                      >
-                        Remove
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-sm text-gray-500">No users found.</p>
-              )}
-            </div>
-
-            {/* Channels List */}
-            <div>
-              <h4 className="text-lg font-semibold text-indigo-300 mb-3">
-                Channels :
-              </h4>
-              {channelsInServer.length > 0 ? (
-                <ul className="space-y-2 max-h-40 overflow-y-auto pr-2">
-                  {channelsInServer.map((channel) => (
-                    <li
-                      key={channel._id}
-                      className="bg-gray-800 p-3 rounded-lg text-sm flex justify-between items-center hover:bg-gray-700 transition-all duration-200"
-                    >
-                      <span className="font-semibold">{channel.name}</span>
-                      <button
-                        onClick={() => handleRemoveChannel(channel._id)}
-                        className="bg-red-500 hover:bg-red-600 active:bg-red-700 text-white text-xs px-3 py-1 rounded-md transition-all duration-200"
-                      >
-                        Remove
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-sm text-gray-500">No channels found.</p>
-              )}
-            </div>
-
-            <div className="flex justify-end gap-3 mt-8">
-              <button
-                onClick={() => handleDeleteServer(selectedServer._id)}
-                className="bg-red-600 hover:bg-red-700 active:bg-red-800 text-white px-4 py-2 rounded-lg shadow transition-all duration-200"
+      {/* Servers List */}
+      <div>
+        {filteredServers.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredServers.map((server) => (
+              <div
+                key={server._id}
+                onClick={() => handleServerClick(server)}
+                className="bg-gray-800 rounded-lg overflow-hidden hover:shadow-xl hover:bg-gray-750 cursor-pointer transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
               >
-                Delete Server
-              </button>
+                <div className="p-5">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center">
+                      <Server size={20} className="text-blue-400 mr-3" />
+                      <h3 className="text-lg font-semibold text-white">
+                        {server.name}
+                      </h3>
+                    </div>
+                  </div>
+                  <div className="text-sm text-gray-400">
+                    Created: {new Date(server.createdAt).toLocaleDateString()}
+                  </div>
+                </div>
+                <div className="bg-gray-700 px-5 py-3 flex justify-between">
+                  <div className="flex items-center text-sm text-blue-300">
+                    <Users size={16} className="mr-1" />
+                    <span>View Details</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-gray-400 text-center bg-gray-800/50 p-6 rounded-lg">
+            No servers found.
+          </p>
+        )}
+      </div>
+
+      {/* Server Details Modal */}
+      {selectedServer && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 backdrop-blur-sm flex justify-center items-center z-50 transition-all duration-300">
+          <div 
+            className="bg-gradient-to-b from-gray-800 to-gray-900 rounded-2xl max-w-3xl w-[90%] shadow-2xl relative overflow-hidden animate-modalFadeIn"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-blue-600 to-blue-400 px-6 py-4 flex justify-between items-center">
+              <h3 className="text-xl font-bold text-white">
+                {selectedServer.name}
+              </h3>
               <button
                 onClick={handleCloseModal}
-                className="bg-gray-700 hover:bg-gray-600 active:bg-gray-500 text-white px-4 py-2 rounded-lg transition-all duration-200"
+                className="bg-black/20 hover:bg-black/40 p-2 rounded-full transition-colors duration-200"
               >
-                Close
+                <X size={20} className="text-white" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 max-h-[70vh] overflow-y-auto">
+              <div className="text-sm text-gray-400 mb-6 flex items-center">
+                <span>Created: {new Date(selectedServer.createdAt).toLocaleDateString()}</span>
+                <span className="inline-block w-1 h-1 bg-gray-500 rounded-full mx-2"></span>
+                <span>ID: {selectedServer._id}</span>
+              </div>
+
+              {/* Users List */}
+              <div className="mb-6">
+                <div className="flex justify-between items-center mb-3">
+                  <h4 className="text-lg font-semibold text-blue-400 flex items-center">
+                    <Users size={18} className="mr-2" />
+                    Users ({usersInServer.length})
+                  </h4>
+                  <div className="flex gap-2">
+                    <input
+                      type="email"
+                      value={newMemberEmail}
+                      onChange={(e) => setNewMemberEmail(e.target.value)}
+                      placeholder="Enter user email"
+                      className="px-3 py-1 bg-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <button
+                      onClick={handleAddUser}
+                      className="flex items-center gap-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-lg text-sm transition-colors"
+                    >
+                      <UserPlus size={16} />
+                      Add
+                    </button>
+                  </div>
+                </div>
+                <div className="bg-gray-800/50 rounded-lg">
+                  {usersInServer.length > 0 ? (
+                    <ul className="divide-y divide-gray-700">
+                      {usersInServer.map((user) => (
+                        <li
+                          key={user._id}
+                          className="flex justify-between items-center p-3 hover:bg-gray-700/50 transition-colors duration-200"
+                        >
+                          <div className="flex items-center">
+                            <User size={16} className="text-gray-400 mr-2" />
+                            <div>
+                              <div className="text-sm font-medium">{user.username}</div>
+                              <div className="text-xs text-gray-400">{user.email}</div>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => handleRemoveUser(user._id)}
+                            className="text-red-400 hover:text-red-300 hover:bg-red-900/20 p-1.5 rounded-md transition-colors duration-200"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-sm text-gray-500 p-3">No users in this server.</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Channels List */}
+              <div>
+                <div className="flex justify-between items-center mb-3">
+                  <h4 className="text-lg font-semibold text-green-400 flex items-center">
+                    <MessageSquare size={18} className="mr-2" />
+                    Channels ({channelsInServer.length})
+                  </h4>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={newChannelName}
+                      onChange={(e) => setNewChannelName(e.target.value)}
+                      placeholder="Enter channel name"
+                      className="px-3 py-1 bg-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                    />
+                    <button
+                      onClick={handleAddChannel}
+                      className="flex items-center gap-1 bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg text-sm transition-colors"
+                    >
+                      <Plus size={16} />
+                      Add
+                    </button>
+                  </div>
+                </div>
+                <div className="bg-gray-800/50 rounded-lg">
+                  {channelsInServer.length > 0 ? (
+                    <ul className="divide-y divide-gray-700">
+                      {channelsInServer.map((channel) => (
+                        <li
+                          key={channel._id}
+                          className="flex justify-between items-center p-3 hover:bg-gray-700/50 transition-colors duration-200"
+                        >
+                          <div className="flex items-center">
+                            <MessageSquare size={16} className="text-gray-400 mr-2" />
+                            <span className="text-sm font-medium">{channel.name}</span>
+                          </div>
+                          <button
+                            onClick={() => handleRemoveChannel(channel._id)}
+                            className="text-red-400 hover:text-red-300 hover:bg-red-900/20 p-1.5 rounded-md transition-colors duration-200"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-sm text-gray-500 p-3">No channels in this server.</p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="bg-gray-850 border-t border-gray-700 px-6 py-4 flex justify-end">
+              <button
+                onClick={() => handleDeleteServer(selectedServer._id)}
+                className="flex items-center bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg shadow transition-colors duration-200"
+              >
+                <Trash2 size={16} className="mr-2" />
+                Delete Server
               </button>
             </div>
           </div>

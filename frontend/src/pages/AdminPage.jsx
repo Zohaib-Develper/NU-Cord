@@ -1,91 +1,79 @@
 import React, { useState } from "react";
+import { Menu, Activity, Users, Server, Layers, BarChart2 } from "lucide-react";
+import Sidebar from "../components/admin/Sidebar";
 import AllUsers from "../components/admin/AllUsers";
 import AllServers from "../components/admin/AllServers";
-import { FaPlus, FaMinus } from "react-icons/fa";
-import logo from "../assets/logo.png";
 import AllStats from "../components/admin/AllStats";
 import AllGroups from "../components/admin/AllGroups";
+import Dashboard from "../components/admin/Dashboard";
+
 const AdminPage = () => {
-  const [showUsers, setShowUsers] = useState(false);
-  const [showServers, setShowServers] = useState(false);
-  const [showstats, setShowStats] = useState(false);
-  const [showGroup, setShowGroup] = useState(false);
+  const [activeView, setActiveView] = useState("dashboard");
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+
+  const toggleMobileSidebar = () => {
+    setIsMobileSidebarOpen(!isMobileSidebarOpen);
+  };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white py-10 px-4 flex flex-col items-center">
-      <img
-        src={logo}
-        alt="Logo"
-        className="w-24 h-24 object-contain mb-8 animate-pulse drop-shadow-lg"
-      />
-
-      <h1 className="text-5xl font-extrabold text-indigo-400 mb-20 text-center">
-        Admin👑 Panel ma Swagat hai Boss!
-      </h1>
-
-      <div className="w-full max-w-4xl flex flex-col gap-6">
-        {/* All Users Section */}
-        <div className="bg-gray-800 rounded-xl shadow-md overflow-hidden">
-          <div
-            className="flex justify-between items-center px-6 py-4 cursor-pointer hover:bg-gray-700 transition"
-            onClick={() => setShowStats(!showstats)}
-          >
-            <h2 className="text-2xl font-bold">Stats</h2>
-            {showstats ? <FaMinus /> : <FaPlus />}
+    <div className="flex h-screen bg-[#0a0f1d] text-white">
+      {/* Mobile Header */}
+      <div className="lg:hidden flex items-center justify-between p-4 bg-[#0f172a] shadow-md">
+        <div className="flex items-center space-x-3">
+          <div className="w-8 h-8 bg-[#7c3aed] rounded-full flex items-center justify-center">
+            <Activity size={20} className="text-white" />
           </div>
-          {showstats && (
-            <div className="px-6 py-4 border-t border-gray-700">
-              <AllStats />
-            </div>
-          )}
+          <h1 className="text-xl font-bold">NU-Cord Admin</h1>
+        </div>
+        <button
+          onClick={toggleMobileSidebar}
+        className="p-2 rounded-lg bg-[#0f172a] hover:bg-[#4c1d95] transition-colors duration-200"
+        >
+          <Menu size={24} />
+        </button>
+      </div>
+
+      <div className="flex flex-1">
+        {/* Sidebar */}
+        <div
+          className={`${
+            isMobileSidebarOpen ? "block" : "hidden"
+          } lg:block fixed lg:static z-30 top-0 left-0 h-full w-64 bg-[#0f172a] shadow-lg transition-all duration-300 ease-in-out`}
+        >
+          <Sidebar 
+            activeView={activeView} 
+            setActiveView={setActiveView} 
+            closeMobileSidebar={() => setIsMobileSidebarOpen(false)}
+          />
         </div>
 
-        <div className="w-full max-w-4xl flex flex-col gap-6">
-          {/* All Users Section */}
-          <div className="bg-gray-800 rounded-xl shadow-md overflow-hidden">
-            <div
-              className="flex justify-between items-center px-6 py-4 cursor-pointer hover:bg-gray-700 transition"
-              onClick={() => setShowUsers(!showUsers)}
-            >
-              <h2 className="text-2xl font-bold">Users</h2>
-              {showUsers ? <FaMinus /> : <FaPlus />}
-            </div>
-            {showUsers && (
-              <div className="px-6 py-4 border-t border-gray-700">
-                <AllUsers />
-              </div>
-            )}
+        {/* Main Content Area */}
+        <div className="flex-1 lg:ml-10 p-4 lg:p-8 overflow-y-auto">
+          {/* Content Header */}
+          <div className="mb-6">
+            <h1 className="text-2xl lg:text-3xl font-bold mb-2">
+              {activeView === "dashboard" && "Dashboard Overview"}
+              {activeView === "users" && "User Management"}
+              {activeView === "servers" && "Server Management"}
+              {activeView === "groups" && "Group Management"}
+              {activeView === "stats" && "Platform Statistics"}
+            </h1>
+            <p className="text-gray-400 text-sm lg:text-base">
+              {activeView === "dashboard" && "Welcome to your NU-Cord admin control panel"}
+              {activeView === "users" && "Manage user accounts and permissions"}
+              {activeView === "servers" && "View and manage all servers in the system"}
+              {activeView === "groups" && "Manage user groups and their members"}
+              {activeView === "stats" && "Comprehensive platform statistics and metrics"}
+            </p>
           </div>
 
-          {/* All Servers Section */}
-          <div className="bg-gray-800 rounded-xl shadow-md overflow-hidden">
-            <div
-              className="flex justify-between items-center px-6 py-4 cursor-pointer hover:bg-gray-700 transition"
-              onClick={() => setShowServers(!showServers)}
-            >
-              <h2 className="text-2xl font-bold">Servers</h2>
-              {showServers ? <FaMinus /> : <FaPlus />}
-            </div>
-            {showServers && (
-              <div className="px-6 py-4 border-t border-gray-700">
-                <AllServers />
-              </div>
-            )}
-          </div>
-
-          <div className="bg-gray-800 rounded-xl shadow-md overflow-hidden">
-            <div
-              className="flex justify-between items-center px-6 py-4 cursor-pointer hover:bg-gray-700 transition"
-              onClick={() => setShowGroup(!showGroup)}
-            >
-              <h2 className="text-2xl font-bold">Groups</h2>
-              {showGroup ? <FaMinus /> : <FaPlus />}
-            </div>
-            {showGroup && (
-              <div className="px-6 py-4 border-t border-gray-700">
-                <AllGroups />
-              </div>
-            )}
+          {/* Content Area */}
+          <div className="bg-[#0f172a]/50 backdrop-blur-sm rounded-xl shadow-xl p-4 lg:p-6">
+            {activeView === "dashboard" && <Dashboard />}
+            {activeView === "users" && <AllUsers />}
+            {activeView === "servers" && <AllServers />}
+            {activeView === "groups" && <AllGroups />}
+            {activeView === "stats" && <AllStats />}
           </div>
         </div>
       </div>

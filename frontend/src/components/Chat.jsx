@@ -21,6 +21,7 @@ import axios from "axios";
 import EmojiPicker from "emoji-picker-react";
 import VoiceChannelCard from "./VoiceChannelCard";
 import Tooltip from "@mui/material/Tooltip";
+import { AlertCircle } from "lucide-react";
 
 const socket = io("http://localhost:8000");
 
@@ -43,6 +44,8 @@ const Chat = ({ selectedChannel }) => {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const [uploadingFile, setUploadingFile] = useState(false);
+  const [isSuspended, setIsSuspended] = useState(false);
+  const [showSuspendedMessage, setShowSuspendedMessage] = useState(false);
 
   // Add new state variables for calling
   const [localStream, setLocalStream] = useState(null);
@@ -167,6 +170,13 @@ const Chat = ({ selectedChannel }) => {
     return () => socket.off("messageDeletedForEveryone", handleDeleteForEveryone);
   }, [selectedChannel]);
 
+  useEffect(() => {
+    // Check if user is suspended
+    if (user) {
+      setIsSuspended(user.isSuspended);
+    }
+  }, [user]);
+
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -176,6 +186,12 @@ const Chat = ({ selectedChannel }) => {
   };
 
   const sendMessage = async (file = null) => {
+    if (isSuspended) {
+      setShowSuspendedMessage(true);
+      setTimeout(() => setShowSuspendedMessage(false), 5000);
+      return;
+    }
+
     if (!selectedChannel || !selectedChannel._id) {
       alert('No recipient selected!');
       return;
@@ -794,6 +810,13 @@ const Chat = ({ selectedChannel }) => {
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {selectedChannel ? (
           <>
+            {/* Suspended user message */}
+            {showSuspendedMessage && (
+              <div className="fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center space-x-2">
+                <AlertCircle size={20} />
+                <span>You are suspended from sending any message. Please contact the administration at nu-cord@gmail.com to resolve the matter</span>
+              </div>
+            )}
             {/* Error message */}
             {uploadError && (
               <div className="mb-2 text-red-400 bg-red-900 bg-opacity-30 px-3 py-2 rounded">
@@ -972,6 +995,13 @@ const Chat = ({ selectedChannel }) => {
               <div className="flex items-center gap-3 px-6 py-3 rounded-lg bg-gradient-to-r from-yellow-600 to-yellow-800 shadow-lg border border-yellow-400">
                 <FaLock className="text-2xl text-yellow-200" />
                 <span className="text-lg font-semibold text-yellow-90">This is a read-only channel. Only admins can send messages in here.</span>
+              </div>
+            </div>
+          ) : isSuspended ? (
+            <div className="flex flex-col items-center justify-center py-6">
+              <div className="flex items-center gap-3 px-6 py-3 rounded-lg bg-gradient-to-r from-red-600 to-red-800 shadow-lg border border-red-400">
+                <AlertCircle className="text-2xl text-red-200" />
+                <span className="text-lg font-semibold text-red-90">Your account is suspended. Please contact the administration at nu-cord@gmail.com to resolve the matter.</span>
               </div>
             </div>
           ) : (

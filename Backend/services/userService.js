@@ -16,7 +16,7 @@ const signupService = async (userProfile) => {
   console.log("📥 Extracted user details:", userDetails);
 
   let user = await User.findOne({ email: userDetails.email });
-  console.log("USER: ", userDetails);
+  // console.log("USER: ", userDetails);
 
   if (!user) {
     console.log("✅ User does not exist, creating new user.");
@@ -28,6 +28,7 @@ const signupService = async (userProfile) => {
     return { status: "new", user };
   } else {
     console.log(`👤 User already exists: ${user.username}. Signing in...`);
+
     const token = await signinExistingUser(user);
     return { status: "existing", token };
   }

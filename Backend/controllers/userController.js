@@ -8,8 +8,29 @@ const { validateToken } = require("../utils/authentication/auth");
 
 const signup = async (req, res) => {
   try {
-    const result = await signupService(req.user);
+    const { email } = req.user;
 
+    // Check if user was previously removed
+    const removedUser = await User.findOne({
+      $or: [{ email: email, isRemoved: true }],
+    });
+    if (removedUser) {
+      console.log("User was previously removed");
+      return res.redirect("http://localhost:5173/deleted");
+    }
+
+    // // Check if user already exists
+    // const existingUser = await User.findOne({
+    //   $or: [{ email }, { roll_no }],
+    // });
+
+    // if (existingUser) {
+    //   return res.status(400).json({
+    //     error: "User with this email or roll number already exists",
+    //   });
+    // }
+
+    const result = await signupService(req.user);
     if (result.status === "new") {
       const updatedUser = await registerUserToServer(result.user._id);
       res.cookie("token", result.token, {
@@ -33,14 +54,27 @@ const signup = async (req, res) => {
 
     return res.status(400).json({ error: "Unexpected signup response" });
   } catch (error) {
-    console.error("❌ Error in signup:", error);
-    return res.status(500).json({ error: "User registration failed" });
+    console.error("Error in signup:", error);
+    res.status(500).json({ error: "Failed to create user" });
   }
 };
 
 const signin = async (req, res) => {
   try {
     const { username, password } = req.body;
+
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(401).json({ error: "Invalid username or password" });
+    }
+
+    // Block removed users
+    if (user.isRemoved) {
+      return res.status(403).json({
+        error:
+          "You are suspended from the platform. Please contact the administration at nu-cord@gmail.com to resolve the matter",
+      });
+    }
 
     const token = await signinService({ username, password });
 
@@ -50,7 +84,7 @@ const signin = async (req, res) => {
       sameSite: "strict",
     });
 
-    const user = await User.findOne({ username })
+    const userProfile = await User.findOne({ username })
       .populate("friends")
       .populate("friendRequestsReceived")
       .populate("friendRequestsSent")
@@ -59,7 +93,7 @@ const signin = async (req, res) => {
       .populate("requested_servers")
       .populate("groups");
 
-    res.status(200).json({ user, token });
+    res.status(200).json({ user: userProfile, token });
   } catch (error) {
     console.error("❌ Error in sign in:", error);
     res
@@ -212,7 +246,6 @@ const logout = (req, res) => {
 
 const searchUserByName = async (req, res) => {
   try {
-
     const { name } = req.query;
     const users = await User.find({
       name: { $regex: name, $options: "i" },
@@ -233,7 +266,7 @@ const searchUserByName = async (req, res) => {
 const getAllUsers = async (req, res) => {
   try {
     const users = await User.find();
-    console.log(users);
+    // console.log(users);
 
     if (!users) {
       return res.status(404).json({ error: "No users found" });
@@ -328,6 +361,24 @@ const getAllStats = async (req, res) => {
   }
 };
 
+const verifyAdminAccess = async (req, res) => {
+  try {
+    // The Protect middleware has already verified the token and attached the user
+    // We just need to check if the user has the ADMIN role
+    const isAdmin = req.user.role === "ADMIN";
+
+    res.status(200).json({
+      isAdmin,
+      message: isAdmin ? "Admin access verified" : "User is not an admin",
+    });
+  } catch (error) {
+    console.error("Error verifying admin access:", error);
+    res.status(500).json({
+      error: "Failed to verify admin access",
+    });
+  }
+};
+
 // Add this function to allow updating about and profile picture
 const updateProfile = async (req, res) => {
   try {
@@ -346,6 +397,56 @@ const updateProfile = async (req, res) => {
   }
 };
 
+const removeUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Mark user as removed instead of deleting
+    user.isRemoved = true;
+    await user.save();
+
+    res.status(200).json({ message: "User account has been removed" });
+  } catch (error) {
+    console.error("Error removing user:", error);
+    res.status(500).json({ error: "Failed to remove user" });
+  }
+};
+
+const addBackUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    user.isRemoved = false;
+    await user.save();
+    res.status(200).json({ message: "User has been added back" });
+  } catch (error) {
+    console.error("Error adding back user:", error);
+    res.status(500).json({ error: "Failed to add back user" });
+  }
+};
+
+const permanentlyDeleteUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findByIdAndDelete(userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    res.status(200).json({ message: "User permanently deleted" });
+  } catch (error) {
+    console.error("Error permanently deleting user:", error);
+    res.status(500).json({ error: "Failed to permanently delete user" });
+  }
+};
+
 module.exports = {
   signup,
   signin,
@@ -359,5 +460,9 @@ module.exports = {
   suspendUser,
   unSuspendUser,
   getAllStats,
+  verifyAdminAccess,
   updateProfile,
+  removeUser,
+  addBackUser,
+  permanentlyDeleteUser,
 };

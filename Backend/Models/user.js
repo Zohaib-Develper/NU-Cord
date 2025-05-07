@@ -60,6 +60,10 @@ const userSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    isRemoved: {
+      type: Boolean,
+      default: false,
+    },
     about: { type: String, default: "Hey there fellow FASTIANS!" },
   },
   { timestamps: true }

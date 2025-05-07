@@ -70,7 +70,6 @@ const Protect = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     // 3. Check if user exists
-
     const currentUser = await User.findById(decoded._id);
     if (!currentUser) {
       return res.status(401).json({
@@ -78,7 +77,14 @@ const Protect = async (req, res, next) => {
       });
     }
 
-    // 4. Attach user to request
+    // 4. Block removed users
+    if (currentUser.isRemoved) {
+      return res.status(403).json({
+        error: "You are suspended from the platform. Please contact the administration at nu-cord@gmail.com to resolve the matter"
+      });
+    }
+
+    // 5. Attach user to request
     req.user = currentUser;
     next();
   } catch (error) {

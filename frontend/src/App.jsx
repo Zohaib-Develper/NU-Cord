@@ -15,6 +15,8 @@ import DirectMessagesPage from "./pages/DirectMessagesPage";
 import GroupsPage from "./pages/GroupsPage";
 import AdminPage from "./pages/AdminPage";
 import AdminRoute from "./utils/AdminRoute";
+import DeletedUser from "./pages/DeletedUser";
+
 function App() {
   return (
     <AuthProvider>
@@ -26,9 +28,9 @@ function App() {
           <Route
             path="/admin"
             element={
-              // <AdminRoute>
-              <AdminPage />
-              // </AdminRoute>
+              <AdminRoute>
+                <AdminPage />
+              </AdminRoute>
             }
           />
           Protected Route for Homepage
@@ -64,6 +66,7 @@ function App() {
               </PrivateRoute>
             }
           />
+          <Route path="/deleted" element={<DeletedUser />} />
         </Routes>
       </Router>
     </AuthProvider>

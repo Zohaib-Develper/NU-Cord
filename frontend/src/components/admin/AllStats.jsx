@@ -1,5 +1,9 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { 
+  Users, Server, Building, Layers, MessageSquare,
+  TrendingUp, BarChart2, Activity, ArrowUp, ArrowDown
+} from "lucide-react";
 
 function AllStats() {
   const [stats, setStats] = useState({
@@ -10,6 +14,13 @@ function AllStats() {
     totalChannels: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [trends] = useState({
+    users: { value: 12.5, up: true },
+    servers: { value: 5.3, up: true },
+    campuses: { value: 0, up: false },
+    groups: { value: 8.7, up: true },
+    channels: { value: 3.2, up: false },
+  });
 
   useEffect(() => {
     async function fetchStats() {
@@ -30,174 +41,193 @@ function AllStats() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64 bg-gray-900">
+      <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
       </div>
     );
   }
 
   return (
-    <div className="bg-gray-900 py-6 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          {/* Users Card */}
-          <div className="bg-gray-800 overflow-hidden shadow rounded-lg">
-            <div className="px-4 py-4 sm:p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0 bg-blue-600 rounded-md p-2">
-                  <svg
-                    className="h-5 w-5 text-white"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-                    />
-                  </svg>
-                </div>
-                <div className="ml-4">
-                  <dt className="text-sm font-medium text-gray-400 truncate">
-                    Total Users
-                  </dt>
-                  <dd className="text-xl font-semibold text-white">
-                    {stats.totalUsers.toLocaleString()}
-                  </dd>
-                </div>
-              </div>
-            </div>
-          </div>
+    <div className="space-y-8">
+      {/* Overall Platform Analytics */}
+      <div className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 rounded-xl p-6 shadow-lg backdrop-blur-sm">
+        <h3 className="text-xl font-semibold mb-4 flex items-center">
+          <Activity size={20} className="mr-2 text-blue-400" />
+          Platform Overview
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <StatOverviewCard 
+            title="Total Users" 
+            value={stats.totalUsers}
+            icon={<Users size={20} />}
+            trendValue={trends.users.value}
+            trendUp={trends.users.up}
+            color="blue"
+          />
+          <StatOverviewCard 
+            title="Total Servers" 
+            value={stats.totalServers}
+            icon={<Server size={20} />}
+            trendValue={trends.servers.value}
+            trendUp={trends.servers.up}
+            color="green"
+          />
+          <StatOverviewCard 
+            title="Total Channels"
+            value={stats.totalChannels}
+            icon={<MessageSquare size={20} />}
+            trendValue={trends.channels.value}
+            trendUp={trends.channels.up}
+            color="orange"
+          />
+        </div>
+      </div>
 
-          {/* Servers Card */}
-          <div className="bg-gray-800 overflow-hidden shadow rounded-lg">
-            <div className="px-4 py-4 sm:p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0 bg-green-600 rounded-md p-2">
-                  <svg
-                    className="h-5 w-5 text-white"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"
-                    />
-                  </svg>
-                </div>
-                <div className="ml-4">
-                  <dt className="text-sm font-medium text-gray-400 truncate">
-                    Total Servers
-                  </dt>
-                  <dd className="text-xl font-semibold text-white">
-                    {stats.totalServers.toLocaleString()}
-                  </dd>
-                </div>
-              </div>
-            </div>
-          </div>
+      {/* Detailed Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <StatCard
+          title="Total Users"
+          value={stats.totalUsers.toLocaleString()}
+          icon={<Users size={24} />}
+          description="Registered platform users"
+          color="blue"
+        />
+        
+        <StatCard
+          title="Total Servers"
+          value={stats.totalServers.toLocaleString()}
+          icon={<Server size={24} />}
+          description="Active communication servers"
+          color="green"
+        />
+        
+        <StatCard
+          title="Total Campuses"
+          value={stats.totalCampuses.toLocaleString()}
+          icon={<Building size={24} />}
+          description="Educational campuses"
+          color="purple"
+        />
+        
+        <StatCard
+          title="Total Groups"
+          value={stats.totalGroups.toLocaleString()}
+          icon={<Layers size={24} />}
+          description="User collaboration groups"
+          color="yellow"
+        />
+        
+        <StatCard
+          title="Total Channels"
+          value={stats.totalChannels.toLocaleString()}
+          icon={<MessageSquare size={24} />}
+          description="Communication channels"
+          color="red"
+        />
+        
+        <StatCard
+          title="User / Server Ratio"
+          value={(stats.totalUsers / Math.max(stats.totalServers, 1)).toFixed(1)}
+          icon={<BarChart2 size={24} />}
+          description="Average users per server"
+          color="indigo"
+        />
+      </div>
 
-          {/* Campuses Card */}
-          <div className="bg-gray-800 overflow-hidden shadow rounded-lg">
-            <div className="px-4 py-4 sm:p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0 bg-purple-600 rounded-md p-2">
-                  <svg
-                    className="h-5 w-5 text-white"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                    />
-                  </svg>
-                </div>
-                <div className="ml-4">
-                  <dt className="text-sm font-medium text-gray-400 truncate">
-                    Total Campuses
-                  </dt>
-                  <dd className="text-xl font-semibold text-white">
-                    {stats.totalCampuses.toLocaleString()}
-                  </dd>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Groups Card */}
-          <div className="bg-gray-800 overflow-hidden shadow rounded-lg">
-            <div className="px-4 py-4 sm:p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0 bg-yellow-600 rounded-md p-2">
-                  <svg
-                    className="h-5 w-5 text-white"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                    />
-                  </svg>
-                </div>
-                <div className="ml-4">
-                  <dt className="text-sm font-medium text-gray-400 truncate">
-                    Total Groups
-                  </dt>
-                  <dd className="text-xl font-semibold text-white">
-                    {stats.totalGroups.toLocaleString()}
-                  </dd>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Channels Card */}
-          <div className="bg-gray-800 overflow-hidden shadow rounded-lg md:col-span-2">
-            <div className="px-4 py-4 sm:p-5">
-              <div className="flex items-center justify-center">
-                <div className="flex-shrink-0 bg-red-600 rounded-md p-2">
-                  <svg
-                    className="h-5 w-5 text-white"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
-                    />
-                  </svg>
-                </div>
-                <div className="ml-4">
-                  <dt className="text-sm font-medium text-gray-400 truncate">
-                    Total Channels
-                  </dt>
-                  <dd className="text-xl font-semibold text-white">
-                    {stats.totalChannels.toLocaleString()}
-                  </dd>
-                </div>
-              </div>
-            </div>
+      {/* Charts Placeholder */}
+      <div className="bg-gray-800 rounded-xl p-6 shadow-lg">
+        <h3 className="text-xl font-semibold mb-4 flex items-center">
+          <TrendingUp size={20} className="mr-2 text-green-400" />
+          Usage Analytics
+        </h3>
+        <p className="text-gray-400 text-sm mb-8">The graph below shows platform usage trends over time.</p>
+        
+        {/* Placeholder for charts - in a real app, you'd integrate an actual chart library */}
+        <div className="h-64 bg-gray-750 rounded-lg flex items-center justify-center border border-gray-700">
+          <div className="text-center">
+            <Activity size={48} className="mx-auto mb-4 text-gray-500" />
+            <p className="text-gray-400">Analytics data visualization would appear here</p>
           </div>
         </div>
       </div>
     </div>
   );
 }
+
+const StatOverviewCard = ({ title, value, icon, trendValue, trendUp, color }) => {
+  const colorClasses = {
+    blue: "from-blue-600/20 to-blue-400/10 border-blue-500/30",
+    green: "from-green-600/20 to-green-400/10 border-green-500/30",
+    purple: "from-purple-600/20 to-purple-400/10 border-purple-500/30",
+    orange: "from-orange-600/20 to-orange-400/10 border-orange-500/30",
+  };
+
+  return (
+    <div className={`bg-gradient-to-br ${colorClasses[color]} rounded-lg border p-4 backdrop-blur-sm`}>
+      <div className="flex justify-between items-start">
+        <div className="text-2xl font-bold mb-1">{value.toLocaleString()}</div>
+        <div className="p-2 rounded-full bg-gray-800/60">{icon}</div>
+      </div>
+      <div className="text-sm text-gray-400 mb-2">{title}</div>
+      <div className={`flex items-center text-xs ${trendUp ? 'text-green-400' : 'text-red-400'}`}>
+        {trendUp ? <ArrowUp size={14} /> : <ArrowDown size={14} />}
+        <span className="ml-1">{trendValue}% from last month</span>
+      </div>
+    </div>
+  );
+};
+
+const StatCard = ({ title, value, icon, description, color }) => {
+  const colorConfig = {
+    blue: {
+      bgGradient: "from-blue-600 to-blue-400",
+      lightBg: "bg-blue-400/10",
+      border: "border-blue-500/20",
+    },
+    green: {
+      bgGradient: "from-green-600 to-green-400",
+      lightBg: "bg-green-400/10",
+      border: "border-green-500/20",
+    },
+    purple: {
+      bgGradient: "from-purple-600 to-purple-400",
+      lightBg: "bg-purple-400/10",
+      border: "border-purple-500/20",
+    },
+    yellow: {
+      bgGradient: "from-yellow-600 to-yellow-400",
+      lightBg: "bg-yellow-400/10",
+      border: "border-yellow-500/20",
+    },
+    red: {
+      bgGradient: "from-red-600 to-red-400",
+      lightBg: "bg-red-400/10",
+      border: "border-red-500/20",
+    },
+    indigo: {
+      bgGradient: "from-indigo-600 to-indigo-400",
+      lightBg: "bg-indigo-400/10",
+      border: "border-indigo-500/20",
+    },
+  };
+
+  return (
+    <div className={`bg-gray-800 rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 ${colorConfig[color].border} border`}>
+      <div className="p-5">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-medium text-gray-300">{title}</h3>
+          <div className={`p-2 rounded-full bg-gradient-to-br ${colorConfig[color].bgGradient}`}>
+            {icon}
+          </div>
+        </div>
+        <div className="mt-4">
+          <div className="text-3xl font-semibold">{value}</div>
+          <p className="text-sm text-gray-400 mt-1">{description}</p>
+        </div>
+      </div>
+      <div className={`h-1 ${colorConfig[color].lightBg}`}></div>
+    </div>
+  );
+};
 
 export default AllStats;
