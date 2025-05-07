@@ -15,8 +15,8 @@ const groupSchema = new Schema(
   { timestamps: true }
 );
 
-// Drop the inviteURL index if it exists
-// const Group = mongoose.models.Group || mongoose.model("Group", groupSchema);
-// Group.collection.dropIndex('inviteURL_1').catch(() => {});
+// Drop the inviteURL index if it exists in old db.
+const Group = mongoose.models.Group || mongoose.model("Group", groupSchema);
+Group.collection.dropIndex('inviteURL_1').catch(() => {});
 
 module.exports = Group;
