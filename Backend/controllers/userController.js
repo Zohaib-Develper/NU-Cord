@@ -379,9 +379,6 @@ const verifyAdminAccess = async (req, res) => {
   }
 };
 
-  }
-};
-
 // Add this function to allow updating about and profile picture
 const updateProfile = async (req, res) => {
   try {
