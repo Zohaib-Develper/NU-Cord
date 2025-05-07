@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { X, Trash2, Server, Users, MessageSquare, User, Search } from "lucide-react";
+import { X, Trash2, Server, Users, MessageSquare, User, Search, Plus, UserPlus } from "lucide-react";
 
 function AllServers() {
   const [servers, setServers] = useState([]);
@@ -9,6 +9,9 @@ function AllServers() {
   const [selectedServer, setSelectedServer] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
+  const [newChannelName, setNewChannelName] = useState("");
+  const [newMemberEmail, setNewMemberEmail] = useState("");
+  const [allUsers, setAllUsers] = useState([]);
 
   useEffect(() => {
     async function fetchServers() {
@@ -27,6 +30,20 @@ function AllServers() {
     fetchServers();
   }, []);
 
+  useEffect(() => {
+    async function fetchAllUsers() {
+      try {
+        const res = await axios.get("http://localhost:8000/user/all", {
+          withCredentials: true,
+        });
+        setAllUsers(res.data.users);
+      } catch (error) {
+        console.error("Error fetching all users:", error);
+      }
+    }
+    fetchAllUsers();
+  }, []);
+
   const filteredServers = servers.filter((server) =>
     server.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -41,6 +58,8 @@ function AllServers() {
     setSelectedServer(null);
     setUsersInServer([]);
     setChannelsInServer([]);
+    setNewChannelName("");
+    setNewMemberEmail("");
   }
 
   async function fetchUsersInServer(serverId) {
@@ -92,6 +111,48 @@ function AllServers() {
       } catch (error) {
         console.error("Error removing user:", error);
       }
+    }
+  }
+
+  async function handleAddUser() {
+    if (!newMemberEmail) return;
+    
+    try {
+      const userToAdd = allUsers.find(user => user.email === newMemberEmail);
+      if (!userToAdd) {
+        alert("User not found");
+        return;
+      }
+
+      await axios.post(
+        `http://localhost:8000/api/servers/${selectedServer._id}/addUser`,
+        { userId: userToAdd._id },
+        { withCredentials: true }
+      );
+      
+      setUsersInServer(prev => [...prev, userToAdd]);
+      setNewMemberEmail("");
+    } catch (error) {
+      console.error("Error adding user:", error);
+      alert("Failed to add user to server");
+    }
+  }
+
+  async function handleAddChannel() {
+    if (!newChannelName) return;
+    
+    try {
+      const response = await axios.post(
+        `http://localhost:8000/api/servers/${selectedServer._id}/channel`,
+        { name: newChannelName },
+        { withCredentials: true }
+      );
+      
+      setChannelsInServer(prev => [...prev, response.data.channel]);
+      setNewChannelName("");
+    } catch (error) {
+      console.error("Error adding channel:", error);
+      alert("Failed to add channel");
     }
   }
 
@@ -213,10 +274,28 @@ function AllServers() {
 
               {/* Users List */}
               <div className="mb-6">
-                <h4 className="text-lg font-semibold text-blue-400 mb-3 flex items-center">
-                  <Users size={18} className="mr-2" />
-                  Users ({usersInServer.length})
-                </h4>
+                <div className="flex justify-between items-center mb-3">
+                  <h4 className="text-lg font-semibold text-blue-400 flex items-center">
+                    <Users size={18} className="mr-2" />
+                    Users ({usersInServer.length})
+                  </h4>
+                  <div className="flex gap-2">
+                    <input
+                      type="email"
+                      value={newMemberEmail}
+                      onChange={(e) => setNewMemberEmail(e.target.value)}
+                      placeholder="Enter user email"
+                      className="px-3 py-1 bg-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <button
+                      onClick={handleAddUser}
+                      className="flex items-center gap-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-lg text-sm transition-colors"
+                    >
+                      <UserPlus size={16} />
+                      Add
+                    </button>
+                  </div>
+                </div>
                 <div className="bg-gray-800/50 rounded-lg">
                   {usersInServer.length > 0 ? (
                     <ul className="divide-y divide-gray-700">
@@ -249,10 +328,28 @@ function AllServers() {
 
               {/* Channels List */}
               <div>
-                <h4 className="text-lg font-semibold text-green-400 mb-3 flex items-center">
-                  <MessageSquare size={18} className="mr-2" />
-                  Channels ({channelsInServer.length})
-                </h4>
+                <div className="flex justify-between items-center mb-3">
+                  <h4 className="text-lg font-semibold text-green-400 flex items-center">
+                    <MessageSquare size={18} className="mr-2" />
+                    Channels ({channelsInServer.length})
+                  </h4>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={newChannelName}
+                      onChange={(e) => setNewChannelName(e.target.value)}
+                      placeholder="Enter channel name"
+                      className="px-3 py-1 bg-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                    />
+                    <button
+                      onClick={handleAddChannel}
+                      className="flex items-center gap-1 bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg text-sm transition-colors"
+                    >
+                      <Plus size={16} />
+                      Add
+                    </button>
+                  </div>
+                </div>
                 <div className="bg-gray-800/50 rounded-lg">
                   {channelsInServer.length > 0 ? (
                     <ul className="divide-y divide-gray-700">

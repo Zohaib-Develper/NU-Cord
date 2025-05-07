@@ -6,6 +6,8 @@ import {
   Building,
   Layers,
   MessageSquare,
+  AlertCircle,
+  RefreshCw,
 } from "lucide-react";
 
 const Dashboard = () => {
@@ -17,22 +19,27 @@ const Dashboard = () => {
     totalChannels: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchStats = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await axios.get("http://localhost:8000/user/stats", {
+        withCredentials: true,
+      });
+      setStats(res.data);
+    } catch (error) {
+      console.error("Error fetching stats:", error);
+      setError("Failed to load dashboard statistics. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    async function fetchStats() {
-      try {
-        const res = await axios.get("http://localhost:8000/user/stats", {
-          withCredentials: true,
-        });
-        setStats(res.data);
-      } catch (error) {
-        console.error("Error fetching stats:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
     fetchStats();
-    const interval = setInterval(fetchStats, 40000);
+    const interval = setInterval(fetchStats, 40000); // Refresh every 40 seconds
     return () => clearInterval(interval);
   }, []);
 
@@ -40,6 +47,24 @@ const Dashboard = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#8b5cf6]"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 space-y-4">
+        <div className="flex items-center text-red-400">
+          <AlertCircle size={24} className="mr-2" />
+          <span>{error}</span>
+        </div>
+        <button
+          onClick={fetchStats}
+          className="flex items-center px-4 py-2 bg-[#7c3aed] text-white rounded-lg hover:bg-[#6d28d9] transition-colors"
+        >
+          <RefreshCw size={16} className="mr-2" />
+          Retry
+        </button>
       </div>
     );
   }

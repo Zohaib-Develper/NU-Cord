@@ -1,7 +1,7 @@
 const generateRandomPassword = require("./passwordGenerator");
 
 function extractDetailsFromEmail(profile) {
-  console.log("Extracting details from: ", profile);                 //FOR DEBUGGING ONLY
+  // console.log("Extracting details from: ", profile);                 //FOR DEBUGGING ONLY
   const profileTokens = profile.family_name.split(" ");
   // console.log("Profile Tokens", profileTokens);                      //FOR DEBUGGING ONLY
 
@@ -15,6 +15,7 @@ function extractDetailsFromEmail(profile) {
     batch: profileTokens[1],
     campus: profileTokens[4],
     pfp: profile.picture || (profile.photos?.[0]?.value ?? null)
+    
   };
 
   return User;

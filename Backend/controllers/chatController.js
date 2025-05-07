@@ -50,10 +50,20 @@ const upload = multer({
   },
 }).single("file");
 
+// Add this helper function at the top
+const checkSuspendedUser = (user) => {
+  if (user.isSuspended) {
+    throw new Error("You are suspended from sending any message. Please contact the administration at nu-cord@gmail.com to resolve the matter");
+  }
+};
+
 function saveMessage(req, res) {
   const { text, receiverId } = req.body;
 
   try {
+    // Check if user is suspended
+    checkSuspendedUser(req.user);
+
     // If there's no text and no file, return error
     if (!text && !req.file) {
       return res
@@ -83,6 +93,9 @@ function saveMessage(req, res) {
       });
   } catch (error) {
     console.error("Error saving message:", error);
+    if (error.message.includes("suspended")) {
+      return res.status(403).json({ error: error.message });
+    }
     res.status(500).json({ error: "Failed to save message" });
   }
 }
@@ -113,6 +126,9 @@ const saveGroupMessage = async (req, res) => {
   const { text, groupId } = req.body;
 
   try {
+    // Check if user is suspended
+    checkSuspendedUser(req.user);
+
     // If there's no text and no file, return error
     if (!text && !req.file) {
       return res
@@ -136,6 +152,9 @@ const saveGroupMessage = async (req, res) => {
     res.status(200).json(populatedChat);
   } catch (error) {
     console.error("Error saving group message:", error);
+    if (error.message.includes("suspended")) {
+      return res.status(403).json({ error: error.message });
+    }
     res.status(500).json({ error: "Failed to save group message" });
   }
 };
@@ -241,6 +260,9 @@ function deleteMessageForEveryone(req, res) {
 const saveServerMessage = async (req, res) => {
   const { text, channelId } = req.body;
   try {
+    // Check if user is suspended
+    checkSuspendedUser(req.user);
+
     if (!text && !req.file) {
       return res.status(400).json({ error: "Message must contain either text or a file" });
     }
@@ -269,6 +291,9 @@ const saveServerMessage = async (req, res) => {
     res.status(200).json(populatedChat);
   } catch (error) {
     console.error("Error saving server message:", error);
+    if (error.message.includes("suspended")) {
+      return res.status(403).json({ error: error.message });
+    }
     res.status(500).json({ error: "Failed to save server message" });
   }
 };

@@ -19,23 +19,17 @@ const {
   suspendUser,
   unSuspendUser,
   getAllStats,
-<<<<<<< HEAD
   verifyAdminAccess,
-=======
   updateProfile,
->>>>>>> 1e67eab248521a4ccc195c2ce6630b7d111debb0
+  removeUser,
+  addBackUser,
+  permanentlyDeleteUser,
 } = require("../controllers/userController");
 const { testGoogleAuth } = require("../test/googleAuth");
 const multer = require("multer");
 const upload = multer({ dest: "uploads/" });
 
 const router = Router();
-
-router.get("/all", getAllUsers);
-router.delete("/:userId", deleteUser);
-router.post("/suspend/:userId", suspendUser);
-router.post("/unSuspend/:userId", unSuspendUser);
-router.get("/stats", getAllStats);
 
 //OAuth Routes
 router.get("/auth/google", googleAuth);
@@ -49,13 +43,25 @@ router.get("/search", searchUserByName);
 
 //Protected Routes(Below are all the routes that would require user to be signed in before accesing)
 router.use(Protect);
+
+// Admin Only Routes
+router.get("/all", RestrictTo("ADMIN"), getAllUsers);
+router.delete("/:userId", RestrictTo("ADMIN"), deleteUser);
+router.post("/suspend/:userId", RestrictTo("ADMIN"), suspendUser);
+router.post("/unSuspend/:userId", RestrictTo("ADMIN"), unSuspendUser);
+router.post("/remove/:userId", RestrictTo("ADMIN"), removeUser);
+router.get("/stats", RestrictTo("ADMIN"), getAllStats);
+router.get("/verify-admin", RestrictTo("ADMIN"), (req, res) => {
+  res.status(200).json({ isAdmin: true, message: "Admin access verified" });
+});
+router.post("/addback/:userId", RestrictTo("ADMIN"), addBackUser);
+router.delete("/permanent/:userId", RestrictTo("ADMIN"), permanentlyDeleteUser);
+
+// Regular User Routes
 router.get("/profile", getUserProfile);
 router.put("/profile", upload.single("pfp"), updateProfile);
 router.use("/friends", friendsRoutes);
 router.post("/block/:userIdToBlock", blockUser);
 router.post("/unblock/:blockedUserId", unblockUser);
-router.get("/verify-admin", Protect, RestrictTo("ADMIN"), (req, res) => {
-  res.status(200).json({ isAdmin: true, message: "Admin access verified" });
-});
 
 module.exports = router;
