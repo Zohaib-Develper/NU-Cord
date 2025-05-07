@@ -9,7 +9,7 @@ const Settings = ({ onClose }) => {
 
   return (
     <div
-      className="fixed inset-0 bg-transparent bg-opacity-50 backdrop-blur-lg flex justify-center items-center"
+      className="fixed inset-0 bg-transparent bg-opacity-50 backdrop-blur-lg z-50 flex justify-center items-center"
       onClick={onClose}
     >
       <div

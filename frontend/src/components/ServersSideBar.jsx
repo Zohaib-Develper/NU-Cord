@@ -1,27 +1,100 @@
 import React from "react";
-import { useState, useContext } from "react";
-import { FaChevronDown, FaChevronRight, FaHashtag, FaVolumeUp } from "react-icons/fa";
+import { useState, useContext, useEffect, useRef } from "react";
+import {
+  FaChevronDown,
+  FaChevronRight,
+  FaHashtag,
+  FaVolumeUp,
+} from "react-icons/fa";
 import { AuthContext } from "../utils/AuthContext";
 import Profile from "./Profile";
+import SearchResult from "../components/SearchResult";
+import axios from "axios";
 
 const ServersSideBar = ({ servers, setSelectedChannel }) => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [expandedCategories, setExpandedCategories] = useState({});
   const { user } = useContext(AuthContext);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [serverss, setServers] = useState([]);
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedServer, setSelectedServer] = useState(null);
+  const [searchResults, setSearchResults] = useState({
+    serversList: [],
+  });
+  const searchRef = useRef(null);
+
+  const handleSearchKeyDown = (e) => {
+    if (e.key === "Enter") {
+      if (searchTerm.trim() === "") {
+        setSearchResults({ usersList: [], serversList: [] });
+        return;
+      }
+
+      const lowerSearch = searchTerm.toLowerCase();
+      const filteredServers = serverss.filter((server) =>
+        server.name.toLowerCase().includes(lowerSearch)
+      );
+
+      setSearchResults({ serversList: filteredServers });
+    }
+  };
+  const handleJoinServer = async (serverId) => {
+    try {
+      const response = await axios.post(
+        `http://localhost:8000/api/servers/${serverId}/join-request`,
+        {},
+
+        {
+          withCredentials: true,
+        }
+      );
+      setSelectedServer(null);
+    } catch (error) {
+      alert(error.response?.data?.error);
+      console.error("Error fetching friend requests:", error);
+    }
+  };
+  useEffect(() => {
+    const fetchServers = async () => {
+      axios;
+      try {
+        const response = await axios.get("http://localhost:8000/api/servers", {
+          withCredentials: true,
+        });
+        if (response.data) {
+          console.log("Response.data: ", response.data);
+          setServers(response.data.servers);
+        }
+      } catch (error) {
+        console.error("Error fetching friend requests:", error);
+      }
+    };
+    fetchServers();
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setSearchTerm("");
+        setSearchResults({ serversList: [] });
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleServerClick = (server) => {
     setSelectedItem(selectedItem?._id === server._id ? null : server);
   };
 
   const handleChannelClick = (channel) => {
-    setSelectedChannel({ ...channel, type: 'server' });
+    setSelectedChannel({ ...channel, type: "server" });
   };
 
   const toggleCategory = (category) => {
-    setExpandedCategories(prev => ({
+    setExpandedCategories((prev) => ({
       ...prev,
-      [category]: !prev[category]
+      [category]: !prev[category],
     }));
   };
 
@@ -36,13 +109,20 @@ const ServersSideBar = ({ servers, setSelectedChannel }) => {
         <div className="flex items-center justify-center w-12 h-12 rounded-full bg-yellow-200 mb-2">
           <FaVolumeUp className="text-2xl text-yellow-600" />
         </div>
-        <span className="font-semibold text-gray-800 text-lg mb-2">{channel.name}</span>
+        <span className="font-semibold text-gray-800 text-lg mb-2">
+          {channel.name}
+        </span>
       </div>
     </div>
   );
 
   const renderChannelList = (channels, type) => {
-    const icon = type === 'voice' ? <FaVolumeUp className="text-xs" /> : <FaHashtag className="text-xs" />;
+    const icon =
+      type === "voice" ? (
+        <FaVolumeUp className="text-xs" />
+      ) : (
+        <FaHashtag className="text-xs" />
+      );
     return channels.map((channel, i) => (
       <p
         key={channel._id || i}
@@ -59,25 +139,27 @@ const ServersSideBar = ({ servers, setSelectedChannel }) => {
     const isExpanded = expandedCategories[title];
     return (
       <div className="mb-2">
-        <div 
+        <div
           className="flex items-center gap-1 text-gray-400 cursor-pointer hover:text-gray-300"
           onClick={() => toggleCategory(title)}
         >
-          {isExpanded ? <FaChevronDown className="text-xs" /> : <FaChevronRight className="text-xs" />}
+          {isExpanded ? (
+            <FaChevronDown className="text-xs" />
+          ) : (
+            <FaChevronRight className="text-xs" />
+          )}
           <span className="text-sm font-semibold">{title}</span>
         </div>
         {isExpanded && (
-          <div className="ml-4 mt-1">
-            {renderChannelList(channels, type)}
-          </div>
+          <div className="ml-4 mt-1">{renderChannelList(channels, type)}</div>
         )}
       </div>
     );
   };
 
   const getProfilePicUrl = (pfp) => {
-    if (!pfp) return '';
-    if (pfp.startsWith('/uploads/')) {
+    if (!pfp) return "";
+    if (pfp.startsWith("/uploads/")) {
       return `http://localhost:8000${pfp}`;
     }
     return pfp;
@@ -87,6 +169,38 @@ const ServersSideBar = ({ servers, setSelectedChannel }) => {
     <div className="flex flex-col h-full min-h-0 bg-gray-900 text-white border-r border-gray-700">
       <div className="flex-1 min-h-0 overflow-y-auto p-4">
         <h2 className="text-xl font-bold mb-3">Joined Servers</h2>
+        <div className="relative mb-3" ref={searchRef}>
+          <input
+            type="text"
+            placeholder="Search servers..."
+            className="w-full p-2 rounded bg-gray-700 text-white focus:outline-none"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyDown={handleSearchKeyDown}
+          />
+          {searchResults.serversList.length > 0 && (
+            <div className="absolute top-full left-0 w-full bg-gray-700 rounded-lg mt-2 shadow-lg z-10">
+              <div className="max-h-60 overflow-y-auto">
+                <h3 className="text-gray-300 px-3 py-1">Servers</h3>
+                <ul>
+                  {searchResults.serversList.map((server) => (
+                    <li
+                      key={server._id}
+                      className="px-4 py-2 text-white hover:bg-gray-600 cursor-pointer"
+                      onClick={() => {
+                        setSelectedServer(server);
+                        setSearchTerm("");
+                        setSearchResults({ serversList: [] });
+                      }}
+                    >
+                      {server.name}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          )}
+        </div>
         {servers && servers.length > 0 ? (
           servers.map((server, index) => (
             <div key={server._id || index} className="mb-3">
@@ -100,13 +214,21 @@ const ServersSideBar = ({ servers, setSelectedChannel }) => {
                 <div className="ml-4 mt-2">
                   {renderCategory(
                     "Text Channels",
-                    server.channels.filter(channel => !channel.name.toLowerCase().includes('voice') && !channel.name.toLowerCase().includes('study')),
-                    'text'
+                    server.channels.filter(
+                      (channel) =>
+                        !channel.name.toLowerCase().includes("voice") &&
+                        !channel.name.toLowerCase().includes("study")
+                    ),
+                    "text"
                   )}
                   {renderCategory(
                     "Voice Channels",
-                    server.channels.filter(channel => channel.name.toLowerCase().includes('voice') || channel.name.toLowerCase().includes('study')),
-                    'voice'
+                    server.channels.filter(
+                      (channel) =>
+                        channel.name.toLowerCase().includes("voice") ||
+                        channel.name.toLowerCase().includes("study")
+                    ),
+                    "voice"
                   )}
                 </div>
               )}
@@ -118,7 +240,10 @@ const ServersSideBar = ({ servers, setSelectedChannel }) => {
       </div>
       {/* User Profile Section pinned to bottom */}
       <div className="w-full bg-gray-900 text-white flex items-center justify-between h-16 p-4 border-t border-gray-800">
-        <div className="flex items-center gap-4 cursor-pointer" onClick={() => setIsProfileOpen(true)}>
+        <div
+          className="flex items-center gap-4 cursor-pointer"
+          onClick={() => setIsProfileOpen(true)}
+        >
           <img
             src={getProfilePicUrl(user?.pfp)}
             alt="Profile"
@@ -131,6 +256,16 @@ const ServersSideBar = ({ servers, setSelectedChannel }) => {
         </div>
       </div>
       {isProfileOpen && <Profile onClose={() => setIsProfileOpen(false)} />}
+      {selectedServer && (
+        <div className="mt-4">
+          <SearchResult
+            type={"server"}
+            data={selectedServer}
+            onClose={() => setSelectedServer(null)}
+            onClick={handleJoinServer}
+          />
+        </div>
+      )}
     </div>
   );
 };

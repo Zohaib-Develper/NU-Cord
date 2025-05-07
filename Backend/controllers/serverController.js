@@ -85,6 +85,43 @@ const deleteServer = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+const requestToJoinServer = async (req, res) => {
+  const { serverId } = req.params;
+  const userId = req.user._id; // Assuming user ID is available via middleware (e.g., JWT auth)
+
+  try {
+    const server = await Server.findById(serverId);
+
+    if (!server) {
+      return res.status(404).json({ message: "Server not found." });
+    }
+
+    // Check if user is already a member
+    if (server.users.includes(userId)) {
+      return res
+        .status(400)
+        .json({ message: "You are already a member of this server." });
+    }
+
+    // Check if user has already requested to join
+    if (server.joining_requests.includes(userId)) {
+      return res
+        .status(400)
+        .json({ message: "You have already requested to join this server." });
+    }
+
+    // Add user to joining_requests
+    server.joining_requests.push(userId);
+    await server.save();
+
+    res.status(200).json({ message: "Join request sent successfully." });
+  } catch (error) {
+    console.error("Error requesting to join server:", error);
+    res.status(500).json({ message: "Server error. Try again later." });
+  }
+};
+
 module.exports = {
   getServers,
   registerUserToServerController,
@@ -92,4 +129,5 @@ module.exports = {
   getAllUsersInServer,
   removeUserFromServer,
   deleteServer,
+  requestToJoinServer,
 };
