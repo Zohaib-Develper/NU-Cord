@@ -8,8 +8,10 @@ const {
   deleteServer,
   addUserToServer,
   addChannelToServer,
-  getAllChannelsInServer
+  getAllChannelsInServer,
+  requestToJoinServer,
 } = require("../controllers/serverController");
+const { deleteChannel } = require("../controllers/channelController");
 
 const router = Router();
 
@@ -23,7 +25,8 @@ router.get("/:serverId/channels", Protect, getAllChannelsInServer);
 router.post("/:serverId/addUser", Protect, addUserToServer);
 router.delete("/:serverId/removeUser/:userId", Protect, removeUserFromServer);
 router.post("/:serverId/channel", Protect, addChannelToServer);
-router.delete("/:serverId/channel/:channelId", Protect, deleteServer);
+router.delete("/:serverId/channel/:channelId", Protect, deleteChannel);
 router.delete("/:serverId", Protect, deleteServer);
+router.post("/:serverId/join-request", Protect, requestToJoinServer);
 
-module.exports = router; 
+module.exports = router;

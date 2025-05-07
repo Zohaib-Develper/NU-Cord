@@ -16,7 +16,7 @@ const signup = async (req, res) => {
     });
     if (removedUser) {
       console.log("User was previously removed");
-      return res.redirect("http://localhost:5173/deleted"); 
+      return res.redirect("http://localhost:5173/deleted");
     }
 
     // // Check if user already exists
