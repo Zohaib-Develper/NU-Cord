@@ -139,9 +139,6 @@ npm run dev
 ## 🤝 Contributing
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## 📝 License
-This project is licensed under the MIT License - see the LICENSE file for details.
-
 ## 👥 Authors
 - [Zohaib Musharaf](https://github.com/Zohaib-Develper) - Project Lead & Backend Developer
 - [Abdul Rafay Naveed](https://github.com/xraffay-dev) - Backend Developer
